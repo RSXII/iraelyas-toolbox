@@ -2,7 +2,7 @@ import type {
   AppState, Campaign, CampaignData, ConvoPC, ConvoState,
   HouseData, NPC, PlayerData, Schema, TabId,
   TimelineData, UIState, TrackerData, TrackerEntry,
-  PartyData, PCCard, PCCustomField,
+  PartyData, PCCard,
 } from '@/types/index';
 
 // ═══════════════════════════════════════════════════════════════
