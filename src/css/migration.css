@@ -1,0 +1,195 @@
+/* ═══════════════════════════════════════════════════════════════
+   MIGRATION / FIRST LAUNCH OVERLAY
+═══════════════════════════════════════════════════════════════ */
+#migration-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.94);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#migration-overlay.hidden { display: none; }
+
+.migration-box {
+  background: var(--card);
+  border: 1px solid var(--border-h);
+  border-radius: 10px;
+  padding: 2.5rem;
+  width: 600px;
+  max-width: 94vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.migration-box h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+
+.migration-subtitle {
+  font-size: 14px;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-bottom: 1.75rem;
+}
+
+/* ── Backup restore card (primary path) ── */
+.mig-backup-card {
+  background: var(--surface);
+  border: 1px solid var(--border-h);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mig-backup-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.mig-backup-info { flex: 1; min-width: 0; }
+
+.mig-backup-title {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-pale);
+  margin-bottom: 3px;
+}
+
+.mig-backup-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.mig-backup-desc code {
+  font-style: normal;
+  color: var(--gold-dim);
+  font-family: monospace;
+}
+
+/* ── Or divider ── */
+.mig-or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.mig-or-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.mig-or-text {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+/* ── Migration steps ── */
+.migration-step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.mig-step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.mig-step-info { flex: 1; min-width: 0; }
+
+.mig-step-title {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 1px;
+}
+
+.mig-step-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.mig-step-status {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.mig-step-status.done     { border-color: var(--friendly); color: var(--friendly); }
+.mig-step-status.optional { border-color: var(--gold-dim); color: var(--gold-dim); }
+
+.mig-file-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-h);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.mig-file-btn:hover { background: var(--gold-glow); }
+.mig-file-btn.done  { border-color: var(--friendly); color: var(--friendly); cursor: default; }
+
+/* ── Footer ── */
+.migration-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.75rem;
+  gap: 1rem;
+}
+
+.migration-note {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}

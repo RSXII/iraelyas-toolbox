@@ -1,0 +1,185 @@
+/* ═══════════════════════════════════════════════════════════════
+   FAVOR TRACKER
+═══════════════════════════════════════════════════════════════ */
+#panel-favor {
+  padding: 1.5rem 2rem 3rem;
+}
+
+.favor-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.favor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.favor-player-block h2 {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 3px;
+}
+
+.favor-player-name {
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--gold-pale);
+  letter-spacing: 0.04em;
+}
+
+.favor-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+/* ── NPC rows ── */
+.npc-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 5px;
+  background: var(--card);
+  transition: border-color 0.15s;
+}
+.npc-row:hover { border-color: var(--border-h); }
+
+.npc-left {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 11px;
+  align-items: center;
+  min-width: 0;
+}
+
+.npc-initials {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.npc-info       { min-width: 0; }
+.npc-name       { font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.npc-role       { font-size: 13px; color: var(--text-dim); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.npc-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ── Meter ── */
+.meter-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 140px;
+}
+.meter-top {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: baseline;
+}
+.favor-word {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.score-num { font-size: 12px; color: var(--text-dim); }
+.meter-track {
+  width: 140px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.meter-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* ── Step buttons ── */
+.step-btns { display: flex; gap: 4px; }
+.step-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step-btn:hover  { border-color: var(--border-h); color: var(--text); background: var(--surface); }
+.step-btn:active { transform: scale(0.92); }
+
+/* ── Add NPC panel ── */
+.add-npc-panel {
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.add-npc-panel h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 1rem;
+}
+
+.add-npc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+/* ── Legend ── */
+.favor-legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+.leg-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-dim); }
+.leg-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
