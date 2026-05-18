@@ -4,12 +4,20 @@ A Dungeon Master's dashboard for 5e campaigns. Built with Electron + Vite + Type
 
 ## Tools
 
-- **Favor Tracker** — NPC relationship scores per player, campaign-scoped
-- **Conversation Tracker** — live mood sliders for social encounters (1–6 PCs)
-- **Family Tree** — genealogy/succession viewer with pan & zoom
-- **Chronicle** — scrollable historical timeline
+- **Favor Tracker** — NPC relationship scores per player, campaign-scoped. Track faction renown separately with faction header entries.
+- **Conversation Tracker** — live mood sliders for social encounters, supports 1–6 PCs with a real-time room average.
+- **Family Tree** — genealogy and succession viewer with pan & zoom. Import house JSON files per campaign.
+- **Chronicle** — scrollable historical timeline with a separate always-on-top editor window for adding and managing events.
+- **Custom Trackers** — bounded counters with named warning thresholds. Track anything with a min, max, and breakpoints — deaths, spell slots, limited-use abilities.
+- **Party Quick View** — at-a-glance reference cards for each PC. Tracks AC, saving throws, passives, currency, and custom fields. Includes a combined party wealth tally.
 
 ## For Users
+
+| Mac (Apple Silicon) | [Download](https://github.com/RSXII/iraelyas-toolbox/releases/latest/download/Iraelyas-5e-Toolbox-mac-arm64.dmg)
+
+| Mac (Intel) | [Download](https://github.com/RSXII/iraelyas-toolbox/releases/latest/download/Iraelyas-5e-Toolbox-mac-x64.dmg)
+
+| Windows | [Download](https://github.com/RSXII/iraelyas-toolbox/releases/latest/download/Iraelyas-5e-Toolbox-Setup-windows.exe)
 
 Download the latest release from the [Releases page](https://github.com/RSXII/iraelyas-toolbox/releases):
 
@@ -76,6 +84,7 @@ The workflow builds Mac (`.dmg`) and Windows (`.exe`) installers and attaches th
 ## Data
 
 App data is stored at:
+
 - **Mac**: `~/Library/Application Support/iraelyas-toolbox/toolbox-data.json`
 - **Windows**: `%APPDATA%\iraelyas-toolbox\toolbox-data.json`
 
