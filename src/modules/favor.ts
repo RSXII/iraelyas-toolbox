@@ -83,79 +83,158 @@ function buildFilterChips(): void {
 export function renderFavor(): void {
   buildFilterChips();
 
-  const cid = store.activeCampaignId;
-  const cd  = store.activeCampaignData;
-  const el  = document.getElementById('npc-list')!;
+  const cid    = store.activeCampaignId;
+  const cd     = store.activeCampaignData;
+  const listEl = document.getElementById('npc-list')!;
+  listEl.innerHTML = '';
 
   if (!cd || !cid) {
-    el.innerHTML = '<div class="empty-state">Select or create a campaign to begin.</div>';
+    listEl.innerHTML = '<div class="empty-state">Select or create a campaign to begin.</div>';
     return;
   }
 
-  const pid = store.activePlayerId;
-  const pd  = pid ? cd.players[pid] : null;
+  const pid    = store.activePlayerId;
+  const pd     = pid ? cd.players[pid] : null;
   const schema = cd.schema;
 
   const factions = activeFilter === 'all'
     ? [...new Set(schema.npcs.map(n => n.faction))]
     : [activeFilter];
 
-  let html = '';
+  let anyRendered = false;
+
   factions.forEach(f => {
     const list = schema.npcs.filter(n => n.faction === f);
     if (!list.length) return;
+    anyRendered = true;
 
-    html += `<div class="section-head">
-      <span class="section-name">${f}</span>
-      <div class="section-line"></div>
-    </div>`;
+    // Section header
+    const head = document.createElement('div');
+    head.className = 'section-head';
+    head.innerHTML = `<span class="section-name">${f}</span><div class="section-line"></div>`;
+    listEl.appendChild(head);
 
-    list.forEach(npc => {
-      const score = pd?.scores?.[npc.id] ?? 50;
-      const { word, color } = favorMeta(score);
-      html += `
-        <div class="npc-row">
-          <div class="npc-left">
-            <div class="npc-initials">${initials(npc.name)}</div>
-            <div class="npc-info">
-              <div class="npc-name">${npc.name}</div>
-              <div class="npc-role">${npc.role}</div>
-            </div>
-          </div>
-          <div class="npc-right">
-            <div class="meter-wrap">
-              <div class="meter-top">
-                <span class="favor-word" style="color:${color}">${word}</span>
-                <span class="score-num">${score}</span>
-              </div>
-              <div class="meter-track">
-                <div class="meter-fill" style="width:${score}%;background:${color}"></div>
-              </div>
-            </div>
-            <div class="step-btns">
-              <button class="step-btn" data-npc="${npc.id}" data-delta="-5">−</button>
-              <button class="step-btn" data-npc="${npc.id}" data-delta="5">+</button>
-            </div>
-          </div>
+    list.forEach((npc, idxInGroup) => {
+      const score              = pd?.scores?.[npc.id] ?? 50;
+      const { word, color }    = favorMeta(score);
+      const isHeader           = npc.isFactionHeader === true;
+      const isFirst            = idxInGroup === 0;
+      const isLast             = idxInGroup === list.length - 1;
+
+      // ── Row ──
+      const row = document.createElement('div');
+      row.className = `npc-row${isHeader ? ' faction-header' : ''}`;
+
+      // ── Left: reorder + initials + info ──
+      const left = document.createElement('div');
+      left.className = 'npc-left';
+
+      // Reorder arrows
+      const reorder = document.createElement('div');
+      reorder.className = 'reorder-btns';
+
+      const upBtn = document.createElement('button');
+      upBtn.className   = 'reorder-arrow';
+      upBtn.textContent = '▲';
+      upBtn.title       = 'Move up';
+      upBtn.disabled    = isFirst;
+      upBtn.addEventListener('click', () => {
+        store.reorderNPC(cid, npc.id, -1);
+        renderFavor();
+      });
+
+      const downBtn = document.createElement('button');
+      downBtn.className   = 'reorder-arrow';
+      downBtn.textContent = '▼';
+      downBtn.title       = 'Move down';
+      downBtn.disabled    = isLast;
+      downBtn.addEventListener('click', () => {
+        store.reorderNPC(cid, npc.id, 1);
+        renderFavor();
+      });
+
+      reorder.appendChild(upBtn);
+      reorder.appendChild(downBtn);
+
+      // Initials badge
+      const badge = document.createElement('div');
+      badge.className   = 'npc-initials';
+      badge.textContent = initials(npc.name);
+
+      // Info block
+      const info = document.createElement('div');
+      info.className = 'npc-info';
+
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'npc-name';
+
+      if (isHeader) {
+        nameDiv.innerHTML = `${npc.name} <span class="faction-header-badge">Renown</span>`;
+      } else {
+        nameDiv.textContent = npc.name;
+      }
+
+      const roleDiv = document.createElement('div');
+      roleDiv.className   = 'npc-role';
+      roleDiv.textContent = npc.role;
+
+      info.appendChild(nameDiv);
+      info.appendChild(roleDiv);
+
+      left.appendChild(reorder);
+      left.appendChild(badge);
+      left.appendChild(info);
+
+      // ── Right: meter + step buttons ──
+      const right = document.createElement('div');
+      right.className = 'npc-right';
+
+      const meter = document.createElement('div');
+      meter.className = 'meter-wrap';
+      meter.innerHTML = `
+        <div class="meter-top">
+          <span class="favor-word" style="color:${color}">${word}</span>
+          <span class="score-num">${score}</span>
+        </div>
+        <div class="meter-track">
+          <div class="meter-fill" style="width:${score}%;background:${color}"></div>
         </div>`;
+
+      const stepBtns = document.createElement('div');
+      stepBtns.className = 'step-btns';
+
+      const minusBtn = document.createElement('button');
+      minusBtn.className   = 'step-btn';
+      minusBtn.textContent = '−';
+      minusBtn.addEventListener('click', () => {
+        if (!pid) { showToast('Select a player first'); return; }
+        store.adjustFavorScore(cid, pid, npc.id, -5);
+        renderFavor();
+      });
+
+      const plusBtn = document.createElement('button');
+      plusBtn.className   = 'step-btn';
+      plusBtn.textContent = '+';
+      plusBtn.addEventListener('click', () => {
+        if (!pid) { showToast('Select a player first'); return; }
+        store.adjustFavorScore(cid, pid, npc.id, 5);
+        renderFavor();
+      });
+
+      stepBtns.appendChild(minusBtn);
+      stepBtns.appendChild(plusBtn);
+      right.appendChild(meter);
+      right.appendChild(stepBtns);
+
+      row.appendChild(left);
+      row.appendChild(right);
+      listEl.appendChild(row);
     });
   });
 
-  if (!html) html = '<div class="empty-state">No NPCs in schema yet — add one below.</div>';
-  el.innerHTML = html;
-
-  // Attach step button listeners
-  el.querySelectorAll<HTMLButtonElement>('.step-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const npcId = btn.dataset.npc!;
-      const delta = parseInt(btn.dataset.delta!);
-      const cid   = store.activeCampaignId;
-      const pid   = store.activePlayerId;
-      if (!cid || !pid) { showToast('Select a player first'); return; }
-      store.adjustFavorScore(cid, pid, npcId, delta);
-      renderFavor();
-    });
-  });
+  if (!anyRendered) {
+    listEl.innerHTML = '<div class="empty-state">No NPCs in schema yet — add one below.</div>';
+  }
 }
 
 // ── Save ───────────────────────────────────────────────────────────────────
@@ -194,13 +273,15 @@ export function createPlayer(): void {
 // ── Add NPC ────────────────────────────────────────────────────────────────
 
 export function addNPC(): void {
-  const nameEl    = document.getElementById('new-npc-name') as HTMLInputElement;
-  const roleEl    = document.getElementById('new-npc-role') as HTMLInputElement;
-  const factionEl = document.getElementById('new-npc-faction') as HTMLInputElement;
+  const nameEl     = document.getElementById('new-npc-name')      as HTMLInputElement;
+  const roleEl     = document.getElementById('new-npc-role')      as HTMLInputElement;
+  const factionEl  = document.getElementById('new-npc-faction')   as HTMLInputElement;
+  const headerEl   = document.getElementById('new-npc-is-header') as HTMLInputElement;
 
-  const name    = nameEl.value.trim();
-  const role    = roleEl.value.trim();
-  const faction = factionEl.value.trim();
+  const name             = nameEl.value.trim();
+  const role             = roleEl.value.trim();
+  const faction          = factionEl.value.trim();
+  const isFactionHeader  = headerEl.checked;
 
   if (!name) { showToast('Name required'); return; }
 
@@ -214,11 +295,18 @@ export function addNPC(): void {
     return;
   }
 
-  store.addNPC(cid, { id, name, role: role || '—', faction: faction || 'Unaffiliated' });
+  store.addNPC(cid, {
+    id,
+    name,
+    role:            role || '—',
+    faction:         faction || 'Unaffiliated',
+    isFactionHeader: isFactionHeader || undefined,
+  });
 
-  nameEl.value = '';
-  roleEl.value = '';
+  nameEl.value    = '';
+  roleEl.value    = '';
   factionEl.value = '';
+  headerEl.checked = false;
 
   renderFavor();
   showToast(`${name} added`);

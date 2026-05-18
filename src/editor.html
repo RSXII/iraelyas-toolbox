@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline Editor</title>
+  <link rel="stylesheet" href="./css/editor.css">
+</head>
+<body>
+
+<div class="ed-shell">
+
+  <!-- ── Header ── -->
+  <div class="ed-header">
+    <div class="ed-header-top">
+      <span class="ed-title">Timeline Editor</span>
+      <select class="ed-campaign-select" id="ed-campaign-select"></select>
+    </div>
+    <div class="ed-campaign" id="ed-campaign-label">No campaign selected</div>
+  </div>
+
+  <!-- ── Scrollable section list ── -->
+  <div class="ed-body" id="ed-body">
+    <div class="empty-state" id="ed-empty">No timeline data for this campaign.</div>
+  </div>
+
+  <!-- ── Add section (pinned at bottom of body, rendered inside ed-body) ── -->
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     ITEM EDIT MODAL
+══════════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-item">
+  <div class="modal">
+    <h3 id="modal-item-title">Edit Item</h3>
+
+    <div class="field-group">
+      <label class="field-label">Type</label>
+      <select class="form-select" id="item-type">
+        <option value="span">Span (duration)</option>
+        <option value="point">Point (moment)</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Label</label>
+      <input type="text" id="item-label" placeholder="Event name">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Tint</label>
+      <select class="form-select" id="item-tint"></select>
+    </div>
+
+    <!-- Span fields -->
+    <div id="span-fields">
+      <div class="field-row">
+        <div class="field-group">
+          <label class="field-label">Start year</label>
+          <input type="number" id="item-start" placeholder="e.g. 1200">
+        </div>
+        <div class="field-group">
+          <label class="field-label">End year</label>
+          <input type="number" id="item-end" placeholder="e.g. 1210">
+        </div>
+      </div>
+    </div>
+
+    <!-- Point fields -->
+    <div id="point-fields" style="display:none">
+      <div class="field-group">
+        <label class="field-label">Year</label>
+        <input type="number" id="item-year" placeholder="e.g. 1205">
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Obsidian path (optional)</label>
+      <input type="text" id="item-obs" placeholder="Events/MyEvent">
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn" id="modal-item-cancel">Cancel</button>
+      <button class="btn btn-gold" id="modal-item-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Section rename modal -->
+<div class="modal-overlay" id="modal-section">
+  <div class="modal">
+    <h3>Rename Section</h3>
+    <div class="field-group">
+      <label class="field-label">Section label</label>
+      <input type="text" id="section-label-input" placeholder="e.g. Events">
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="modal-section-cancel">Cancel</button>
+      <button class="btn btn-gold" id="modal-section-save">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module" src="./modules/editor.ts"></script>
+</body>
+</html>

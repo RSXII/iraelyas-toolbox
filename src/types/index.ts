@@ -23,11 +23,24 @@ export interface ToolboxBridge {
   getDataPath:  ()                              => Promise<string>;
   openExternal: (url: string)                   => Promise<void>;
   platform:     'darwin' | 'win32' | 'linux';
+
+  // Timeline editor window
+  openTimelineEditor: ()                                      => Promise<void>;
+  getTimeline:        (campaignId: string)                    => Promise<TimelineData | null>;
+  saveTimeline:       (campaignId: string, data: TimelineData) => Promise<{ ok: boolean; error?: string }>;
+  getEditorContext:   ()                                      => Promise<EditorContext | null>;
+  onTimelineUpdated:  (cb: () => void)                        => void;
+  offTimelineUpdated: (cb: () => void)                        => void;
 }
 
 export interface FileFilter {
   name: string;
   extensions: string[];
+}
+
+export interface EditorContext {
+  campaigns:      Campaign[];
+  activeCampaign: string;
 }
 
 // Augment Window so TypeScript knows about the bridge
@@ -51,10 +64,11 @@ export interface Campaign {
 // ═══════════════════════════════════════════════════════════════
 
 export interface NPC {
-  id: string;
-  name: string;
-  role: string;
-  faction: string;
+  id:               string;
+  name:             string;
+  role:             string;
+  faction:          string;
+  isFactionHeader?: boolean;
 }
 
 export interface Schema {

@@ -350,8 +350,16 @@ async function main(): Promise<void> {
 
   // ── Chronicle ──
   initChronicle();
+  document.getElementById('btn-open-editor')!
+    .addEventListener('click', () => window.toolbox.openTimelineEditor());
+
+  // Listen for saves made in the editor window
+  const onTimelineUpdated = () => renderChronicle();
+  window.toolbox.onTimelineUpdated(onTimelineUpdated);
+
   document.getElementById('btn-import-timeline')!
     .addEventListener('click', importTimelineFile);
+  window.toolbox.onTimelineUpdated(onTimelineUpdated);
 
   document.getElementById('btn-export-timeline')!
     .addEventListener('click', exportTimelineFile);

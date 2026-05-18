@@ -7,8 +7,9 @@ const IS_DEV  = process.env.NODE_ENV === 'development' || !app.isPackaged;
 const DEV_URL = 'http://localhost:5173';
 const DATA_FILE = path.join(app.getPath('userData'), 'toolbox-data.json');
 
-// ─── Window ───────────────────────────────────────────────────────────────────
-let mainWindow = null;
+// ─── Windows ──────────────────────────────────────────────────────────────────
+let mainWindow   = null;
+let editorWindow = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -43,9 +44,114 @@ function createWindow() {
   });
 
   mainWindow.on('closed', () => {
+    // Close editor window when main window closes
+    if (editorWindow && !editorWindow.isDestroyed()) editorWindow.close();
     mainWindow = null;
   });
 }
+
+// ─── Editor window ────────────────────────────────────────────────────────────
+function createEditorWindow() {
+  editorWindow = new BrowserWindow({
+    width:       480,
+    height:      720,
+    minWidth:    400,
+    minHeight:   500,
+    title:       'Timeline Editor',
+    backgroundColor: '#111113',
+    alwaysOnTop: true,
+    // Don't show in taskbar/dock as a separate app entry
+    parent:      mainWindow ?? undefined,
+    webPreferences: {
+      preload:          path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration:  false,
+      sandbox:          false,
+    },
+    show: false,
+  });
+
+  if (IS_DEV) {
+    editorWindow.loadURL('http://localhost:5173/editor.html');
+  } else {
+    editorWindow.loadFile(path.join(__dirname, '../dist/renderer/editor.html'));
+  }
+
+  editorWindow.once('ready-to-show', () => editorWindow.show());
+
+  editorWindow.on('closed', () => {
+    editorWindow = null;
+    // Tell main window to re-render — catches any saves made during the session
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('timeline-updated');
+    }
+  });
+}
+
+// ─── IPC: Timeline editor window ──────────────────────────────────────────────
+
+ipcMain.handle('open-timeline-editor', () => {
+  if (editorWindow && !editorWindow.isDestroyed()) {
+    // Already open — just focus it
+    editorWindow.focus();
+    return;
+  }
+  createEditorWindow();
+});
+
+// ─── IPC: Timeline-specific data ops ─────────────────────────────────────────
+// These let the editor window read/write only the timeline portion of the state,
+// keeping IPC payloads small and the editor decoupled from full app state.
+
+// Read the full app state from disk and return just the timeline for a campaign
+ipcMain.handle('get-timeline', (_event, campaignId) => {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return null;
+    const state = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    return state?.campaignData?.[campaignId]?.timeline ?? null;
+  } catch (err) {
+    console.error('get-timeline error:', err);
+    return null;
+  }
+});
+
+// Write an updated timeline back into the state file for a campaign,
+// then notify the main window to re-render
+ipcMain.handle('save-timeline', (_event, campaignId, timelineData) => {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return { ok: false, error: 'No data file' };
+    const state = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    if (!state.campaignData) state.campaignData = {};
+    if (!state.campaignData[campaignId]) state.campaignData[campaignId] = {};
+    state.campaignData[campaignId].timeline = timelineData;
+    fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf-8');
+
+    // Notify main window to re-render the chronicle
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('timeline-updated');
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error('save-timeline error:', err);
+    return { ok: false, error: err.message };
+  }
+});
+
+// Get just the campaign list + active campaign id so the editor can
+// display context without needing the full state
+ipcMain.handle('get-editor-context', () => {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return null;
+    const state = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    return {
+      campaigns:      state.campaigns      ?? [],
+      activeCampaign: state.ui?.activeCampaign ?? '',
+    };
+  } catch (err) {
+    console.error('get-editor-context error:', err);
+    return null;
+  }
+});
 
 // ─── App lifecycle ────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
