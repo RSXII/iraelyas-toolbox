@@ -18,6 +18,8 @@ import {
   renderChronicle, initChronicle, importTimelineFile,
   exportTimelineFile, scrollToNow,
 } from './chronicle';
+import { renderTracker, initTracker } from './tracker';
+import { renderParty, initParty } from './party';
 
 // ═══════════════════════════════════════════════════════════════
 // TOAST
@@ -59,6 +61,8 @@ function switchTab(id: TabId): void {
   // Trigger renders that need DOM to be visible first
   if (id === 'tree')      setTimeout(() => initTree(), 10);
   if (id === 'chronicle') setTimeout(() => renderChronicle(), 10);
+  if (id === 'tracker')   renderTracker();
+  if (id === 'party')     renderParty();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -87,6 +91,8 @@ function switchCampaign(id: string): void {
   const activeTab = store.activeTab;
   if (activeTab === 'tree')      initTree();
   if (activeTab === 'chronicle') renderChronicle();
+  if (activeTab === 'tracker')   renderTracker();
+  if (activeTab === 'party')     renderParty();
 }
 
 function createCampaign(): void {
@@ -281,6 +287,14 @@ function boot(): void {
   initConvoTitle();
   syncPCCountButtons();
   renderConvoSliders();
+
+  // Tracker
+  initTracker();
+  if (tab === 'tracker') renderTracker();
+
+  // Party
+  initParty();
+  if (tab === 'party') renderParty();
 
   // Tree / Chronicle if on those tabs
   if (tab === 'tree')      setTimeout(() => initTree(), 10);

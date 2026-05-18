@@ -1,0 +1,244 @@
+/* ═══════════════════════════════════════════════════════════════
+   TRACKER
+═══════════════════════════════════════════════════════════════ */
+#panel-tracker { padding: 1.5rem 2rem 3rem; }
+
+.tracker-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.tracker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+/* ── Entry card ── */
+.tracker-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  background: var(--card);
+  transition: border-color 0.15s;
+  position: relative;
+}
+.tracker-card:hover              { border-color: var(--border-h); }
+.tracker-card.has-warning        { border-color: rgba(184, 64, 64, 0.5); }
+.tracker-card.has-warning:hover  { border-color: rgba(184, 64, 64, 0.8); }
+
+/* ── Card top row: name + actions ── */
+.tracker-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.tracker-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tracker-name {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tracker-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ── Progress row: bar + controls ── */
+.tracker-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tracker-bar-wrap {
+  flex: 1;
+  position: relative;
+  height: 6px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.tracker-bar-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+
+/* Countup: fills left to right */
+.tracker-bar-fill.countup  { left: 0; }
+/* Countdown: fills right to left */
+.tracker-bar-fill.countdown { right: 0; }
+
+.tracker-value-display {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 52px;
+  text-align: right;
+}
+
+.tracker-value-display .tracker-max {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.tracker-step-btns {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Reuse step-btn from favor tracker */
+
+/* ── Warning labels ── */
+.tracker-warnings {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tracker-warning-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hostile);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tracker-warning-label::before {
+  content: '⚠';
+  font-size: 10px;
+}
+
+/* ── Add entry panel ── */
+.add-tracker-panel {
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.add-tracker-panel h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 0.75rem;
+}
+
+/* ── Modal: warning rows ── */
+.warning-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.warning-row input[type="number"] {
+  width: 72px;
+  flex-shrink: 0;
+}
+
+.warning-row input[type="text"] {
+  flex: 1;
+}
+
+.add-warning-btn {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--border-h);
+  background: transparent;
+  color: var(--gold-dim);
+  cursor: pointer;
+  width: 100%;
+  margin-top: 4px;
+  transition: all 0.15s;
+}
+.add-warning-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
+
+/* Direction toggle */
+.direction-toggle {
+  display: flex;
+  gap: 8px;
+}
+
+.direction-option {
+  flex: 1;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.direction-option:hover           { border-color: var(--border-h); color: var(--text); }
+.direction-option.active          { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-glow); }
+
+/* Modal wider for tracker */
+.modal-tracker { width: 460px; }
+
+.warnings-section-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin: 1rem 0 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.warnings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}

@@ -1,7 +1,8 @@
 import type {
   AppState, Campaign, CampaignData, ConvoPC, ConvoState,
   HouseData, NPC, PlayerData, Schema, TabId,
-  TimelineData, UIState,
+  TimelineData, UIState, TrackerData, TrackerEntry,
+  PartyData, PCCard, PCCustomField,
 } from '@/types/index';
 
 // ═══════════════════════════════════════════════════════════════
@@ -33,6 +34,8 @@ function defaultCampaignData(): CampaignData {
     players:  {},
     houses:   {},
     timeline: null,
+    tracker:  { entries: [] },
+    party:    { pcs: [] },
   };
 }
 
@@ -308,6 +311,86 @@ class Store {
 
   setActiveTab(tab: TabId): void {
     this._state.ui.activeTab = tab;
+    this.save();
+  }
+
+  // ── Tracker helpers ───────────────────────────────────────────
+
+  getTracker(campaignId: string): TrackerData {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.tracker) cd.tracker = { entries: [] };
+    return cd.tracker;
+  }
+
+  upsertTrackerEntry(campaignId: string, entry: TrackerEntry): void {
+    const tracker = this.getTracker(campaignId);
+    const idx     = tracker.entries.findIndex(e => e.id === entry.id);
+    if (idx >= 0) {
+      tracker.entries[idx] = entry;
+    } else {
+      tracker.entries.push(entry);
+    }
+    this.save();
+  }
+
+  adjustTrackerValue(campaignId: string, entryId: string, delta: number): void {
+    const tracker = this.getTracker(campaignId);
+    const entry   = tracker.entries.find(e => e.id === entryId);
+    if (!entry) return;
+    entry.current = Math.max(entry.min, Math.min(entry.max, entry.current + delta));
+    this.save();
+  }
+
+  deleteTrackerEntry(campaignId: string, entryId: string): void {
+    const tracker   = this.getTracker(campaignId);
+    tracker.entries = tracker.entries.filter(e => e.id !== entryId);
+    this.save();
+  }
+
+  reorderTrackerEntry(campaignId: string, entryId: string, direction: -1 | 1): void {
+    const tracker  = this.getTracker(campaignId);
+    const entries  = tracker.entries;
+    const idx      = entries.findIndex(e => e.id === entryId);
+    if (idx === -1) return;
+
+    const category   = entries[idx].category;
+    const groupIdxs  = entries.reduce<number[]>((acc, e, i) => {
+      if (e.category === category) acc.push(i);
+      return acc;
+    }, []);
+
+    const posInGroup = groupIdxs.indexOf(idx);
+    const targetPos  = posInGroup + direction;
+    if (targetPos < 0 || targetPos >= groupIdxs.length) return;
+
+    const targetIdx  = groupIdxs[targetPos];
+    [entries[idx], entries[targetIdx]] = [entries[targetIdx], entries[idx]];
+    this.save();
+  }
+
+  // ── Party helpers ─────────────────────────────────────────────
+
+  getParty(campaignId: string): PartyData {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.party) cd.party = { pcs: [] };
+    return cd.party;
+  }
+
+  addPC(campaignId: string, pc: PCCard): void {
+    this.getParty(campaignId).pcs.push(pc);
+    this.save();
+  }
+
+  updatePC(campaignId: string, pc: PCCard): void {
+    const party = this.getParty(campaignId);
+    const idx   = party.pcs.findIndex(p => p.id === pc.id);
+    if (idx >= 0) party.pcs[idx] = pc;
+    this.save();
+  }
+
+  deletePC(campaignId: string, pcId: string): void {
+    const party   = this.getParty(campaignId);
+    party.pcs     = party.pcs.filter(p => p.id !== pcId);
     this.save();
   }
 

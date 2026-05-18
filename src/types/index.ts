@@ -198,6 +198,70 @@ export interface ConvoState {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// TRACKER
+// ═══════════════════════════════════════════════════════════════
+
+export type TrackerDirection = 'countup' | 'countdown';
+
+export interface TrackerWarning {
+  value: number;
+  label: string;
+}
+
+export interface TrackerEntry {
+  id:        string;
+  name:      string;
+  category:  string;
+  min:       number;
+  max:       number;
+  current:   number;
+  direction: TrackerDirection;
+  warnings:  TrackerWarning[];
+}
+
+export interface TrackerData {
+  entries: TrackerEntry[];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PARTY QUICK VIEW
+// ═══════════════════════════════════════════════════════════════
+
+export interface PCCustomField {
+  id:    string;
+  name:  string;
+  value: string;
+}
+
+export interface PCCard {
+  id:   string;
+  name: string;
+  ac:   string;
+  saves: {
+    str: string;
+    dex: string;
+    con: string;
+    int: string;
+    wis: string;
+    cha: string;
+  };
+  passives: {
+    perception:    string;
+    insight:       string;
+    investigation: string;
+  };
+  currency: {
+    platinum: number;
+    gold:     number;
+  };
+  custom: PCCustomField[];
+}
+
+export interface PartyData {
+  pcs: PCCard[];
+}
+
+// ═══════════════════════════════════════════════════════════════
 // CAMPAIGN DATA (per-campaign bucket)
 // ═══════════════════════════════════════════════════════════════
 
@@ -206,6 +270,8 @@ export interface CampaignData {
   players:  Record<string, PlayerData>;
   houses:   Record<string, HouseData>;
   timeline: TimelineData | null;
+  tracker:  TrackerData;
+  party:    PartyData;
 }
 
 // ═══════════════════════════════════════════════════════════════
