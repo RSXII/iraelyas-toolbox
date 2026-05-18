@@ -147,6 +147,55 @@
 .step-btn:hover  { border-color: var(--border-h); color: var(--text); background: var(--surface); }
 .step-btn:active { transform: scale(0.92); }
 
+/* ── Reorder arrows (within faction group) ── */
+.reorder-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.reorder-arrow {
+  width: 18px;
+  height: 14px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 7px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s;
+  line-height: 1;
+}
+.reorder-arrow:hover            { border-color: var(--border-h); color: var(--text-dim); background: var(--surface); }
+.reorder-arrow:active           { transform: scale(0.9); }
+.reorder-arrow:disabled         { opacity: 0.15; cursor: default; }
+.reorder-arrow:disabled:hover   { border-color: var(--border); color: var(--text-faint); background: transparent; transform: none; }
+
+/* ── Faction header NPC card ── */
+.npc-row.faction-header {
+  border-color: var(--gold-dim);
+  border-left: 3px solid var(--gold);
+  background: rgba(201, 168, 76, 0.04);
+}
+.npc-row.faction-header:hover { border-color: var(--gold); }
+
+.faction-header-badge {
+  font-family: 'Cinzel', serif;
+  font-size: 7px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  border: 1px solid var(--gold-dim);
+  border-radius: 20px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 /* ── Add NPC panel ── */
 .add-npc-panel {
   margin-top: 2rem;

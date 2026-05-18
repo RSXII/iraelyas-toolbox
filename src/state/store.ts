@@ -210,6 +210,30 @@ class Store {
     this.save();
   }
 
+  /** Move an NPC up or down within its faction group only */
+  reorderNPC(campaignId: string, npcId: string, direction: -1 | 1): void {
+    const cd   = this.getCampaignData(campaignId);
+    const npcs = cd.schema.npcs;
+    const idx  = npcs.findIndex(n => n.id === npcId);
+    if (idx === -1) return;
+
+    const faction     = npcs[idx].faction;
+    // All indices in this faction group, in order
+    const groupIdxs   = npcs.reduce<number[]>((acc, n, i) => {
+      if (n.faction === faction) acc.push(i);
+      return acc;
+    }, []);
+
+    const posInGroup  = groupIdxs.indexOf(idx);
+    const targetPos   = posInGroup + direction;
+    if (targetPos < 0 || targetPos >= groupIdxs.length) return;
+
+    const targetIdx   = groupIdxs[targetPos];
+    // Swap in the flat npcs array
+    [npcs[idx], npcs[targetIdx]] = [npcs[targetIdx], npcs[idx]];
+    this.save();
+  }
+
   // ── House / Family Tree helpers ───────────────────────────────
 
   get activeHouseId(): string {

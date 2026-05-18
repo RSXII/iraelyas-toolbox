@@ -42,6 +42,31 @@ contextBridge.exposeInMainWorld('toolbox', {
   openExternal: (url) =>
     ipcRenderer.invoke('open-external', url),
 
+  // ── Timeline editor window ─────────────────────────────────────
+  /** Open (or focus) the always-on-top timeline editor window */
+  openTimelineEditor: () =>
+    ipcRenderer.invoke('open-timeline-editor'),
+
+  /** Read the timeline for a specific campaign from disk */
+  getTimeline: (campaignId) =>
+    ipcRenderer.invoke('get-timeline', campaignId),
+
+  /** Write an updated timeline to disk and notify the main window */
+  saveTimeline: (campaignId, timelineData) =>
+    ipcRenderer.invoke('save-timeline', campaignId, timelineData),
+
+  /** Get campaign list + active campaign id for the editor window */
+  getEditorContext: () =>
+    ipcRenderer.invoke('get-editor-context'),
+
+  /** Listen for timeline-updated events pushed from main process */
+  onTimelineUpdated: (callback) =>
+    ipcRenderer.on('timeline-updated', callback),
+
+  /** Remove timeline-updated listener (cleanup) */
+  offTimelineUpdated: (callback) =>
+    ipcRenderer.removeListener('timeline-updated', callback),
+
   // ── Platform ───────────────────────────────────────────────────
   /** 'darwin' | 'win32' | 'linux' */
   platform: process.platform,

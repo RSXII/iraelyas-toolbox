@@ -182,6 +182,12 @@
           </div>
           <button class="btn btn-gold" id="btn-add-npc" style="align-self:end">Add</button>
         </div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="new-npc-is-header" style="accent-color:var(--gold);width:14px;height:14px;cursor:pointer;">
+          <label for="new-npc-is-header" style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);cursor:pointer;">
+            Faction header — tracks renown for the faction as a whole
+          </label>
+        </div>
       </div>
       <div class="favor-legend">
         <div class="leg-item"><div class="leg-dot" style="background:var(--hostile)"></div>Hostile (0–19)</div>
@@ -259,6 +265,7 @@
         <button class="btn btn-sm" id="btn-jump-now">Jump to Now</button>
         <button class="btn btn-sm" id="btn-import-timeline">Import Timeline</button>
         <button class="btn btn-sm btn-gold" id="btn-export-timeline">Export Timeline JS</button>
+        <button class="btn btn-sm" id="btn-open-editor">Edit Timeline</button>
       </div>
     </div>
     <div class="chronicle-scroll" id="chronicle-scroll">
