@@ -467,3 +467,161 @@ input[type="number"]::placeholder {
   text-transform: uppercase;
   color: var(--text-faint);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   DANGER ZONE
+═══════════════════════════════════════════════════════════════ */
+.btn-danger-subtle {
+  border-color: rgba(180, 60, 60, 0.25);
+  color: #a05050;
+}
+.btn-danger-subtle:hover {
+  border-color: rgba(180, 60, 60, 0.6);
+  color: #d07070;
+  background: rgba(180, 60, 60, 0.06);
+}
+
+.btn-red {
+  border-color: rgba(180, 60, 60, 0.6);
+  color: #e07070;
+  background: rgba(180, 60, 60, 0.08);
+}
+.btn-red:hover {
+  border-color: #c04040;
+  color: #ff9090;
+  background: rgba(180, 60, 60, 0.18);
+}
+
+.modal-danger {
+  width: 520px;
+  position: relative;
+  border-color: rgba(180, 60, 60, 0.35);
+}
+
+.danger-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.danger-icon { font-size: 18px; color: #e08030; }
+
+.danger-header h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #e08030;
+  margin-bottom: 0;
+}
+
+.danger-subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}
+
+.danger-action-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid rgba(180, 60, 60, 0.2);
+  border-radius: var(--radius);
+}
+
+.danger-action-info { flex: 1; min-width: 0; }
+
+.danger-action-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+
+.danger-action-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.55;
+}
+
+.danger-step-notice {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 1rem 1.25rem;
+  background: rgba(201, 168, 76, 0.06);
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius);
+}
+
+.danger-step-notice-icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
+
+.danger-step-notice-title {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold-pale);
+  margin-bottom: 5px;
+}
+
+.danger-step-notice-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+  line-height: 1.55;
+}
+
+.danger-final-warning {
+  padding: 1rem 1.25rem;
+  background: rgba(180, 60, 60, 0.06);
+  border: 1px solid rgba(180, 60, 60, 0.35);
+  border-radius: var(--radius);
+}
+
+.danger-final-warning-title {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e07070;
+  margin-bottom: 6px;
+}
+
+.danger-final-warning-desc {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.danger-final-warning-desc strong {
+  color: var(--text);
+  font-style: normal;
+}
+
+.danger-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+}
+.danger-close:hover { border-color: var(--border-h); color: var(--text); }

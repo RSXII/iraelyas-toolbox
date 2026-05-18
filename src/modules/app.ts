@@ -264,8 +264,74 @@ function migFinish(): void {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// BOOT
+// DANGEROUS ACTIONS
 // ═══════════════════════════════════════════════════════════════
+
+function openDangerOverlay(): void {
+  // Always reset to step 1 when opening
+  showDangerStep(1);
+  openModal('modal-danger');
+}
+
+function closeDangerOverlay(): void {
+  closeModal('modal-danger');
+  // Reset to step 1 so state is clean next time
+  setTimeout(() => showDangerStep(1), 300);
+}
+
+function showDangerStep(step: 1 | 2 | 3): void {
+  document.getElementById('danger-step-1')!.style.display = step === 1 ? '' : 'none';
+  document.getElementById('danger-step-2')!.style.display = step === 2 ? '' : 'none';
+  document.getElementById('danger-step-3')!.style.display = step === 3 ? '' : 'none';
+}
+
+async function dangerDownloadAndContinue(): Promise<void> {
+  // Export the backup via native save dialog — blocks until dialog closes
+  const content = store.toJSON();
+  const result  = await window.toolbox.exportFile('toolbox_backup.json', content);
+
+  if (result.canceled || !result.ok) {
+    // User canceled the save dialog — stay on step 2, don't proceed
+    showToast('Backup not saved — download your backup to continue');
+    return;
+  }
+
+  // Backup was saved — advance to final confirmation
+  showDangerStep(3);
+}
+
+async function dangerClearAll(): Promise<void> {
+  // Wipe the data file by saving an empty default state
+  const emptyState: AppState = {
+    version:      1,
+    campaigns:    [],
+    campaignData: {},
+    ui: {
+      activeCampaign: '',
+      activePlayer:   '',
+      activeHouse:    '',
+      activeTab:      'favor',
+      convo: {
+        title:   'Generic Conversation',
+        pcCount: 4,
+        pcs: Array.from({ length: 6 }, (_, i) => ({ name: `PC ${i + 1}`, score: 5 })),
+      },
+    },
+  };
+
+  await window.toolbox.saveData(emptyState);
+
+  // Reset in-memory store
+  store.replaceState(emptyState);
+
+  // Close overlay
+  closeModal('modal-danger');
+
+  // Show migration overlay — they're back to first launch
+  document.getElementById('migration-overlay')!.classList.remove('hidden');
+
+  showToast('All data cleared');
+}
 
 function boot(): void {
   renderCampaignSelect();
@@ -373,7 +439,6 @@ async function main(): Promise<void> {
 
   document.getElementById('btn-import-timeline')!
     .addEventListener('click', importTimelineFile);
-  window.toolbox.onTimelineUpdated(onTimelineUpdated);
 
   document.getElementById('btn-export-timeline')!
     .addEventListener('click', exportTimelineFile);
@@ -393,8 +458,38 @@ async function main(): Promise<void> {
     btn.addEventListener('click', () => closeModal(btn.dataset.close!));
   });
 
+  // ── Danger zone ──
+  document.getElementById('btn-dangerous-actions')!
+    .addEventListener('click', openDangerOverlay);
+
+  document.getElementById('btn-danger-close')!
+    .addEventListener('click', closeDangerOverlay);
+
+  document.getElementById('btn-clear-step1')!
+    .addEventListener('click', () => showDangerStep(2));
+
+  document.getElementById('btn-danger-cancel-step2')!
+    .addEventListener('click', closeDangerOverlay);
+
+  document.getElementById('btn-danger-download')!
+    .addEventListener('click', dangerDownloadAndContinue);
+
+  document.getElementById('btn-danger-cancel-step3')!
+    .addEventListener('click', closeDangerOverlay);
+
+  document.getElementById('btn-danger-confirm')!
+    .addEventListener('click', dangerClearAll);
+
+  // ── Keyboard shortcuts ──
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
+      const dangerOpen = document.getElementById('modal-danger')?.classList.contains('open');
+      if (dangerOpen) {
+        // Only close danger overlay from step 1 — step 2/3 require explicit cancel
+        const onStep1 = document.getElementById('danger-step-1')!.style.display !== 'none';
+        if (onStep1) closeDangerOverlay();
+        return;
+      }
       document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
     }
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {

@@ -263,7 +263,7 @@ export function openModal(entry?: TrackerEntry): void {
   modalDirection = entry?.direction ?? 'countup';
 
   const titleEl = document.getElementById('tracker-modal-title')!;
-  titleEl.textContent = entry ? 'Edit Tracker' : 'Add Tracker';
+  titleEl.textContent = entry ? 'Edit Custom Tracker' : 'Add Custom Tracker';
 
   // Populate fields
   (document.getElementById('tracker-name-input')  as HTMLInputElement).value =
