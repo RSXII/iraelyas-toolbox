@@ -15,22 +15,25 @@ export interface SaveResult {
 }
 
 export interface ToolboxBridge {
-  loadData:     ()                              => Promise<AppState | null>;
-  saveData:     (data: AppState)                => Promise<{ ok: boolean }>;
-  importFile:   (filters: FileFilter[])         => Promise<FileResult[] | null>;
-  exportFile:   (filename: string, content: string) => Promise<SaveResult>;
-  getVersion:   ()                              => Promise<string>;
-  getDataPath:  ()                              => Promise<string>;
-  openExternal: (url: string)                   => Promise<void>;
-  platform:     'darwin' | 'win32' | 'linux';
+  loadData: () => Promise<AppState | null>;
+  saveData: (data: AppState) => Promise<{ ok: boolean }>;
+  importFile: (filters: FileFilter[]) => Promise<FileResult[] | null>;
+  exportFile: (filename: string, content: string) => Promise<SaveResult>;
+  getVersion: () => Promise<string>;
+  getDataPath: () => Promise<string>;
+  openExternal: (url: string) => Promise<void>;
+  platform: "darwin" | "win32" | "linux";
 
   // Timeline editor window
-  openTimelineEditor: ()                                      => Promise<void>;
-  getTimeline:        (campaignId: string)                    => Promise<TimelineData | null>;
-  saveTimeline:       (campaignId: string, data: TimelineData) => Promise<{ ok: boolean; error?: string }>;
-  getEditorContext:   ()                                      => Promise<EditorContext | null>;
-  onTimelineUpdated:  (cb: () => void)                        => void;
-  offTimelineUpdated: (cb: () => void)                        => void;
+  openTimelineEditor: () => Promise<void>;
+  getTimeline: (campaignId: string) => Promise<TimelineData | null>;
+  saveTimeline: (
+    campaignId: string,
+    data: TimelineData,
+  ) => Promise<{ ok: boolean; error?: string }>;
+  getEditorContext: () => Promise<EditorContext | null>;
+  onTimelineUpdated: (cb: () => void) => void;
+  offTimelineUpdated: (cb: () => void) => void;
 }
 
 export interface FileFilter {
@@ -39,7 +42,7 @@ export interface FileFilter {
 }
 
 export interface EditorContext {
-  campaigns:      Campaign[];
+  campaigns: Campaign[];
   activeCampaign: string;
 }
 
@@ -64,10 +67,10 @@ export interface Campaign {
 // ═══════════════════════════════════════════════════════════════
 
 export interface NPC {
-  id:               string;
-  name:             string;
-  role:             string;
-  faction:          string;
+  id: string;
+  name: string;
+  role: string;
+  faction: string;
   isFactionHeader?: boolean;
 }
 
@@ -84,47 +87,47 @@ export interface PlayerData {
 // FAMILY TREE
 // ═══════════════════════════════════════════════════════════════
 
-export type MemberType = 'bio' | 'priestess' | 'current' | 'heir' | 'unknown';
-export type ColValue   = number | 'spine';
+export type MemberType = "bio" | "priestess" | "current" | "heir" | "unknown";
+export type ColValue = number | "spine";
 
 export interface HouseMember {
-  id:       string;
-  label:    string;
-  row:      number;
-  col:      ColValue;
-  type:     MemberType;
-  mother:   string | null;
-  father:   string | null;
+  id: string;
+  label: string;
+  row: number;
+  col: ColValue;
+  type: MemberType;
+  mother: string | null;
+  father: string | null;
   adoptive: string | null;
-  spouse:   string | null;
-  img:      string | null;
-  note:     string | null;
+  spouse: string | null;
+  img: string | null;
+  note: string | null;
 }
 
 export interface SpineConfig {
-  enabled:       boolean;
-  label?:        string;
-  color?:        string;
+  enabled: boolean;
+  label?: string;
+  color?: string;
   badge_current?: string;
-  badge_heir?:   string;
+  badge_heir?: string;
   badge_former?: string;
 }
 
 export interface TreeLayoutConfig {
   row_height?: number;
-  node_w?:     number;
-  node_h?:     number;
-  col_gap?:    number;
-  col_start?:  number;
-  spine_x?:    number;
+  node_w?: number;
+  node_h?: number;
+  col_gap?: number;
+  col_start?: number;
+  spine_x?: number;
 }
 
 export interface HouseData {
-  house:     string;
+  house: string;
   subtitle?: string;
-  spine?:    SpineConfig;
-  layout?:   TreeLayoutConfig;
-  members:   HouseMember[];
+  spine?: SpineConfig;
+  layout?: TreeLayoutConfig;
+  members: HouseMember[];
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -132,53 +135,53 @@ export interface HouseData {
 // ═══════════════════════════════════════════════════════════════
 
 export interface TintConfig {
-  tint:   string;
+  tint: string;
   accent: string;
-  text:   string;
+  text: string;
 }
 
 export interface TimelineConfig {
-  startYear:           number;
-  endYear:             number;
-  currentYear:         number;
-  vault:               string;
+  startYear: number;
+  endYear: number;
+  currentYear: number;
+  vault: string;
   cardSurfaceOpacity?: number;
   textures?: {
-    page?:       string;
-    card?:       string;
-    events?:     string;
+    page?: string;
+    card?: string;
+    events?: string;
     characters?: string;
   };
 }
 
 export interface TimelineSpan {
-  type:   'span';
-  label:  string;
-  tint:   string;
-  obs:    string;
-  start:  number;
-  end:    number;
+  type: "span";
+  label: string;
+  tint: string;
+  obs: string;
+  start: number;
+  end: number;
 }
 
 export interface TimelinePoint {
-  type:  'point';
+  type: "point";
   label: string;
-  tint:  string;
-  obs:   string;
-  year:  number;
+  tint: string;
+  obs: string;
+  year: number;
 }
 
 export type TimelineItem = TimelineSpan | TimelinePoint;
 
 export interface TimelineSection {
-  id:    string;
+  id: string;
   label: string;
   items: TimelineItem[];
 }
 
 export interface TimelineData {
-  config:   TimelineConfig;
-  tints:    Record<string, TintConfig>;
+  config: TimelineConfig;
+  tints: Record<string, TintConfig>;
   sections: TimelineSection[];
 }
 
@@ -187,21 +190,21 @@ export interface TimelineData {
 // ═══════════════════════════════════════════════════════════════
 
 export interface ConvoPC {
-  name:  string;
+  name: string;
   score: number;
 }
 
 export interface ConvoState {
-  title:   string;
+  title: string;
   pcCount: number;
-  pcs:     ConvoPC[];
+  pcs: ConvoPC[];
 }
 
 // ═══════════════════════════════════════════════════════════════
 // TRACKER
 // ═══════════════════════════════════════════════════════════════
 
-export type TrackerDirection = 'countup' | 'countdown';
+export type TrackerDirection = "countup" | "countdown";
 
 export interface TrackerWarning {
   value: number;
@@ -209,14 +212,14 @@ export interface TrackerWarning {
 }
 
 export interface TrackerEntry {
-  id:        string;
-  name:      string;
-  category:  string;
-  min:       number;
-  max:       number;
-  current:   number;
+  id: string;
+  name: string;
+  category: string;
+  min: number;
+  max: number;
+  current: number;
   direction: TrackerDirection;
-  warnings:  TrackerWarning[];
+  warnings: TrackerWarning[];
 }
 
 export interface TrackerData {
@@ -228,15 +231,15 @@ export interface TrackerData {
 // ═══════════════════════════════════════════════════════════════
 
 export interface PCCustomField {
-  id:    string;
-  name:  string;
+  id: string;
+  name: string;
   value: string;
 }
 
 export interface PCCard {
-  id:   string;
+  id: string;
   name: string;
-  ac:   string;
+  ac: string;
   saves: {
     str: string;
     dex: string;
@@ -246,13 +249,13 @@ export interface PCCard {
     cha: string;
   };
   passives: {
-    perception:    string;
-    insight:       string;
+    perception: string;
+    insight: string;
     investigation: string;
   };
   currency: {
     platinum: number;
-    gold:     number;
+    gold: number;
   };
   custom: PCCustomField[];
 }
@@ -266,26 +269,32 @@ export interface PartyData {
 // ═══════════════════════════════════════════════════════════════
 
 export interface CampaignData {
-  schema:   Schema;
-  players:  Record<string, PlayerData>;
-  houses:   Record<string, HouseData>;
+  schema: Schema;
+  players: Record<string, PlayerData>;
+  houses: Record<string, HouseData>;
   timeline: TimelineData | null;
-  tracker:  TrackerData;
-  party:    PartyData;
+  tracker: TrackerData;
+  party: PartyData;
 }
 
 // ═══════════════════════════════════════════════════════════════
 // UI STATE
 // ═══════════════════════════════════════════════════════════════
 
-export type TabId = 'favor' | 'convo' | 'tree' | 'chronicle';
+export type TabId =
+  | "favor"
+  | "convo"
+  | "tree"
+  | "chronicle"
+  | "tracker"
+  | "party";
 
 export interface UIState {
   activeCampaign: string;
-  activePlayer:   string;
-  activeHouse:    string;
-  activeTab:      TabId;
-  convo:          ConvoState;
+  activePlayer: string;
+  activeHouse: string;
+  activeTab: TabId;
+  convo: ConvoState;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -293,10 +302,10 @@ export interface UIState {
 // ═══════════════════════════════════════════════════════════════
 
 export interface AppState {
-  version:      number;  // for future migrations
-  campaigns:    Campaign[];
+  version: number; // for future migrations
+  campaigns: Campaign[];
   campaignData: Record<string, CampaignData>;
-  ui:           UIState;
+  ui: UIState;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -304,9 +313,9 @@ export interface AppState {
 // ═══════════════════════════════════════════════════════════════
 
 export function isTimelineSpan(item: TimelineItem): item is TimelineSpan {
-  return item.type === 'span';
+  return item.type === "span";
 }
 
 export function isTimelinePoint(item: TimelineItem): item is TimelinePoint {
-  return item.type === 'point';
+  return item.type === "point";
 }
