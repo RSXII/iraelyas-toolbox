@@ -16,8 +16,9 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main:   path.resolve(__dirname, 'src/index.html'),
-        editor: path.resolve(__dirname, 'src/editor.html'),
+        main:       path.resolve(__dirname, 'src/index.html'),
+        editor:     path.resolve(__dirname, 'src/editor.html'),
+        treeEditor: path.resolve(__dirname, 'src/tree-editor.html'),
       },
     },
   },

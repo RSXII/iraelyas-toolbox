@@ -57,6 +57,33 @@ contextBridge.exposeInMainWorld("toolbox", {
   offTimelineUpdated: (callback) =>
     ipcRenderer.removeListener("timeline-updated", callback),
 
+  // ── Tree editor window ─────────────────────────────────────
+  /** Open (or focus) the always-on-top tree editor window */
+  openTreeEditor: () => ipcRenderer.invoke("open-tree-editor"),
+
+  /** Get campaign list + active campaign + houses for a campaign */
+  getTreeContext: (campaignId) =>
+    ipcRenderer.invoke("get-tree-context", campaignId),
+
+  /** Write an updated HouseData to disk and notify the main window */
+  saveHouse: (campaignId, houseId, data) =>
+    ipcRenderer.invoke("save-house", campaignId, houseId, data),
+
+  /** Delete a house from disk and notify the main window */
+  deleteHouse: (campaignId, houseId) =>
+    ipcRenderer.invoke("delete-house", campaignId, houseId),
+
+  /** Open a native image file picker; returns absolute path or null */
+  pickImage: () => ipcRenderer.invoke("pick-image"),
+
+  /** Listen for tree-updated events pushed from main process */
+  onTreeUpdated: (callback) =>
+    ipcRenderer.on("tree-updated", (_e, campaignId) => callback(campaignId)),
+
+  /** Remove tree-updated listener (cleanup) */
+  offTreeUpdated: (callback) =>
+    ipcRenderer.removeListener("tree-updated", callback),
+
   // ── Platform ───────────────────────────────────────────────────
   /** 'darwin' | 'win32' | 'linux' */
   platform: process.platform,

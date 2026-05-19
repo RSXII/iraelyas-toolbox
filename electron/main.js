@@ -8,8 +8,9 @@ const DEV_URL = 'http://localhost:5173';
 const DATA_FILE = path.join(app.getPath('userData'), 'toolbox-data.json');
 
 // ─── Windows ──────────────────────────────────────────────────────────────────
-let mainWindow   = null;
-let editorWindow = null;
+let mainWindow       = null;
+let editorWindow     = null;
+let treeEditorWindow = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -44,8 +45,9 @@ function createWindow() {
   });
 
   mainWindow.on('closed', () => {
-    // Close editor window when main window closes
-    if (editorWindow && !editorWindow.isDestroyed()) editorWindow.close();
+    // Close editor windows when main window closes
+    if (editorWindow     && !editorWindow.isDestroyed())     editorWindow.close();
+    if (treeEditorWindow && !treeEditorWindow.isDestroyed()) treeEditorWindow.close();
     mainWindow = null;
   });
 }
@@ -88,6 +90,39 @@ function createEditorWindow() {
   });
 }
 
+// ─── Tree editor window ──────────────────────────────────────────────────────
+function createTreeEditorWindow() {
+  treeEditorWindow = new BrowserWindow({
+    width:       780,
+    height:      680,
+    minWidth:    600,
+    minHeight:   500,
+    title:       'Tree Editor',
+    backgroundColor: '#111113',
+    alwaysOnTop: true,
+    parent:      mainWindow ?? undefined,
+    webPreferences: {
+      preload:          path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration:  false,
+      sandbox:          false,
+    },
+    show: false,
+  });
+
+  if (IS_DEV) {
+    treeEditorWindow.loadURL('http://localhost:5173/tree-editor.html');
+  } else {
+    treeEditorWindow.loadFile(path.join(__dirname, '../dist/renderer/tree-editor.html'));
+  }
+
+  treeEditorWindow.once('ready-to-show', () => treeEditorWindow.show());
+
+  treeEditorWindow.on('closed', () => {
+    treeEditorWindow = null;
+  });
+}
+
 // ─── IPC: Timeline editor window ──────────────────────────────────────────────
 
 ipcMain.handle('open-timeline-editor', () => {
@@ -97,6 +132,84 @@ ipcMain.handle('open-timeline-editor', () => {
     return;
   }
   createEditorWindow();
+});
+
+// ─── IPC: Tree editor window ─────────────────────────────────────────────────
+
+ipcMain.handle('open-tree-editor', () => {
+  if (treeEditorWindow && !treeEditorWindow.isDestroyed()) {
+    treeEditorWindow.focus();
+    return;
+  }
+  createTreeEditorWindow();
+});
+
+// Get campaign list + active campaign + all houses for a campaign
+ipcMain.handle('get-tree-context', (_event, campaignId) => {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return null;
+    const state = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    return {
+      campaigns:      state.campaigns      ?? [],
+      activeCampaign: state.ui?.activeCampaign ?? '',
+      houses:         state.campaignData?.[campaignId]?.houses ?? {},
+    };
+  } catch (err) {
+    console.error('get-tree-context error:', err);
+    return null;
+  }
+});
+
+// Write a single house into the state file and notify the main window
+ipcMain.handle('save-house', (_event, campaignId, houseId, houseData) => {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return { ok: false, error: 'No data file' };
+    const state = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    if (!state.campaignData)             state.campaignData = {};
+    if (!state.campaignData[campaignId]) state.campaignData[campaignId] = {};
+    if (!state.campaignData[campaignId].houses) state.campaignData[campaignId].houses = {};
+    state.campaignData[campaignId].houses[houseId] = houseData;
+    fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf-8');
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('tree-updated', campaignId);
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error('save-house error:', err);
+    return { ok: false, error: err.message };
+  }
+});
+
+// Remove a house from the state file and notify the main window
+ipcMain.handle('delete-house', (_event, campaignId, houseId) => {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return { ok: false, error: 'No data file' };
+    const state = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    if (state.campaignData?.[campaignId]?.houses) {
+      delete state.campaignData[campaignId].houses[houseId];
+    }
+    fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), 'utf-8');
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('tree-updated', campaignId);
+    }
+    return { ok: true };
+  } catch (err) {
+    console.error('delete-house error:', err);
+    return { ok: false, error: err.message };
+  }
+});
+
+// Open a native image file picker and return the chosen absolute path
+ipcMain.handle('pick-image', async () => {
+  const win = treeEditorWindow && !treeEditorWindow.isDestroyed()
+    ? treeEditorWindow
+    : mainWindow;
+  const result = await dialog.showOpenDialog(win, {
+    properties: ['openFile'],
+    filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'] }],
+  });
+  if (result.canceled || !result.filePaths.length) return null;
+  return result.filePaths[0];
 });
 
 // ─── IPC: Timeline-specific data ops ─────────────────────────────────────────

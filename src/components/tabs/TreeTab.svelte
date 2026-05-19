@@ -80,13 +80,17 @@
     try {
       const parsed: HouseData = JSON.parse(files[0].content);
       if (!cid) { showToast('Select a campaign first'); return; }
-      const key = (parsed.house || 'house').toLowerCase().replace(/[^a-z0-9]+/g, '_');
+      const key = crypto.randomUUID();
       store.upsertHouse(cid, key, parsed);
       store.setActiveHouse(key);
       showToast(`${parsed.house} imported`);
     } catch {
       showToast('Invalid house JSON');
     }
+  }
+
+  function openTreeEditor(): void {
+    window.toolbox.openTreeEditor();
   }
 
   // ── SVG builder ─────────────────────────────────────────────────
@@ -432,11 +436,18 @@
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
 
+    // Refresh houses when the tree editor saves changes
+    const onTreeUpdated = (campaignId: string) => {
+      store.refreshHouses(campaignId);
+    };
+    window.toolbox.onTreeUpdated(onTreeUpdated);
+
     return () => {
       wrapEl?.removeEventListener('wheel', handleWheel);
       wrapEl?.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.toolbox.offTreeUpdated(onTreeUpdated);
     };
   });
 </script>
@@ -463,6 +474,7 @@
         {/if}
       </select>
       <button class="btn btn-sm" onclick={importHouseFile}>Import House JSON</button>
+      <button class="btn btn-sm btn-gold" onclick={openTreeEditor}>Edit Trees</button>
       <button class="btn btn-sm" onclick={resetView}>Reset View</button>
     </div>
   </div>

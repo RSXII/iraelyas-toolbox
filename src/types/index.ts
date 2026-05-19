@@ -35,6 +35,22 @@ export interface ToolboxBridge {
   getEditorContext: () => Promise<EditorContext | null>;
   onTimelineUpdated: (cb: () => void) => void;
   offTimelineUpdated: (cb: () => void) => void;
+
+  // Tree editor window
+  openTreeEditor: () => Promise<void>;
+  getTreeContext: (campaignId: string) => Promise<TreeEditorContext | null>;
+  saveHouse: (
+    campaignId: string,
+    houseId: string,
+    data: HouseData,
+  ) => Promise<{ ok: boolean; error?: string }>;
+  deleteHouse: (
+    campaignId: string,
+    houseId: string,
+  ) => Promise<{ ok: boolean; error?: string }>;
+  pickImage: () => Promise<string | null>;
+  onTreeUpdated: (cb: (campaignId: string) => void) => void;
+  offTreeUpdated: (cb: (campaignId: string) => void) => void;
 }
 
 export interface FileFilter {
@@ -45,6 +61,12 @@ export interface FileFilter {
 export interface EditorContext {
   campaigns: Campaign[];
   activeCampaign: string;
+}
+
+export interface TreeEditorContext {
+  campaigns: Campaign[];
+  activeCampaign: string;
+  houses: Record<string, HouseData>;
 }
 
 // Augment Window so TypeScript knows about the bridge
