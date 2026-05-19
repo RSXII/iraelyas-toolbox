@@ -9,6 +9,7 @@ import {
   savePlayer,
   createPlayer,
   addNPC,
+  setFavorDeleteEnabled,
 } from "./favor";
 import {
   renderConvoSliders,
@@ -586,6 +587,15 @@ async function main(): Promise<void> {
     });
 
   document.getElementById("btn-add-npc")!.addEventListener("click", addNPC);
+
+  document
+    .getElementById("favor-delete-toggle")!
+    .addEventListener("change", (e) => {
+      const checked = (e.target as HTMLInputElement).checked;
+      // Import and set the flag — need to export a setter from favor.ts
+      setFavorDeleteEnabled(checked);
+      renderFavor();
+    });
 
   // ── Convo ──
   initConvoPCButtons();
