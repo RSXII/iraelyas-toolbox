@@ -7,6 +7,8 @@ import type {
   TintConfig,
   Campaign,
 } from "@/types/index";
+import { showToast } from "./ui/toast";
+import { openModal, closeModal } from "./ui/modal";
 
 // ═══════════════════════════════════════════════════════════════
 // STATE
@@ -60,32 +62,6 @@ const DEFAULT_TINTS: Record<string, TintConfig> = {
 
 function getTints(): Record<string, TintConfig> {
   return { ...DEFAULT_TINTS, ...(timeline?.tints ?? {}) };
-}
-
-// ═══════════════════════════════════════════════════════════════
-// TOAST
-// ═══════════════════════════════════════════════════════════════
-
-let toastTimer: ReturnType<typeof setTimeout> | null = null;
-
-function showToast(msg: string): void {
-  const t = document.getElementById("toast")!;
-  t.textContent = msg;
-  t.classList.add("show");
-  if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
-}
-
-// ═══════════════════════════════════════════════════════════════
-// MODAL HELPERS
-// ═══════════════════════════════════════════════════════════════
-
-function openModal(id: string): void {
-  document.getElementById(id)?.classList.add("open");
-}
-
-function closeModal(id: string): void {
-  document.getElementById(id)?.classList.remove("open");
 }
 
 // ═══════════════════════════════════════════════════════════════
