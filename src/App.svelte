@@ -311,7 +311,7 @@
 {#if showMigrationOverlay}
 <div id="migration-overlay">
   <div class="migration-box">
-    <h2>Iraelya's 5e Toolbox</h2>
+    <h2>Iraelya's 5e Toolbox{window.toolbox.isBeta ? ' (Beta)' : ''}</h2>
     <p class="migration-subtitle">
       Welcome — restore your data or set up from scratch.
     </p>
@@ -457,7 +457,7 @@
 ═══════════════════════════════════════════════════════════════ -->
 <div class="topbar">
   <div class="topbar-brand">
-    <span class="topbar-brand-name">Iraelya's 5e Toolbox</span>
+    <span class="topbar-brand-name">Iraelya's 5e Toolbox{window.toolbox.isBeta ? ' (Beta)' : ''}</span>
     <span class="topbar-brand-sub">Dungeon Master's Dashboard</span>
   </div>
   <div class="topbar-divider"></div>

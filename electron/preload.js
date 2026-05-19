@@ -1,19 +1,17 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require("electron");
 
 /**
  * Exposes a minimal, typed API surface to the renderer process.
  * The renderer never touches Node/Electron APIs directly.
  * All file I/O goes through this bridge.
  */
-contextBridge.exposeInMainWorld('toolbox', {
+contextBridge.exposeInMainWorld("toolbox", {
   // ── Persistence ────────────────────────────────────────────────
   /** Load the unified app state from disk. Returns null on first launch. */
-  loadData: () =>
-    ipcRenderer.invoke('load-data'),
+  loadData: () => ipcRenderer.invoke("load-data"),
 
   /** Persist the full app state to disk. */
-  saveData: (data) =>
-    ipcRenderer.invoke('save-data', data),
+  saveData: (data) => ipcRenderer.invoke("save-data", data),
 
   // ── File dialogs ───────────────────────────────────────────────
   /**
@@ -21,8 +19,7 @@ contextBridge.exposeInMainWorld('toolbox', {
    * @param filters  e.g. [{ name: 'JSON', extensions: ['json'] }]
    * @returns Array of { name: string, content: string } or null if canceled.
    */
-  importFile: (filters) =>
-    ipcRenderer.invoke('import-file', filters),
+  importFile: (filters) => ipcRenderer.invoke("import-file", filters),
 
   /**
    * Open a native save dialog and write content to the chosen path.
@@ -30,44 +27,41 @@ contextBridge.exposeInMainWorld('toolbox', {
    * @param content   String content to write
    */
   exportFile: (filename, content) =>
-    ipcRenderer.invoke('export-file', filename, content),
+    ipcRenderer.invoke("export-file", filename, content),
 
   // ── App info ───────────────────────────────────────────────────
-  getVersion: () =>
-    ipcRenderer.invoke('get-version'),
+  getVersion: () => ipcRenderer.invoke("get-version"),
 
-  getDataPath: () =>
-    ipcRenderer.invoke('get-data-path'),
+  getDataPath: () => ipcRenderer.invoke("get-data-path"),
 
-  openExternal: (url) =>
-    ipcRenderer.invoke('open-external', url),
+  openExternal: (url) => ipcRenderer.invoke("open-external", url),
 
   // ── Timeline editor window ─────────────────────────────────────
   /** Open (or focus) the always-on-top timeline editor window */
-  openTimelineEditor: () =>
-    ipcRenderer.invoke('open-timeline-editor'),
+  openTimelineEditor: () => ipcRenderer.invoke("open-timeline-editor"),
 
   /** Read the timeline for a specific campaign from disk */
-  getTimeline: (campaignId) =>
-    ipcRenderer.invoke('get-timeline', campaignId),
+  getTimeline: (campaignId) => ipcRenderer.invoke("get-timeline", campaignId),
 
   /** Write an updated timeline to disk and notify the main window */
   saveTimeline: (campaignId, timelineData) =>
-    ipcRenderer.invoke('save-timeline', campaignId, timelineData),
+    ipcRenderer.invoke("save-timeline", campaignId, timelineData),
 
   /** Get campaign list + active campaign id for the editor window */
-  getEditorContext: () =>
-    ipcRenderer.invoke('get-editor-context'),
+  getEditorContext: () => ipcRenderer.invoke("get-editor-context"),
 
   /** Listen for timeline-updated events pushed from main process */
-  onTimelineUpdated: (callback) =>
-    ipcRenderer.on('timeline-updated', callback),
+  onTimelineUpdated: (callback) => ipcRenderer.on("timeline-updated", callback),
 
   /** Remove timeline-updated listener (cleanup) */
   offTimelineUpdated: (callback) =>
-    ipcRenderer.removeListener('timeline-updated', callback),
+    ipcRenderer.removeListener("timeline-updated", callback),
 
   // ── Platform ───────────────────────────────────────────────────
   /** 'darwin' | 'win32' | 'linux' */
   platform: process.platform,
+
+  // ── Build variant ─────────────────────────────────────────────
+  /** True when this is a beta build (productName contains 'Beta') */
+  isBeta: (require("../package.json").productName ?? "").includes("Beta"),
 });

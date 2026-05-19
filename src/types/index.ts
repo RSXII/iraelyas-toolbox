@@ -23,6 +23,7 @@ export interface ToolboxBridge {
   getDataPath: () => Promise<string>;
   openExternal: (url: string) => Promise<void>;
   platform: "darwin" | "win32" | "linux";
+  isBeta: boolean;
 
   // Timeline editor window
   openTimelineEditor: () => Promise<void>;
