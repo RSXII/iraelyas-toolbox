@@ -4,6 +4,10 @@
   import type { TabId } from '@/types/index';
   import Toast from '@/components/ui/Toast.svelte';
   import Modal from '@/components/ui/Modal.svelte';
+  import ConvoTab from '@/components/tabs/ConvoTab.svelte';
+  import PartyTab from '@/components/tabs/PartyTab.svelte';
+  import TrackerTab from '@/components/tabs/TrackerTab.svelte';
+  import FavorTab from '@/components/tabs/FavorTab.svelte';
 
   // Vanilla modules — progressively replaced as each tab is converted to Svelte
   import { openModal, closeModal } from '@/modules/ui/modal';
@@ -28,22 +32,6 @@
     dangerClearAll,
   } from '@/modules/danger';
   import {
-    renderFavor,
-    renderPlayerSelect,
-    switchPlayer,
-    savePlayer,
-    createPlayer,
-    addNPC,
-    setFavorDeleteEnabled,
-  } from '@/modules/favor';
-  import {
-    renderConvoSliders,
-    resetConvo,
-    initConvoPCButtons,
-    syncPCCountButtons,
-    initConvoTitle,
-  } from '@/modules/convo';
-  import {
     initTree,
     renderHouseSelect,
     switchHouse,
@@ -57,8 +45,7 @@
     exportTimelineFile,
     scrollToNow,
   } from '@/modules/chronicle';
-  import { renderTracker, initTracker } from '@/modules/tracker';
-  import { renderParty, initParty } from '@/modules/party';
+
 
   // ─── State ───────────────────────────────────────────────────
   let showMigrationOverlay = $state(true);
@@ -70,8 +57,6 @@
     store.setActiveTab(id);
     if (id === 'tree') setTimeout(() => initTree(), 10);
     if (id === 'chronicle') setTimeout(() => renderChronicle(), 10);
-    if (id === 'tracker') renderTracker();
-    if (id === 'party') renderParty();
   }
 
   // ─── Campaign switching ──────────────────────────────────────
@@ -79,13 +64,9 @@
     if (!id) return;
     store.setActiveCampaign(id);
     renderCampaignSelect();
-    renderPlayerSelect();
     renderHouseSelect();
-    renderFavor();
     if (activeTab === 'tree') initTree();
     if (activeTab === 'chronicle') renderChronicle();
-    if (activeTab === 'tracker') renderTracker();
-    if (activeTab === 'party') renderParty();
   }
 
   // ─── Boot ────────────────────────────────────────────────────
@@ -93,18 +74,9 @@
     showMigrationOverlay = false;
     renderCampaignSelect();
     if (store.activeCampaignId) {
-      renderPlayerSelect();
       renderHouseSelect();
-      renderFavor();
     }
     activeTab = store.activeTab;
-    initConvoTitle();
-    syncPCCountButtons();
-    renderConvoSliders();
-    initTracker();
-    if (activeTab === 'tracker') renderTracker();
-    initParty();
-    if (activeTab === 'party') renderParty();
     if (activeTab === 'tree') setTimeout(() => initTree(), 10);
     if (activeTab === 'chronicle') setTimeout(() => renderChronicle(), 10);
   }
@@ -116,7 +88,6 @@
       boot();
     }
 
-    initConvoPCButtons();
     initChronicle();
 
     // Listen for saves made in the timeline editor window
@@ -149,7 +120,7 @@
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 's') {
         e.preventDefault();
-        savePlayer();
+        store.forceSave();
       }
     });
 
@@ -339,138 +310,10 @@
 <div class="content-area">
 
   <!-- ── FAVOR TRACKER ── -->
-  <div class="tab-panel" id="panel-favor" class:active={activeTab === 'favor'}>
-    <div class="favor-inner">
-      <div class="favor-header">
-        <div class="favor-player-block">
-          <h2>Viewing as</h2>
-          <div class="favor-player-name" id="favor-player-display">—</div>
-        </div>
-        <div class="favor-controls">
-          <select
-            class="topbar-select"
-            id="player-select"
-            style="min-width: 160px"
-            onchange={(e) => switchPlayer((e.target as HTMLSelectElement).value)}
-          ></select>
-          <button class="btn btn-gold btn-sm" onclick={savePlayer}>Save</button>
-          <button class="btn btn-sm" onclick={() => openModal('modal-add-player')}>+ Player</button>
-        </div>
-      </div>
-      <div class="filter-row" id="filter-row">
-        <span class="filter-label">Filter:</span>
-      </div>
-      <div id="npc-list"></div>
-      <div class="add-npc-panel">
-        <h3>Add NPC to Schema</h3>
-        <div class="add-npc-grid">
-          <div class="field-group">
-            <label class="field-label">Name</label>
-            <input type="text" id="new-npc-name" placeholder="Full name" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Role</label>
-            <input type="text" id="new-npc-role" placeholder="Role or title" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Faction</label>
-            <input type="text" id="new-npc-faction" placeholder="Faction" />
-          </div>
-          <button class="btn btn-gold" id="btn-add-npc" style="align-self: end" onclick={addNPC}>Add</button>
-        </div>
-        <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px">
-          <input
-            type="checkbox"
-            id="new-npc-is-header"
-            style="accent-color: var(--gold); width: 14px; height: 14px; cursor: pointer"
-          />
-          <label
-            for="new-npc-is-header"
-            style='font-family: "Cinzel", serif; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); cursor: pointer'
-          >
-            Faction header — tracks renown for the faction as a whole
-          </label>
-        </div>
-      </div>
-      <div class="favor-options">
-        <label class="favor-option-toggle">
-          <input
-            type="checkbox"
-            id="favor-delete-toggle"
-            onchange={(e) => {
-              setFavorDeleteEnabled((e.target as HTMLInputElement).checked);
-              renderFavor();
-            }}
-          />
-          <span>Enable NPC deletion</span>
-        </label>
-      </div>
-      <div class="favor-legend">
-        <div class="leg-item">
-          <div class="leg-dot" style="background: var(--hostile)"></div>
-          Hostile (0–19)
-        </div>
-        <div class="leg-item">
-          <div class="leg-dot" style="background: var(--wary)"></div>
-          Wary (20–39)
-        </div>
-        <div class="leg-item">
-          <div class="leg-dot" style="background: var(--neutral)"></div>
-          Neutral (40–59)
-        </div>
-        <div class="leg-item">
-          <div class="leg-dot" style="background: var(--friendly)"></div>
-          Friendly (60–79)
-        </div>
-        <div class="leg-item">
-          <div class="leg-dot" style="background: var(--allied)"></div>
-          Allied (80–100)
-        </div>
-      </div>
-    </div>
-  </div>
+  <FavorTab active={activeTab === 'favor'} />
 
   <!-- ── CONVERSATION TRACKER ── -->
-  <div class="tab-panel" id="panel-convo" class:active={activeTab === 'convo'}>
-    <div class="convo-inner">
-      <div class="convo-top">
-        <input
-          type="text"
-          class="convo-title-input"
-          id="convo-title"
-          placeholder="Conversation name…"
-        />
-      </div>
-      <div class="convo-setup-row">
-        <span class="convo-pc-count-label">Active PCs</span>
-        <div style="display: flex; gap: 6px" id="pc-count-btns">
-          <button class="filter-chip" data-count="1">1</button>
-          <button class="filter-chip" data-count="2">2</button>
-          <button class="filter-chip" data-count="3">3</button>
-          <button class="filter-chip" data-count="4">4</button>
-          <button class="filter-chip active" data-count="5">5</button>
-          <button class="filter-chip" data-count="6">6</button>
-        </div>
-        <div style="margin-left: auto">
-          <button class="btn btn-sm" onclick={resetConvo}>Reset to 5</button>
-        </div>
-      </div>
-      <div class="convo-sliders" id="convo-sliders"></div>
-      <div class="convo-aggregate">
-        <div>
-          <div class="agg-label">Room Average</div>
-          <div class="agg-mood" id="agg-mood">Neutral</div>
-        </div>
-        <div class="agg-bar-wrap">
-          <div class="agg-bar-fill" id="agg-bar"></div>
-        </div>
-        <div class="agg-score-block">
-          <span class="agg-score-num" id="agg-score">5.0</span>
-          <span class="agg-score-denom">/ 10</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <ConvoTab active={activeTab === 'convo'} />
 
   <!-- ── FAMILY TREE ── -->
   <div class="tab-panel" id="panel-tree" class:active={activeTab === 'tree'}>
@@ -532,52 +375,10 @@
   </div>
 
   <!-- ── TRACKER ── -->
-  <div class="tab-panel" id="panel-tracker" class:active={activeTab === 'tracker'}>
-    <div class="tracker-inner">
-      <div class="tracker-header">
-        <div style='font-family: "Cinzel", serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim)'>
-          Custom Trackers
-        </div>
-        <button class="btn btn-gold btn-sm" id="btn-add-tracker">+ Add Tracker</button>
-      </div>
-      <div class="filter-row" id="tracker-filter-row">
-        <span class="filter-label">Filter:</span>
-      </div>
-      <div id="tracker-list"></div>
-    </div>
-  </div>
+  <TrackerTab active={activeTab === 'tracker'} />
 
   <!-- ── PARTY QUICK VIEW ── -->
-  <div class="tab-panel" id="panel-party" class:active={activeTab === 'party'}>
-    <div class="party-inner">
-      <!-- Wealth tally -->
-      <div class="party-tally">
-        <span class="party-tally-label">Party Wealth</span>
-        <div class="party-tally-item">
-          <span class="tally-icon">◆</span>
-          <span class="tally-value" id="tally-pp">0</span>
-          <span class="tally-unit">pp</span>
-        </div>
-        <div class="party-tally-item">
-          <span class="tally-icon">◈</span>
-          <span class="tally-value" id="tally-gp">0</span>
-          <span class="tally-unit">gp</span>
-        </div>
-        <span class="party-tally-members" id="tally-members">0 members</span>
-      </div>
-
-      <!-- Header -->
-      <div class="party-header">
-        <div style='font-family: "Cinzel", serif; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dim)'>
-          Party Members
-        </div>
-        <button class="btn btn-gold btn-sm" id="btn-add-pc">+ Add PC</button>
-      </div>
-
-      <!-- Card grid -->
-      <div class="party-grid" id="party-grid"></div>
-    </div>
-  </div>
+  <PartyTab active={activeTab === 'party'} />
 
 </div>
 <!-- /content-area -->
@@ -616,79 +417,6 @@
     <div class="modal-foot">
       <button class="btn" onclick={() => closeModal('modal-rename-campaign')}>Cancel</button>
       <button class="btn btn-gold" onclick={confirmRenameCampaign}>Rename</button>
-    </div>
-  </div>
-</Modal>
-
-<!-- Add Player -->
-<Modal id="modal-add-player">
-  <div class="modal">
-    <h3>New Player</h3>
-    <div class="field-group">
-      <label class="field-label">Player name</label>
-      <input type="text" id="new-player-name" placeholder="e.g. Anna" />
-    </div>
-    <div class="modal-foot">
-      <button class="btn" onclick={() => closeModal('modal-add-player')}>Cancel</button>
-      <button class="btn btn-gold" onclick={() => { createPlayer(); closeModal('modal-add-player'); }}>Create</button>
-    </div>
-  </div>
-</Modal>
-
-<!-- Add / Edit Tracker -->
-<Modal id="modal-tracker">
-  <div class="modal modal-tracker">
-    <h3 id="tracker-modal-title">Add Custom Tracker</h3>
-    <div class="field-group" style="margin-bottom: 10px">
-      <label class="field-label">Name</label>
-      <input type="text" id="tracker-name-input" placeholder="e.g. Reginald's Deaths" />
-    </div>
-    <div class="field-group" style="margin-bottom: 10px">
-      <label class="field-label">Category</label>
-      <input type="text" id="tracker-cat-input" placeholder="e.g. Characters" />
-    </div>
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px">
-      <div class="field-group">
-        <label class="field-label">Min</label>
-        <input type="number" id="tracker-min-input" value="0" />
-      </div>
-      <div class="field-group">
-        <label class="field-label">Max</label>
-        <input type="number" id="tracker-max-input" value="10" />
-      </div>
-      <div class="field-group">
-        <label class="field-label">Start at</label>
-        <input type="number" id="tracker-start-input" value="0" />
-      </div>
-    </div>
-    <div class="field-group" style="margin-bottom: 10px">
-      <label class="field-label">Direction</label>
-      <div class="direction-toggle">
-        <button class="direction-option active" data-dir="countup">↑ Count Up</button>
-        <button class="direction-option" data-dir="countdown">↓ Count Down</button>
-      </div>
-    </div>
-    <div class="warnings-section-label">Warning Thresholds</div>
-    <div class="warnings-list" id="warnings-list"></div>
-    <button class="add-warning-btn" id="btn-add-warning">+ Add Warning Threshold</button>
-    <div class="modal-foot">
-      <button class="btn" id="btn-tracker-cancel">Cancel</button>
-      <button class="btn btn-gold" id="btn-tracker-save">Save</button>
-    </div>
-  </div>
-</Modal>
-
-<!-- Add PC -->
-<Modal id="modal-add-pc">
-  <div class="modal modal-party">
-    <h3>Add Party Member</h3>
-    <div class="field-group">
-      <label class="field-label">Character name</label>
-      <input type="text" id="new-pc-name-input" placeholder="e.g. Reginald Thelonious" />
-    </div>
-    <div class="modal-foot">
-      <button class="btn" id="btn-cancel-add-pc">Cancel</button>
-      <button class="btn btn-gold" id="btn-confirm-add-pc">Add</button>
     </div>
   </div>
 </Modal>
