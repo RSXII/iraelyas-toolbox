@@ -1,5 +1,6 @@
 import { store } from "@/state/store";
-import { showToast } from "./app";
+import { showToast } from "./ui/toast";
+import { buildFilterChips } from "./ui/filters";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -69,38 +70,19 @@ export function setFavorDeleteEnabled(val: boolean): void {
 
 // ── Filter chips ───────────────────────────────────────────────────────────
 
-function buildFilterChips(): void {
+function buildFactionFilterChips(): void {
   const cd = store.activeCampaignData;
   const factions = cd ? [...new Set(cd.schema.npcs.map((n) => n.faction))] : [];
-  const all = ["all", ...factions];
-  const row = document.getElementById("filter-row")!;
-
-  row.innerHTML =
-    '<span class="filter-label">Filter:</span>' +
-    all
-      .map(
-        (f) =>
-          `<button class="filter-chip${f === activeFilter ? " active" : ""}"
-        data-faction="${f}">${f === "all" ? "All" : f}</button>`,
-      )
-      .join("");
-
-  row.querySelectorAll<HTMLButtonElement>(".filter-chip").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      activeFilter = btn.dataset.faction!;
-      row
-        .querySelectorAll(".filter-chip")
-        .forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      renderFavor();
-    });
+  buildFilterChips('filter-row', factions, activeFilter, (val) => {
+    activeFilter = val;
+    renderFavor();
   });
 }
 
 // ── Main render ────────────────────────────────────────────────────────────
 
 export function renderFavor(): void {
-  buildFilterChips();
+  buildFactionFilterChips();
 
   const cid = store.activeCampaignId;
   const cd = store.activeCampaignData;
