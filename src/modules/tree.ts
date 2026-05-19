@@ -1,6 +1,13 @@
-import { store } from "@/state/store";
+import { store } from "@/state/store.svelte";
 import { showToast } from "./ui/toast";
 import type { HouseData, HouseMember, SpineConfig } from "@/types/index";
+import {
+  computeLayoutConstants,
+  computePositions,
+  rowY as rowYFn,
+  toRoman,
+  nodeStyle,
+} from "@/utils/tree-layout";
 
 // ── Pan / zoom state ───────────────────────────────────────────────────────
 
@@ -106,46 +113,21 @@ export function initTree(): void {
 // ── SVG builder ────────────────────────────────────────────────────────────
 
 function buildSVG(data: HouseData): void {
-  const { spine, layout, members } = data;
-
-  const ROW_H = layout?.row_height ?? 130;
-  const NW = layout?.node_w ?? 148;
-  const NH = layout?.node_h ?? 60;
-  const COL_GAP = layout?.col_gap ?? 172;
-  const SPINE_X = spine?.enabled ? (layout?.spine_x ?? 90) : 0;
-  const COL0 = spine?.enabled
-    ? (layout?.col_start ?? 290)
-    : (layout?.col_start ?? 120);
-  const PAD_TOP = 34;
-  const PAD_SIDE = 20;
-  const spineColor = spine?.color ?? "#3a8fc4";
+  const { spine, members } = data;
+  const c = computeLayoutConstants(data);
+  const { NW, NH, SPINE_X, PAD_TOP, svgW, svgH, maxRow, spineColor } = c;
 
   const NS = "http://www.w3.org/2000/svg";
 
   function rowY(row: number) {
-    return PAD_TOP + (row - 1) * ROW_H + ROW_H / 2;
-  }
-  function colX(col: number | "spine") {
-    if (col === "spine") return SPINE_X;
-    return COL0 + (col - 1) * COL_GAP;
+    return rowYFn(row, c);
   }
 
-  const pos: Record<string, { x: number; y: number }> = {};
-  members.forEach((m) => {
-    pos[m.id] = { x: colX(m.col), y: rowY(m.row) };
-  });
+  const pos = computePositions(members, c);
 
   function byId(id: string): HouseMember | undefined {
     return members.find((m) => m.id === id);
   }
-
-  const maxRow = Math.max(...members.map((m) => m.row));
-  const bioCols = members
-    .filter((m) => m.col !== "spine")
-    .map((m) => m.col as number);
-  const maxCol = bioCols.length ? Math.max(...bioCols) : 1;
-  const svgW = PAD_SIDE + COL0 + (maxCol - 1) * COL_GAP + NW + PAD_SIDE;
-  const svgH = PAD_TOP + maxRow * ROW_H + 40;
 
   const svg = document.createElementNS(NS, "svg");
   svg.setAttribute("width", String(svgW));
@@ -189,17 +171,6 @@ function buildSVG(data: HouseData): void {
   svg.appendChild(gNodes);
 
   // Row bands + roman numerals
-  function toRoman(n: number): string {
-    const vals = [10, 9, 5, 4, 1],
-      syms = ["X", "IX", "V", "IV", "I"];
-    let out = "";
-    for (let i = 0; i < vals.length; i++)
-      while (n >= vals[i]) {
-        out += syms[i];
-        n -= vals[i];
-      }
-    return out;
-  }
   for (let r = 1; r <= maxRow; r++) {
     const y = rowY(r);
     if (r % 2 === 0) {
@@ -254,22 +225,6 @@ function buildSVG(data: HouseData): void {
     });
     sl.textContent = (spine.label ?? "Succession Line").toUpperCase();
     gBg.appendChild(sl);
-  }
-
-  // Node styles
-  function nodeStyle(type: string) {
-    switch (type) {
-      case "priestess":
-        return { fill: "#0d2b43", stroke: spineColor, sw: 1.5 };
-      case "current":
-        return { fill: "#0d2b43", stroke: "#4caf50", sw: 2.5 };
-      case "heir":
-        return { fill: "#091e30", stroke: spineColor, sw: 1.5 };
-      case "unknown":
-        return { fill: "#111114", stroke: "#383530", sw: 1.5 };
-      default:
-        return { fill: "#14141a", stroke: "#35322c", sw: 1.5 };
-    }
   }
 
   // Marriage lines
@@ -423,7 +378,7 @@ function buildSVG(data: HouseData): void {
 
   members.forEach((n) => {
     const p = pos[n.id];
-    const st = nodeStyle(n.type);
+    const st = nodeStyle(n.type, c);
     const nx = p.x - NW / 2,
       ny = p.y - NH / 2;
     const g = el("g") as SVGGElement;

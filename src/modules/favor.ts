@@ -1,4 +1,4 @@
-import { store } from "@/state/store";
+import { store } from "@/state/store.svelte";
 import { showToast } from "./ui/toast";
 import { buildFilterChips } from "./ui/filters";
 
@@ -73,7 +73,7 @@ export function setFavorDeleteEnabled(val: boolean): void {
 function buildFactionFilterChips(): void {
   const cd = store.activeCampaignData;
   const factions = cd ? [...new Set(cd.schema.npcs.map((n) => n.faction))] : [];
-  buildFilterChips('filter-row', factions, activeFilter, (val) => {
+  buildFilterChips("filter-row", factions, activeFilter, (val) => {
     activeFilter = val;
     renderFavor();
   });

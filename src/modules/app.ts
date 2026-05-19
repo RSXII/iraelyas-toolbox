@@ -1,4 +1,4 @@
-import { store } from "@/state/store";
+import { store } from "@/state/store.svelte";
 import type { TabId } from "@/types/index";
 import { openModal, closeModal } from "./ui/modal";
 import {

@@ -1,4 +1,4 @@
-import { store } from "@/state/store";
+import { store } from "@/state/store.svelte";
 import type { Campaign } from "@/types/index";
 import { showToast } from "./ui/toast";
 import { openModal, closeModal } from "./ui/modal";

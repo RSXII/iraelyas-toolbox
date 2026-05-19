@@ -75,6 +75,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Svelte mounts inside #app — extend the body flex column through it */
+#app {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+}
+
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;

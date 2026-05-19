@@ -1,4 +1,4 @@
-import { store } from "@/state/store";
+import { store } from "@/state/store.svelte";
 import { showToast } from "./ui/toast";
 import { buildFilterChips } from "./ui/filters";
 import type {

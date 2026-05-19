@@ -1,5 +1,6 @@
-import { store } from "@/state/store";
+import { store } from "@/state/store.svelte";
 import { showToast } from "./ui/toast";
+import { packRows } from "@/utils/chronicle-layout";
 import type { TimelineData, TimelineItem, TintConfig } from "@/types/index";
 
 // ── Year width (zoom) ──────────────────────────────────────────────────────
@@ -261,40 +262,6 @@ function makeItem(
     el.innerHTML = `<span>${item.label}</span>`;
     return el;
   }
-}
-
-// ── Row packing ────────────────────────────────────────────────────────────
-
-interface Interval {
-  start: number;
-  end: number;
-}
-
-function packRows(items: TimelineItem[]): TimelineItem[][] {
-  const occ: Interval[][] = [];
-  const rowIdx: number[] = [];
-
-  items.forEach((item) => {
-    const s = item.type === "point" ? item.year : item.start;
-    const e = item.type === "point" ? item.year + 0.85 : item.end;
-    let placed = false;
-    for (let r = 0; r < occ.length; r++) {
-      if (!occ[r].some((iv) => s < iv.end && e > iv.start)) {
-        occ[r].push({ start: s, end: e });
-        rowIdx.push(r);
-        placed = true;
-        break;
-      }
-    }
-    if (!placed) {
-      occ.push([{ start: s, end: e }]);
-      rowIdx.push(occ.length - 1);
-    }
-  });
-
-  const rows: TimelineItem[][] = Array.from({ length: occ.length }, () => []);
-  items.forEach((item, i) => rows[rowIdx[i]].push(item));
-  return rows;
 }
 
 // ── Label alignment ────────────────────────────────────────────────────────
