@@ -1,0 +1,311 @@
+<script lang="ts">
+  import { store } from '@/state/store.svelte';
+  import { showToast } from '@/state/toast.svelte';
+  import type { NPC } from '@/types/index';
+
+  interface Props { active?: boolean; }
+  let { active = false }: Props = $props();
+
+  // ─── Helpers ─────────────────────────────────────────────────
+  function favorMeta(s: number): { word: string; color: string } {
+    if (s < 20) return { word: 'Hostile',  color: 'var(--hostile)'  };
+    if (s < 40) return { word: 'Wary',     color: 'var(--wary)'     };
+    if (s < 60) return { word: 'Neutral',  color: 'var(--neutral)'  };
+    if (s < 80) return { word: 'Friendly', color: 'var(--friendly)' };
+    return             { word: 'Allied',   color: 'var(--allied)'   };
+  }
+
+  function initials(name: string): string {
+    return name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
+  }
+
+  function cap(s: string): string {
+    return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
+  }
+
+  // ─── Reactive campaign data ───────────────────────────────────
+  const cid      = $derived(store.activeCampaignId);
+  const cd       = $derived(store.activeCampaignData);
+  const players  = $derived(cd ? Object.keys(cd.players) : []);
+  const pid      = $derived(store.activePlayerId);
+  const pd       = $derived(pid && cd ? cd.players[pid] : null);
+  const factions = $derived(cd ? [...new Set(cd.schema.npcs.map((n) => n.faction))] : []);
+
+  // Auto-select first player if none is valid for this campaign
+  $effect(() => {
+    if (cid && players.length && (!pid || !cd?.players[pid])) {
+      store.setActivePlayer(players[0]);
+      store.patchPlayerScores(cid, players[0]);
+    }
+  });
+
+  // ─── Filter & display state ───────────────────────────────────
+  let activeFilter  = $state('all');
+  let deleteEnabled = $state(false);
+
+  const visibleFactions = $derived(
+    activeFilter === 'all' ? factions : factions.filter((f) => f === activeFilter)
+  );
+
+  // ─── Player actions ───────────────────────────────────────────
+  function switchPlayer(name: string): void {
+    if (!name || !cid) return;
+    store.setActivePlayer(name);
+    store.patchPlayerScores(cid, name);
+  }
+
+  async function savePlayer(): Promise<void> {
+    if (!cid || !pid) return;
+    store.patchPlayerScores(cid, pid);
+    await store.forceSave();
+    showToast(`${cap(pid)} saved`);
+  }
+
+  // ─── Add Player modal ─────────────────────────────────────────
+  let showAddPlayer = $state(false);
+  let newPlayerName = $state('');
+  let playerNameEl  = $state<HTMLInputElement | null>(null);
+
+  function openAddPlayer(): void {
+    newPlayerName = '';
+    showAddPlayer = true;
+    setTimeout(() => playerNameEl?.focus(), 50);
+  }
+
+  function confirmAddPlayer(): void {
+    const raw = newPlayerName.trim();
+    if (!raw) return;
+    if (!cid) { showToast('Select a campaign first'); return; }
+    const key = raw.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const cdNow = store.getCampaignData(cid);
+    const scores: Record<string, number> = {};
+    cdNow.schema.npcs.forEach((n) => { scores[n.id] = 50; });
+    store.upsertPlayer(cid, key, { player: raw, scores });
+    store.setActivePlayer(key);
+    store.patchPlayerScores(cid, key);
+    showAddPlayer = false;
+    showToast(`${raw} created`);
+  }
+
+  // ─── Add NPC form ─────────────────────────────────────────────
+  let npcName    = $state('');
+  let npcRole    = $state('');
+  let npcFaction = $state('');
+  let npcHeader  = $state(false);
+
+  function addNPC(): void {
+    const name    = npcName.trim();
+    const role    = npcRole.trim();
+    const faction = npcFaction.trim();
+    if (!name) { showToast('Name required'); return; }
+    if (!cid)  { showToast('Select a campaign first'); return; }
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    if (store.getCampaignData(cid).schema.npcs.find((n) => n.id === id)) {
+      showToast('NPC already exists');
+      return;
+    }
+    store.addNPC(cid, {
+      id, name,
+      role: role || '—',
+      faction: faction || 'Unaffiliated',
+      isFactionHeader: npcHeader || undefined,
+    });
+    npcName = ''; npcRole = ''; npcFaction = ''; npcHeader = false;
+    showToast(`${name} added`);
+  }
+
+  // ─── NPC actions ─────────────────────────────────────────────
+  function deleteNPC(npc: NPC): void {
+    if (!cid) return;
+    if (!confirm(`Remove ${npc.name}? This will delete their scores for all players.`)) return;
+    store.deleteNPC(cid, npc.id);
+  }
+
+  function adjust(npcId: string, delta: number): void {
+    if (!cid || !pid) { showToast('Select a player first'); return; }
+    store.adjustFavorScore(cid, pid, npcId, delta);
+  }
+</script>
+
+<div class="tab-panel" id="panel-favor" class:active>
+  <div class="favor-inner">
+
+    <!-- Header: player viewer + controls -->
+    <div class="favor-header">
+      <div class="favor-player-block">
+        <h2>Viewing as</h2>
+        <div class="favor-player-name">{pid ? cap(pid) : '—'}</div>
+      </div>
+      <div class="favor-controls">
+        <select
+          class="topbar-select"
+          style="min-width: 160px"
+          value={pid}
+          onchange={(e) => switchPlayer((e.target as HTMLSelectElement).value)}
+        >
+          {#if players.length}
+            {#each players as p}
+              <option value={p}>{cap(p)}</option>
+            {/each}
+          {:else}
+            <option value="">No players</option>
+          {/if}
+        </select>
+        <button class="btn btn-gold btn-sm" onclick={savePlayer}>Save</button>
+        <button class="btn btn-sm" onclick={openAddPlayer}>+ Player</button>
+      </div>
+    </div>
+
+    <!-- Faction filter chips -->
+    <div class="filter-row">
+      <span class="filter-label">Filter:</span>
+      <button class="filter-chip" class:active={activeFilter === 'all'} onclick={() => (activeFilter = 'all')}>All</button>
+      {#each factions as f}
+        <button class="filter-chip" class:active={activeFilter === f} onclick={() => (activeFilter = f)}>{f}</button>
+      {/each}
+    </div>
+
+    <!-- NPC list grouped by faction -->
+    <div id="npc-list">
+      {#if !cd || !cid}
+        <div class="empty-state">Select or create a campaign to begin.</div>
+      {:else if !cd.schema.npcs.length}
+        <div class="empty-state">No NPCs in schema yet — add one below.</div>
+      {:else if !visibleFactions.length}
+        <div class="empty-state">No NPCs in this faction.</div>
+      {:else}
+        {#each visibleFactions as f}
+          {@const group = cd.schema.npcs.filter((n) => n.faction === f)}
+          {#if group.length}
+            <div class="section-head">
+              <span class="section-name">{f}</span>
+              <div class="section-line"></div>
+            </div>
+            {#each group as npc, i (npc.id)}
+              {@const score      = pd?.scores[npc.id] ?? 50}
+              {@const { word, color } = favorMeta(score)}
+              <div class="npc-row" class:faction-header={npc.isFactionHeader === true}>
+
+                <!-- Left: delete btn + reorder + badge + info -->
+                <div class="npc-left">
+                  <button
+                    class="btn-icon danger"
+                    title="Remove NPC"
+                    style="display: {deleteEnabled ? 'flex' : 'none'}"
+                    onclick={() => deleteNPC(npc)}
+                  >✕</button>
+                  <div class="reorder-btns">
+                    <button class="reorder-arrow" title="Move up" disabled={i === 0}
+                      onclick={() => store.reorderNPC(cid!, npc.id, -1)}>▲</button>
+                    <button class="reorder-arrow" title="Move down" disabled={i === group.length - 1}
+                      onclick={() => store.reorderNPC(cid!, npc.id, 1)}>▼</button>
+                  </div>
+                  <div class="npc-initials">{initials(npc.name)}</div>
+                  <div class="npc-info">
+                    <div class="npc-name">
+                      {npc.name}
+                      {#if npc.isFactionHeader}<span class="faction-header-badge">Renown</span>{/if}
+                    </div>
+                    <div class="npc-role">{npc.role}</div>
+                  </div>
+                </div>
+
+                <!-- Right: meter + step buttons -->
+                <div class="npc-right">
+                  <div class="meter-wrap">
+                    <div class="meter-top">
+                      <span class="favor-word" style="color: {color}">{word}</span>
+                      <span class="score-num">{score}</span>
+                    </div>
+                    <div class="meter-track">
+                      <div class="meter-fill" style="width: {score}%; background: {color}"></div>
+                    </div>
+                  </div>
+                  <div class="step-btns">
+                    <button class="step-btn" onclick={() => adjust(npc.id, -5)}>−</button>
+                    <button class="step-btn" onclick={() => adjust(npc.id, 5)}>+</button>
+                  </div>
+                </div>
+
+              </div><!-- /npc-row -->
+            {/each}
+          {/if}
+        {/each}
+      {/if}
+    </div><!-- /npc-list -->
+
+    <!-- Add NPC panel -->
+    <div class="add-npc-panel">
+      <h3>Add NPC to Schema</h3>
+      <div class="add-npc-grid">
+        <div class="field-group">
+          <label class="field-label" for="new-npc-name-svelte">Name</label>
+          <input id="new-npc-name-svelte" type="text" bind:value={npcName} placeholder="Full name" />
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="new-npc-role-svelte">Role</label>
+          <input id="new-npc-role-svelte" type="text" bind:value={npcRole} placeholder="Role or title" />
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="new-npc-faction-svelte">Faction</label>
+          <input id="new-npc-faction-svelte" type="text" bind:value={npcFaction} placeholder="Faction" />
+        </div>
+        <button class="btn btn-gold" style="align-self: end" onclick={addNPC}>Add</button>
+      </div>
+      <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px">
+        <input
+          type="checkbox"
+          id="new-npc-is-header-svelte"
+          bind:checked={npcHeader}
+          style="accent-color: var(--gold); width: 14px; height: 14px; cursor: pointer"
+        />
+        <label
+          for="new-npc-is-header-svelte"
+          style='font-family:"Cinzel",serif;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);cursor:pointer'
+        >
+          Faction header — tracks renown for the faction as a whole
+        </label>
+      </div>
+    </div>
+
+    <!-- Delete toggle -->
+    <div class="favor-options">
+      <label class="favor-option-toggle">
+        <input type="checkbox" bind:checked={deleteEnabled} />
+        <span>Enable NPC deletion</span>
+      </label>
+    </div>
+
+    <!-- Legend -->
+    <div class="favor-legend">
+      <div class="leg-item"><div class="leg-dot" style="background: var(--hostile)"></div>Hostile (0–19)</div>
+      <div class="leg-item"><div class="leg-dot" style="background: var(--wary)"></div>Wary (20–39)</div>
+      <div class="leg-item"><div class="leg-dot" style="background: var(--neutral)"></div>Neutral (40–59)</div>
+      <div class="leg-item"><div class="leg-dot" style="background: var(--friendly)"></div>Friendly (60–79)</div>
+      <div class="leg-item"><div class="leg-dot" style="background: var(--allied)"></div>Allied (80–100)</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Add Player modal -->
+<div class="modal-overlay" class:open={showAddPlayer}>
+  <div class="modal">
+    <h3>New Player</h3>
+    <div class="field-group">
+      <label class="field-label" for="new-player-name-svelte">Player name</label>
+      <input
+        id="new-player-name-svelte"
+        type="text"
+        bind:this={playerNameEl}
+        bind:value={newPlayerName}
+        placeholder="e.g. Anna"
+        onkeydown={(e) => { if (e.key === 'Enter') confirmAddPlayer(); }}
+      />
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick={() => (showAddPlayer = false)}>Cancel</button>
+      <button class="btn btn-gold" onclick={confirmAddPlayer}>Create</button>
+    </div>
+  </div>
+</div>

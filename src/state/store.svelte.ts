@@ -68,7 +68,7 @@ function defaultState(): AppState {
 // ═══════════════════════════════════════════════════════════════
 
 class Store {
-  private _state: AppState = defaultState();
+  private _state = $state<AppState>(defaultState());
   private _dirty = false;
   private _saveTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -116,7 +116,9 @@ class Store {
     if (!this._dirty) return;
     this._dirty = false;
     try {
-      await window.toolbox.saveData(this._state);
+      // $state.snapshot() converts the reactive proxy to a plain object
+      // so Electron's IPC structured-clone serialization works correctly
+      await window.toolbox.saveData($state.snapshot(this._state));
     } catch (err) {
       console.error("Store._flush failed:", err);
     }
