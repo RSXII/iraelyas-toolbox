@@ -1,21 +1,26 @@
 import type {
-  TimelineData, TimelineSection, TimelineItem,
-  TimelineSpan, TimelinePoint, TintConfig, Campaign,
-} from '@/types/index';
+  TimelineData,
+  TimelineSection,
+  TimelineItem,
+  TimelineSpan,
+  TimelinePoint,
+  TintConfig,
+  Campaign,
+} from "@/types/index";
 
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
 
-let campaigns:      Campaign[]     = [];
-let activeCampaign: string         = '';
-let timeline:       TimelineData | null = null;
+let campaigns: Campaign[] = [];
+let activeCampaign: string = "";
+let timeline: TimelineData | null = null;
 
 // Editing context for the item modal
 type ItemModalContext = {
-  mode:        'add' | 'edit';
-  sectionIdx:  number;
-  itemIdx:     number | null;   // null when adding
+  mode: "add" | "edit";
+  sectionIdx: number;
+  itemIdx: number | null; // null when adding
 };
 let itemCtx: ItemModalContext | null = null;
 
@@ -27,14 +32,30 @@ let renamingSectionIdx: number | null = null;
 // ═══════════════════════════════════════════════════════════════
 
 const DEFAULT_TINTS: Record<string, TintConfig> = {
-  lore:      { tint: 'rgba(225,215,195,0.88)', accent: '#9a7848', text: '#3a2e1e' },
-  war:       { tint: 'rgba(205,178,162,0.88)', accent: '#8a4830', text: '#3a1a0e' },
-  intrigue:  { tint: 'rgba(136,150,207,0.88)', accent: '#7080bf', text: '#1e1630' },
-  civic:     { tint: 'rgba(198,208,192,0.88)', accent: '#5a6848', text: '#202818' },
-  political: { tint: 'rgba(218,208,175,0.88)', accent: '#807040', text: '#302810' },
-  noble:     { tint: 'rgba(205,192,222,0.88)', accent: '#68509a', text: '#2a1e48' },
-  faculty:   { tint: 'rgba(215,208,188,0.88)', accent: '#7a6838', text: '#302a18' },
-  student:   { tint: 'rgba(188,210,200,0.88)', accent: '#4a6858', text: '#182820' },
+  lore: { tint: "rgba(225,215,195,0.88)", accent: "#9a7848", text: "#3a2e1e" },
+  war: { tint: "rgba(205,178,162,0.88)", accent: "#8a4830", text: "#3a1a0e" },
+  intrigue: {
+    tint: "rgba(136,150,207,0.88)",
+    accent: "#7080bf",
+    text: "#1e1630",
+  },
+  civic: { tint: "rgba(198,208,192,0.88)", accent: "#5a6848", text: "#202818" },
+  political: {
+    tint: "rgba(218,208,175,0.88)",
+    accent: "#807040",
+    text: "#302810",
+  },
+  noble: { tint: "rgba(205,192,222,0.88)", accent: "#68509a", text: "#2a1e48" },
+  faculty: {
+    tint: "rgba(215,208,188,0.88)",
+    accent: "#7a6838",
+    text: "#302a18",
+  },
+  student: {
+    tint: "rgba(188,210,200,0.88)",
+    accent: "#4a6858",
+    text: "#182820",
+  },
 };
 
 function getTints(): Record<string, TintConfig> {
@@ -48,11 +69,11 @@ function getTints(): Record<string, TintConfig> {
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
 function showToast(msg: string): void {
-  const t = document.getElementById('toast')!;
+  const t = document.getElementById("toast")!;
   t.textContent = msg;
-  t.classList.add('show');
+  t.classList.add("show");
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -60,11 +81,11 @@ function showToast(msg: string): void {
 // ═══════════════════════════════════════════════════════════════
 
 function openModal(id: string): void {
-  document.getElementById(id)?.classList.add('open');
+  document.getElementById(id)?.classList.add("open");
 }
 
 function closeModal(id: string): void {
-  document.getElementById(id)?.classList.remove('open');
+  document.getElementById(id)?.classList.remove("open");
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -75,7 +96,7 @@ async function saveTimeline(): Promise<void> {
   if (!timeline || !activeCampaign) return;
   const result = await window.toolbox.saveTimeline(activeCampaign, timeline);
   if (!result.ok) {
-    showToast(`Save failed: ${result.error ?? 'unknown error'}`);
+    showToast(`Save failed: ${result.error ?? "unknown error"}`);
   }
 }
 
@@ -85,8 +106,8 @@ async function saveTimeline(): Promise<void> {
 
 async function loadCampaignTimeline(campaignId: string): Promise<void> {
   activeCampaign = campaignId;
-  const campaign = campaigns.find(c => c.id === campaignId);
-  document.getElementById('ed-campaign-label')!.textContent =
+  const campaign = campaigns.find((c) => c.id === campaignId);
+  document.getElementById("ed-campaign-label")!.textContent =
     campaign?.label ?? campaignId;
 
   timeline = await window.toolbox.getTimeline(campaignId);
@@ -98,21 +119,21 @@ async function loadCampaignTimeline(campaignId: string): Promise<void> {
 // ═══════════════════════════════════════════════════════════════
 
 function renderBody(): void {
-  const createPanel  = document.getElementById('ed-create-panel')!;
-  const configPanel  = document.getElementById('ed-config-panel')!;
-  const sectionsEl   = document.getElementById('ed-sections')!;
-  sectionsEl.innerHTML = '';
+  const createPanel = document.getElementById("ed-create-panel")!;
+  const configPanel = document.getElementById("ed-config-panel")!;
+  const sectionsEl = document.getElementById("ed-sections")!;
+  sectionsEl.innerHTML = "";
 
   if (!timeline) {
     // No timeline — show the create form
-    createPanel.style.display = '';
-    configPanel.style.display = 'none';
+    createPanel.style.display = "";
+    configPanel.style.display = "none";
     return;
   }
 
   // Has timeline — hide create, show config + sections
-  createPanel.style.display = 'none';
-  configPanel.style.display = '';
+  createPanel.style.display = "none";
+  configPanel.style.display = "";
 
   // Update config summary label
   updateConfigSummary();
@@ -123,10 +144,10 @@ function renderBody(): void {
   });
 
   // Add section button
-  const addBtn = document.createElement('button');
-  addBtn.className   = 'ed-add-section';
-  addBtn.textContent = '+ Add Section';
-  addBtn.addEventListener('click', () => addSection());
+  const addBtn = document.createElement("button");
+  addBtn.className = "ed-add-section";
+  addBtn.textContent = "+ Add Section";
+  addBtn.addEventListener("click", () => addSection());
   sectionsEl.appendChild(addBtn);
 }
 
@@ -135,32 +156,52 @@ function renderBody(): void {
 // ═══════════════════════════════════════════════════════════════
 
 function createTimeline(): void {
-  const vault   = (document.getElementById('create-vault')   as HTMLInputElement).value.trim();
-  const start   = parseInt((document.getElementById('create-start')   as HTMLInputElement).value);
-  const end     = parseInt((document.getElementById('create-end')     as HTMLInputElement).value);
-  const current = parseInt((document.getElementById('create-current') as HTMLInputElement).value);
+  const vault = (
+    document.getElementById("create-vault") as HTMLInputElement
+  ).value.trim();
+  const start = parseInt(
+    (document.getElementById("create-start") as HTMLInputElement).value,
+  );
+  const end = parseInt(
+    (document.getElementById("create-end") as HTMLInputElement).value,
+  );
+  const current = parseInt(
+    (document.getElementById("create-current") as HTMLInputElement).value,
+  );
 
-  if (!vault)          { showToast('World name is required'); return; }
-  if (isNaN(start) || isNaN(end) || isNaN(current)) { showToast('All year fields are required'); return; }
-  if (end <= start)    { showToast('End year must be after start year'); return; }
-  if (current < start || current > end) { showToast(`Current year must be between ${start} and ${end}`); return; }
+  if (!vault) {
+    showToast("World name is required");
+    return;
+  }
+  if (isNaN(start) || isNaN(end) || isNaN(current)) {
+    showToast("All year fields are required");
+    return;
+  }
+  if (end <= start) {
+    showToast("End year must be after start year");
+    return;
+  }
+  if (current < start || current > end) {
+    showToast(`Current year must be between ${start} and ${end}`);
+    return;
+  }
 
   timeline = {
     config: {
       vault,
-      startYear:           start,
-      endYear:             end,
-      currentYear:         current,
-      cardSurfaceOpacity:  0.78,
-      textures:            {},
+      startYear: start,
+      endYear: end,
+      currentYear: current,
+      cardSurfaceOpacity: 0.78,
+      textures: {},
     },
-    tints:    {},
+    tints: {},
     sections: [],
   };
 
   saveTimeline();
   renderBody();
-  showToast('Timeline created');
+  showToast("Timeline created");
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -172,39 +213,65 @@ let configOpen = false;
 function updateConfigSummary(): void {
   if (!timeline) return;
   const cfg = timeline.config;
-  const summary = document.getElementById('ed-config-summary')!;
+  const summary = document.getElementById("ed-config-summary")!;
   summary.textContent = `${cfg.vault} · Yr ${cfg.startYear}–${cfg.endYear} · Now: ${cfg.currentYear}`;
 }
 
 function syncConfigFields(): void {
   if (!timeline) return;
   const cfg = timeline.config;
-  (document.getElementById('cfg-vault')   as HTMLInputElement).value = cfg.vault;
-  (document.getElementById('cfg-start')   as HTMLInputElement).value = String(cfg.startYear);
-  (document.getElementById('cfg-end')     as HTMLInputElement).value = String(cfg.endYear);
-  (document.getElementById('cfg-current') as HTMLInputElement).value = String(cfg.currentYear);
+  (document.getElementById("cfg-vault") as HTMLInputElement).value = cfg.vault;
+  (document.getElementById("cfg-start") as HTMLInputElement).value = String(
+    cfg.startYear,
+  );
+  (document.getElementById("cfg-end") as HTMLInputElement).value = String(
+    cfg.endYear,
+  );
+  (document.getElementById("cfg-current") as HTMLInputElement).value = String(
+    cfg.currentYear,
+  );
 }
 
 function saveConfig(): void {
   if (!timeline) return;
-  const vault   = (document.getElementById('cfg-vault')   as HTMLInputElement).value.trim();
-  const start   = parseInt((document.getElementById('cfg-start')   as HTMLInputElement).value);
-  const end     = parseInt((document.getElementById('cfg-end')     as HTMLInputElement).value);
-  const current = parseInt((document.getElementById('cfg-current') as HTMLInputElement).value);
+  const vault = (
+    document.getElementById("cfg-vault") as HTMLInputElement
+  ).value.trim();
+  const start = parseInt(
+    (document.getElementById("cfg-start") as HTMLInputElement).value,
+  );
+  const end = parseInt(
+    (document.getElementById("cfg-end") as HTMLInputElement).value,
+  );
+  const current = parseInt(
+    (document.getElementById("cfg-current") as HTMLInputElement).value,
+  );
 
-  if (!vault)          { showToast('World name is required'); return; }
-  if (isNaN(start) || isNaN(end) || isNaN(current)) { showToast('All year fields are required'); return; }
-  if (end <= start)    { showToast('End year must be after start year'); return; }
-  if (current < start || current > end) { showToast(`Current year must be between ${start} and ${end}`); return; }
+  if (!vault) {
+    showToast("World name is required");
+    return;
+  }
+  if (isNaN(start) || isNaN(end) || isNaN(current)) {
+    showToast("All year fields are required");
+    return;
+  }
+  if (end <= start) {
+    showToast("End year must be after start year");
+    return;
+  }
+  if (current < start || current > end) {
+    showToast(`Current year must be between ${start} and ${end}`);
+    return;
+  }
 
-  timeline.config.vault       = vault;
-  timeline.config.startYear   = start;
-  timeline.config.endYear     = end;
+  timeline.config.vault = vault;
+  timeline.config.startYear = start;
+  timeline.config.endYear = end;
   timeline.config.currentYear = current;
 
   saveTimeline();
   updateConfigSummary();
-  showToast('Config saved');
+  showToast("Config saved");
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -217,35 +284,35 @@ const openSections = new Set<number>();
 function buildSectionEl(section: TimelineSection, si: number): HTMLElement {
   const isOpen = openSections.has(si);
 
-  const wrapper = document.createElement('div');
-  wrapper.className = `ed-section${isOpen ? ' open' : ''}`;
+  const wrapper = document.createElement("div");
+  wrapper.className = `ed-section${isOpen ? " open" : ""}`;
   wrapper.dataset.sectionIdx = String(si);
 
   // ── Head ──
-  const head = document.createElement('div');
-  head.className = 'ed-section-head';
+  const head = document.createElement("div");
+  head.className = "ed-section-head";
 
-  const chevron = document.createElement('span');
-  chevron.className   = 'ed-section-chevron';
-  chevron.textContent = '▶';
+  const chevron = document.createElement("span");
+  chevron.className = "ed-section-chevron";
+  chevron.textContent = "▶";
 
-  const name = document.createElement('span');
-  name.className   = 'ed-section-name';
+  const name = document.createElement("span");
+  name.className = "ed-section-name";
   name.textContent = section.label;
 
-  const count = document.createElement('span');
-  count.className   = 'ed-section-count';
+  const count = document.createElement("span");
+  count.className = "ed-section-count";
   count.textContent = `${section.items.length}`;
 
-  const actions = document.createElement('div');
-  actions.className = 'ed-section-actions';
+  const actions = document.createElement("div");
+  actions.className = "ed-section-actions";
 
-  const renameBtn = makeIconBtn('✎', 'Rename section', false, e => {
+  const renameBtn = makeIconBtn("✎", "Rename section", false, (e) => {
     e.stopPropagation();
     openSectionRename(si);
   });
 
-  const deleteBtn = makeIconBtn('✕', 'Delete section', true, e => {
+  const deleteBtn = makeIconBtn("✕", "Delete section", true, (e) => {
     e.stopPropagation();
     deleteSection(si);
   });
@@ -259,7 +326,7 @@ function buildSectionEl(section: TimelineSection, si: number): HTMLElement {
   head.appendChild(actions);
 
   // Toggle open/close on head click
-  head.addEventListener('click', () => {
+  head.addEventListener("click", () => {
     if (openSections.has(si)) {
       openSections.delete(si);
     } else {
@@ -271,17 +338,17 @@ function buildSectionEl(section: TimelineSection, si: number): HTMLElement {
   wrapper.appendChild(head);
 
   // ── Body (collapsible) ──
-  const body = document.createElement('div');
-  body.className = 'ed-section-body';
+  const body = document.createElement("div");
+  body.className = "ed-section-body";
 
   // Item list
-  const list = document.createElement('div');
-  list.className = 'ed-item-list';
+  const list = document.createElement("div");
+  list.className = "ed-item-list";
 
   if (section.items.length === 0) {
-    const empty = document.createElement('div');
-    empty.className   = 'empty-state';
-    empty.textContent = 'No items yet.';
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "No items yet.";
     list.appendChild(empty);
   } else {
     section.items.forEach((item, ii) => {
@@ -292,18 +359,22 @@ function buildSectionEl(section: TimelineSection, si: number): HTMLElement {
   body.appendChild(list);
 
   // Add item row
-  const addRow = document.createElement('div');
-  addRow.className = 'ed-add-item-row';
+  const addRow = document.createElement("div");
+  addRow.className = "ed-add-item-row";
 
-  const addSpan = document.createElement('button');
-  addSpan.className   = 'btn btn-sm';
-  addSpan.textContent = '+ Span';
-  addSpan.addEventListener('click', () => openItemModal('add', si, null, 'span'));
+  const addSpan = document.createElement("button");
+  addSpan.className = "btn btn-sm";
+  addSpan.textContent = "+ Span";
+  addSpan.addEventListener("click", () =>
+    openItemModal("add", si, null, "span"),
+  );
 
-  const addPoint = document.createElement('button');
-  addPoint.className   = 'btn btn-sm';
-  addPoint.textContent = '+ Point';
-  addPoint.addEventListener('click', () => openItemModal('add', si, null, 'point'));
+  const addPoint = document.createElement("button");
+  addPoint.className = "btn btn-sm";
+  addPoint.textContent = "+ Point";
+  addPoint.addEventListener("click", () =>
+    openItemModal("add", si, null, "point"),
+  );
 
   addRow.appendChild(addSpan);
   addRow.appendChild(addPoint);
@@ -323,61 +394,66 @@ function buildItemRow(
   ii: number,
   total: number,
 ): HTMLElement {
-  const tints  = getTints();
-  const tint   = tints[item.tint] ?? DEFAULT_TINTS.lore;
+  const tints = getTints();
+  const tint = tints[item.tint] ?? DEFAULT_TINTS.lore;
 
-  const row = document.createElement('div');
-  row.className = 'ed-item-row';
+  const row = document.createElement("div");
+  row.className = "ed-item-row";
 
   // ── Up/down arrows ──
-  const reorder = document.createElement('div');
-  reorder.className = 'ed-reorder';
+  const reorder = document.createElement("div");
+  reorder.className = "ed-reorder";
 
-  const upBtn = document.createElement('button');
-  upBtn.className   = 'ed-arrow';
-  upBtn.textContent = '▲';
-  upBtn.title       = 'Move up';
-  upBtn.disabled    = ii === 0;
-  upBtn.addEventListener('click', () => moveItem(si, ii, -1));
+  const upBtn = document.createElement("button");
+  upBtn.className = "ed-arrow";
+  upBtn.textContent = "▲";
+  upBtn.title = "Move up";
+  upBtn.disabled = ii === 0;
+  upBtn.addEventListener("click", () => moveItem(si, ii, -1));
 
-  const downBtn = document.createElement('button');
-  downBtn.className   = 'ed-arrow';
-  downBtn.textContent = '▼';
-  downBtn.title       = 'Move down';
-  downBtn.disabled    = ii === total - 1;
-  downBtn.addEventListener('click', () => moveItem(si, ii, 1));
+  const downBtn = document.createElement("button");
+  downBtn.className = "ed-arrow";
+  downBtn.textContent = "▼";
+  downBtn.title = "Move down";
+  downBtn.disabled = ii === total - 1;
+  downBtn.addEventListener("click", () => moveItem(si, ii, 1));
 
   reorder.appendChild(upBtn);
   reorder.appendChild(downBtn);
 
   // ── Tint pip ──
-  const pip = document.createElement('div');
-  pip.className        = 'ed-item-tint';
+  const pip = document.createElement("div");
+  pip.className = "ed-item-tint";
   pip.style.background = tint.accent;
 
   // ── Info ──
-  const info = document.createElement('div');
-  info.className = 'ed-item-info';
+  const info = document.createElement("div");
+  info.className = "ed-item-info";
 
-  const label = document.createElement('div');
-  label.className   = 'ed-item-label';
+  const label = document.createElement("div");
+  label.className = "ed-item-label";
   label.textContent = item.label;
 
-  const meta = document.createElement('div');
-  meta.className   = 'ed-item-meta';
-  meta.textContent = item.type === 'span'
-    ? `Span · ${item.start} – ${item.end}`
-    : `Point · ${item.year}`;
+  const meta = document.createElement("div");
+  meta.className = "ed-item-meta";
+  meta.textContent =
+    item.type === "span"
+      ? `Span · ${item.start} – ${item.end}`
+      : `Point · ${item.year}`;
 
   info.appendChild(label);
   info.appendChild(meta);
 
   // ── Actions ──
-  const actions = document.createElement('div');
-  actions.className = 'ed-item-actions';
+  const actions = document.createElement("div");
+  actions.className = "ed-item-actions";
 
-  const editBtn = makeIconBtn('✎', 'Edit item', false, () => openItemModal('edit', si, ii));
-  const delBtn  = makeIconBtn('✕', 'Delete item', true,  () => deleteItem(si, ii));
+  const editBtn = makeIconBtn("✎", "Edit item", false, () =>
+    openItemModal("edit", si, ii),
+  );
+  const delBtn = makeIconBtn("✕", "Delete item", true, () =>
+    deleteItem(si, ii),
+  );
 
   actions.appendChild(editBtn);
   actions.appendChild(delBtn);
@@ -400,11 +476,11 @@ function makeIconBtn(
   danger: boolean,
   handler: (e: MouseEvent) => void,
 ): HTMLButtonElement {
-  const btn = document.createElement('button');
-  btn.className   = `btn-icon${danger ? ' danger' : ''}`;
+  const btn = document.createElement("button");
+  btn.className = `btn-icon${danger ? " danger" : ""}`;
   btn.textContent = icon;
-  btn.title       = title;
-  btn.addEventListener('click', handler);
+  btn.title = title;
+  btn.addEventListener("click", handler);
   return btn;
 }
 
@@ -414,7 +490,7 @@ function makeIconBtn(
 
 function moveItem(si: number, ii: number, direction: -1 | 1): void {
   if (!timeline) return;
-  const items  = timeline.sections[si].items;
+  const items = timeline.sections[si].items;
   const target = ii + direction;
   if (target < 0 || target >= items.length) return;
 
@@ -431,7 +507,7 @@ function moveItem(si: number, ii: number, direction: -1 | 1): void {
 
 function addSection(): void {
   if (!timeline) return;
-  const id    = `section_${Date.now()}`;
+  const id = `section_${Date.now()}`;
   const label = `New Section ${timeline.sections.length + 1}`;
   timeline.sections.push({ id, label, items: [] });
   // Auto-open the new section
@@ -444,15 +520,23 @@ function deleteSection(si: number): void {
   if (!timeline) return;
   const section = timeline.sections[si];
   if (section.items.length > 0) {
-    if (!confirm(`Delete "${section.label}" and all ${section.items.length} items?`)) return;
+    if (
+      !confirm(
+        `Delete "${section.label}" and all ${section.items.length} items?`,
+      )
+    )
+      return;
   }
   timeline.sections.splice(si, 1);
   openSections.delete(si);
   // Shift open section indices down
   const shifted = new Set<number>();
-  openSections.forEach(idx => { if (idx < si) shifted.add(idx); else if (idx > si) shifted.add(idx - 1); });
+  openSections.forEach((idx) => {
+    if (idx < si) shifted.add(idx);
+    else if (idx > si) shifted.add(idx - 1);
+  });
   openSections.clear();
-  shifted.forEach(idx => openSections.add(idx));
+  shifted.forEach((idx) => openSections.add(idx));
   saveTimeline();
   renderBody();
 }
@@ -460,20 +544,27 @@ function deleteSection(si: number): void {
 function openSectionRename(si: number): void {
   if (!timeline) return;
   renamingSectionIdx = si;
-  const input = document.getElementById('section-label-input') as HTMLInputElement;
+  const input = document.getElementById(
+    "section-label-input",
+  ) as HTMLInputElement;
   input.value = timeline.sections[si].label;
-  openModal('modal-section');
+  openModal("modal-section");
   setTimeout(() => input.select(), 50);
 }
 
 function saveSectionRename(): void {
   if (!timeline || renamingSectionIdx === null) return;
-  const input = document.getElementById('section-label-input') as HTMLInputElement;
+  const input = document.getElementById(
+    "section-label-input",
+  ) as HTMLInputElement;
   const label = input.value.trim();
-  if (!label) { showToast('Label cannot be empty'); return; }
+  if (!label) {
+    showToast("Label cannot be empty");
+    return;
+  }
   timeline.sections[renamingSectionIdx].label = label;
   renamingSectionIdx = null;
-  closeModal('modal-section');
+  closeModal("modal-section");
   saveTimeline();
   renderBody();
 }
@@ -483,119 +574,134 @@ function saveSectionRename(): void {
 // ═══════════════════════════════════════════════════════════════
 
 function populateTintSelect(selectedKey: string): void {
-  const sel    = document.getElementById('item-tint') as HTMLSelectElement;
-  const tints  = getTints();
+  const sel = document.getElementById("item-tint") as HTMLSelectElement;
+  const tints = getTints();
   sel.innerHTML = Object.keys(tints)
-    .map(k => `<option value="${k}"${k === selectedKey ? ' selected' : ''}>${k}</option>`)
-    .join('');
+    .map(
+      (k) =>
+        `<option value="${k}"${k === selectedKey ? " selected" : ""}>${k}</option>`,
+    )
+    .join("");
 }
 
 function syncTypeFields(type: string): void {
-  const spanFields  = document.getElementById('span-fields')!;
-  const pointFields = document.getElementById('point-fields')!;
-  spanFields.style.display  = type === 'span'  ? ''     : 'none';
-  pointFields.style.display = type === 'point' ? ''     : 'none';
+  const spanFields = document.getElementById("span-fields")!;
+  const pointFields = document.getElementById("point-fields")!;
+  spanFields.style.display = type === "span" ? "" : "none";
+  pointFields.style.display = type === "point" ? "" : "none";
 }
 
 function openItemModal(
-  mode: 'add' | 'edit',
+  mode: "add" | "edit",
   si: number,
   ii: number | null,
-  defaultType: 'span' | 'point' = 'span',
+  defaultType: "span" | "point" = "span",
 ): void {
   if (!timeline) return;
 
   itemCtx = { mode, sectionIdx: si, itemIdx: ii };
 
-  const titleEl = document.getElementById('modal-item-title')!;
-  titleEl.textContent = mode === 'add' ? 'Add Item' : 'Edit Item';
+  const titleEl = document.getElementById("modal-item-title")!;
+  titleEl.textContent = mode === "add" ? "Add Item" : "Edit Item";
 
-  const typeEl  = document.getElementById('item-type')  as HTMLSelectElement;
-  const labelEl = document.getElementById('item-label') as HTMLInputElement;
-  const startEl = document.getElementById('item-start') as HTMLInputElement;
-  const endEl   = document.getElementById('item-end')   as HTMLInputElement;
-  const yearEl  = document.getElementById('item-year')  as HTMLInputElement;
-  const obsEl   = document.getElementById('item-obs')   as HTMLInputElement;
+  const typeEl = document.getElementById("item-type") as HTMLSelectElement;
+  const labelEl = document.getElementById("item-label") as HTMLInputElement;
+  const startEl = document.getElementById("item-start") as HTMLInputElement;
+  const endEl = document.getElementById("item-end") as HTMLInputElement;
+  const yearEl = document.getElementById("item-year") as HTMLInputElement;
+  const obsEl = document.getElementById("item-obs") as HTMLInputElement;
 
-  if (mode === 'edit' && ii !== null) {
+  if (mode === "edit" && ii !== null) {
     const item = timeline.sections[si].items[ii];
-    typeEl.value  = item.type;
+    typeEl.value = item.type;
     labelEl.value = item.label;
-    obsEl.value   = item.obs ?? '';
+    obsEl.value = item.obs ?? "";
     populateTintSelect(item.tint);
 
-    if (item.type === 'span') {
+    if (item.type === "span") {
       startEl.value = String(item.start);
-      endEl.value   = String(item.end);
-      yearEl.value  = '';
+      endEl.value = String(item.end);
+      yearEl.value = "";
     } else {
-      yearEl.value  = String(item.year);
-      startEl.value = '';
-      endEl.value   = '';
+      yearEl.value = String(item.year);
+      startEl.value = "";
+      endEl.value = "";
     }
   } else {
     // Defaults for new item
-    const cfg     = timeline.config;
-    typeEl.value  = defaultType;
-    labelEl.value = '';
-    obsEl.value   = 'Events/NewEvent';
-    populateTintSelect('lore');
+    const cfg = timeline.config;
+    typeEl.value = defaultType;
+    labelEl.value = "";
+    obsEl.value = "Events/NewEvent";
+    populateTintSelect("lore");
 
     const midYear = Math.round((cfg.startYear + cfg.endYear) / 2);
     startEl.value = String(midYear);
-    endEl.value   = String(midYear + 5);
-    yearEl.value  = String(midYear);
+    endEl.value = String(midYear + 5);
+    yearEl.value = String(midYear);
   }
 
   syncTypeFields(typeEl.value);
-  openModal('modal-item');
+  openModal("modal-item");
   setTimeout(() => labelEl.select(), 50);
 }
 
 function saveItemModal(): void {
   if (!timeline || !itemCtx) return;
 
-  const typeEl  = document.getElementById('item-type')  as HTMLSelectElement;
-  const labelEl = document.getElementById('item-label') as HTMLInputElement;
-  const startEl = document.getElementById('item-start') as HTMLInputElement;
-  const endEl   = document.getElementById('item-end')   as HTMLInputElement;
-  const yearEl  = document.getElementById('item-year')  as HTMLInputElement;
-  const obsEl   = document.getElementById('item-obs')   as HTMLInputElement;
-  const tintEl  = document.getElementById('item-tint')  as HTMLSelectElement;
+  const typeEl = document.getElementById("item-type") as HTMLSelectElement;
+  const labelEl = document.getElementById("item-label") as HTMLInputElement;
+  const startEl = document.getElementById("item-start") as HTMLInputElement;
+  const endEl = document.getElementById("item-end") as HTMLInputElement;
+  const yearEl = document.getElementById("item-year") as HTMLInputElement;
+  const obsEl = document.getElementById("item-obs") as HTMLInputElement;
+  const tintEl = document.getElementById("item-tint") as HTMLSelectElement;
 
   const label = labelEl.value.trim();
-  if (!label) { showToast('Label is required'); return; }
+  if (!label) {
+    showToast("Label is required");
+    return;
+  }
 
-  const type  = typeEl.value as 'span' | 'point';
-  const tint  = tintEl.value;
-  const obs   = obsEl.value.trim() || 'Events/NewEvent';
+  const type = typeEl.value as "span" | "point";
+  const tint = tintEl.value;
+  const obs = obsEl.value.trim() || "Events/NewEvent";
 
   let item: TimelineItem;
 
-  if (type === 'span') {
+  if (type === "span") {
     const start = parseInt(startEl.value);
-    const end   = parseInt(endEl.value);
-    if (isNaN(start) || isNaN(end)) { showToast('Start and end year required'); return; }
-    if (end <= start) { showToast('End year must be after start year'); return; }
-    const span: TimelineSpan = { type: 'span', label, tint, obs, start, end };
+    const end = parseInt(endEl.value);
+    if (isNaN(start) || isNaN(end)) {
+      showToast("Start and end year required");
+      return;
+    }
+    if (end <= start) {
+      showToast("End year must be after start year");
+      return;
+    }
+    const span: TimelineSpan = { type: "span", label, tint, obs, start, end };
     item = span;
   } else {
     const year = parseInt(yearEl.value);
-    if (isNaN(year)) { showToast('Year is required'); return; }
-    const point: TimelinePoint = { type: 'point', label, tint, obs, year };
+    if (isNaN(year)) {
+      showToast("Year is required");
+      return;
+    }
+    const point: TimelinePoint = { type: "point", label, tint, obs, year };
     item = point;
   }
 
   const { mode, sectionIdx, itemIdx } = itemCtx;
   const items = timeline.sections[sectionIdx].items;
 
-  if (mode === 'add') {
+  if (mode === "add") {
     items.push(item);
   } else if (itemIdx !== null) {
     items[itemIdx] = item;
   }
 
-  closeModal('modal-item');
+  closeModal("modal-item");
   itemCtx = null;
   saveTimeline();
   renderBody();
@@ -623,21 +729,26 @@ async function main(): Promise<void> {
   const ctx = await window.toolbox.getEditorContext();
 
   if (!ctx || !ctx.campaigns.length) {
-    document.getElementById('ed-body')!.innerHTML =
+    document.getElementById("ed-body")!.innerHTML =
       '<div class="empty-state">No campaigns found.<br>Create a campaign in the main window first.</div>';
     return;
   }
 
-  campaigns      = ctx.campaigns;
+  campaigns = ctx.campaigns;
   activeCampaign = ctx.activeCampaign || ctx.campaigns[0].id;
 
   // Populate campaign selector
-  const sel = document.getElementById('ed-campaign-select') as HTMLSelectElement;
+  const sel = document.getElementById(
+    "ed-campaign-select",
+  ) as HTMLSelectElement;
   sel.innerHTML = campaigns
-    .map(c => `<option value="${c.id}"${c.id === activeCampaign ? ' selected' : ''}>${c.label}</option>`)
-    .join('');
+    .map(
+      (c) =>
+        `<option value="${c.id}"${c.id === activeCampaign ? " selected" : ""}>${c.label}</option>`,
+    )
+    .join("");
 
-  sel.addEventListener('change', () => {
+  sel.addEventListener("change", () => {
     loadCampaignTimeline(sel.value);
   });
 
@@ -645,53 +756,67 @@ async function main(): Promise<void> {
   await loadCampaignTimeline(activeCampaign);
 
   // ── Create timeline ──
-  document.getElementById('btn-create-timeline')!
-    .addEventListener('click', createTimeline);
+  document
+    .getElementById("btn-create-timeline")!
+    .addEventListener("click", createTimeline);
 
   // ── Config panel toggle ──
-  document.getElementById('ed-config-toggle')!
-    .addEventListener('click', () => {
-      const section = document.getElementById('ed-config-section')!;
-      const body    = document.getElementById('ed-config-body')!;
-      configOpen    = !configOpen;
-      section.classList.toggle('open', configOpen);
-      if (configOpen) syncConfigFields();
-    });
+  document.getElementById("ed-config-toggle")!.addEventListener("click", () => {
+    const section = document.getElementById("ed-config-section")!;
+    configOpen = !configOpen;
+    section.classList.toggle("open", configOpen);
+    if (configOpen) syncConfigFields();
+  });
 
   // ── Save config ──
-  document.getElementById('btn-save-config')!
-    .addEventListener('click', saveConfig);
+  document
+    .getElementById("btn-save-config")!
+    .addEventListener("click", saveConfig);
 
   // ── Item modal events ──
-  const typeEl = document.getElementById('item-type') as HTMLSelectElement;
-  typeEl.addEventListener('change', () => syncTypeFields(typeEl.value));
+  const typeEl = document.getElementById("item-type") as HTMLSelectElement;
+  typeEl.addEventListener("change", () => syncTypeFields(typeEl.value));
 
-  document.getElementById('modal-item-save')!
-    .addEventListener('click', saveItemModal);
+  document
+    .getElementById("modal-item-save")!
+    .addEventListener("click", saveItemModal);
 
-  document.getElementById('modal-item-cancel')!
-    .addEventListener('click', () => { closeModal('modal-item'); itemCtx = null; });
+  document
+    .getElementById("modal-item-cancel")!
+    .addEventListener("click", () => {
+      closeModal("modal-item");
+      itemCtx = null;
+    });
 
   // ── Section rename modal events ──
-  document.getElementById('modal-section-save')!
-    .addEventListener('click', saveSectionRename);
+  document
+    .getElementById("modal-section-save")!
+    .addEventListener("click", saveSectionRename);
 
-  document.getElementById('modal-section-cancel')!
-    .addEventListener('click', () => { closeModal('modal-section'); renamingSectionIdx = null; });
+  document
+    .getElementById("modal-section-cancel")!
+    .addEventListener("click", () => {
+      closeModal("modal-section");
+      renamingSectionIdx = null;
+    });
 
   // ── Keyboard shortcuts ──
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      closeModal('modal-item');
-      closeModal('modal-section');
-      itemCtx            = null;
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal("modal-item");
+      closeModal("modal-section");
+      itemCtx = null;
       renamingSectionIdx = null;
     }
     // Cmd/Ctrl+Enter saves whichever modal is currently open
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      const itemOpen    = document.getElementById('modal-item')?.classList.contains('open');
-      const sectionOpen = document.getElementById('modal-section')?.classList.contains('open');
-      if (itemOpen)    saveItemModal();
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      const itemOpen = document
+        .getElementById("modal-item")
+        ?.classList.contains("open");
+      const sectionOpen = document
+        .getElementById("modal-section")
+        ?.classList.contains("open");
+      if (itemOpen) saveItemModal();
       if (sectionOpen) saveSectionRename();
     }
   });
