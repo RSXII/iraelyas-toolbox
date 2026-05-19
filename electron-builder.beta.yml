@@ -1,0 +1,50 @@
+appId: com.rsxii.iraelyas-toolbox-beta
+productName: "Iraelya's 5e Toolbox (Beta)"
+copyright: "Copyright © 2024 RSXII"
+
+directories:
+  output: dist/installers
+  buildResources: assets
+
+files:
+  - dist/renderer/**/*
+  - electron/**/*
+  - package.json
+
+extraMetadata:
+  main: electron/main.js
+
+mac:
+  category: public.app-category.entertainment
+  icon: assets/icon.png
+  artifactName: "Iraelyas-5e-Toolbox-beta-mac-${arch}.dmg"
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  darkModeSupport: true
+
+dmg:
+  title: "Iraelya's 5e Toolbox (Beta)"
+  background: null
+  window:
+    width: 540
+    height: 380
+
+win:
+  icon: assets/icon.ico
+  artifactName: "Iraelyas-5e-Toolbox-beta-Setup-windows.exe"
+  target:
+    - target: nsis
+      arch: [x64]
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "Iraelya's 5e Toolbox (Beta)"
+
+linux:
+  icon: assets/icon.png
+  target: AppImage
+  category: Game
