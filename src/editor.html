@@ -19,12 +19,78 @@
     <div class="ed-campaign" id="ed-campaign-label">No campaign selected</div>
   </div>
 
-  <!-- ── Scrollable section list ── -->
+  <!-- ── Scrollable body ── -->
   <div class="ed-body" id="ed-body">
-    <div class="empty-state" id="ed-empty">No timeline data for this campaign.</div>
-  </div>
 
-  <!-- ── Add section (pinned at bottom of body, rendered inside ed-body) ── -->
+    <!-- Shown when no timeline exists yet -->
+    <div id="ed-create-panel" style="display:none">
+      <div class="ed-create-header">No timeline yet</div>
+      <div class="ed-create-desc">
+        Set up the basic config to get started. You can change these later.
+      </div>
+      <div class="field-group" style="margin-bottom:10px">
+        <label class="field-label">Vault / World name</label>
+        <input type="text" id="create-vault" placeholder="e.g. Endmyre">
+      </div>
+      <div class="field-row" style="margin-bottom:10px">
+        <div class="field-group">
+          <label class="field-label">Start year</label>
+          <input type="number" id="create-start" placeholder="e.g. 1" value="1">
+        </div>
+        <div class="field-group">
+          <label class="field-label">End year</label>
+          <input type="number" id="create-end" placeholder="e.g. 1500" value="100">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Current year</label>
+          <input type="number" id="create-current" placeholder="e.g. 1237" value="50">
+        </div>
+      </div>
+      <button class="btn btn-gold" id="btn-create-timeline" style="width:100%">
+        Create Timeline
+      </button>
+    </div>
+
+    <!-- Config panel — shown when timeline exists, collapsible -->
+    <div id="ed-config-panel" style="display:none">
+      <div class="ed-section" id="ed-config-section">
+        <div class="ed-section-head" id="ed-config-toggle">
+          <span class="ed-section-chevron">▶</span>
+          <span class="ed-section-name">Timeline Config</span>
+          <span class="ed-section-count" id="ed-config-summary"></span>
+        </div>
+        <div class="ed-section-body" id="ed-config-body">
+          <div style="padding:10px 12px;display:flex;flex-direction:column;gap:8px;">
+            <div class="field-group">
+              <label class="field-label">Vault / World name</label>
+              <input type="text" id="cfg-vault" placeholder="e.g. Endmyre">
+            </div>
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label">Start year</label>
+                <input type="number" id="cfg-start">
+              </div>
+              <div class="field-group">
+                <label class="field-label">End year</label>
+                <input type="number" id="cfg-end">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Current year</label>
+                <input type="number" id="cfg-current">
+              </div>
+            </div>
+            <button class="btn btn-gold btn-sm" id="btn-save-config" style="align-self:flex-end">
+              Save Config
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section list rendered here by editor.ts -->
+    <div id="ed-sections"></div>
+
+  </div>
 
 </div>
 
