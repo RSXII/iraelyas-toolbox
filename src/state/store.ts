@@ -243,6 +243,15 @@ class Store {
     this.save();
   }
 
+  deleteNPC(campaignId: string, npcId: string): void {
+    const cd = this.getCampaignData(campaignId);
+    cd.schema.npcs = cd.schema.npcs.filter((n) => n.id !== npcId);
+    Object.values(cd.players).forEach((pd) => {
+      delete pd.scores[npcId];
+    });
+    this.save();
+  }
+
   /** Move an NPC up or down within its faction group only */
   reorderNPC(campaignId: string, npcId: string, direction: -1 | 1): void {
     const cd = this.getCampaignData(campaignId);

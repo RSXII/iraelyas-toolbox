@@ -21,7 +21,7 @@
 }
 
 .favor-player-block h2 {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -30,7 +30,7 @@
 }
 
 .favor-player-name {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 22px;
   font-weight: 500;
   color: var(--gold-pale);
@@ -58,11 +58,13 @@
   background: var(--card);
   transition: border-color 0.15s;
 }
-.npc-row:hover { border-color: var(--border-h); }
+.npc-row:hover {
+  border-color: var(--border-h);
+}
 
 .npc-left {
   display: grid;
-  grid-template-columns: auto auto 3fr;
+  grid-template-columns: auto auto auto 3fr;
   gap: 11px;
   align-items: center;
   min-width: 0;
@@ -76,15 +78,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 10px;
   color: var(--text-dim);
   flex-shrink: 0;
 }
 
-.npc-info       { min-width: 0; }
-.npc-name       { font-size: 15px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.npc-role       { font-size: 13px; color: var(--text-dim); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.npc-info {
+  min-width: 0;
+}
+.npc-name {
+  font-size: 15px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.npc-role {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .npc-right {
   display: flex;
@@ -108,12 +125,15 @@
   align-items: baseline;
 }
 .favor-word {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
-.score-num { font-size: 12px; color: var(--text-dim); }
+.score-num {
+  font-size: 12px;
+  color: var(--text-dim);
+}
 .meter-track {
   width: 140px;
   height: 3px;
@@ -128,7 +148,10 @@
 }
 
 /* ── Step buttons ── */
-.step-btns { display: flex; gap: 4px; }
+.step-btns {
+  display: flex;
+  gap: 4px;
+}
 .step-btn {
   width: 28px;
   height: 28px;
@@ -144,8 +167,40 @@
   align-items: center;
   justify-content: center;
 }
-.step-btn:hover  { border-color: var(--border-h); color: var(--text); background: var(--surface); }
-.step-btn:active { transform: scale(0.92); }
+.step-btn:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+  background: var(--surface);
+}
+.step-btn:active {
+  transform: scale(0.92);
+}
+
+/* ── Delete button ── */
+.btn-icon {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+.btn-icon:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+}
+.btn-icon.danger:hover {
+  border-color: rgba(180, 60, 60, 0.5);
+  color: #c06060;
+  background: rgba(180, 60, 60, 0.08);
+}
 
 /* ── Reorder arrows (within faction group) ── */
 .reorder-btns {
@@ -170,10 +225,24 @@
   transition: all 0.1s;
   line-height: 1;
 }
-.reorder-arrow:hover            { border-color: var(--border-h); color: var(--text-dim); background: var(--surface); }
-.reorder-arrow:active           { transform: scale(0.9); }
-.reorder-arrow:disabled         { opacity: 0.15; cursor: default; }
-.reorder-arrow:disabled:hover   { border-color: var(--border); color: var(--text-faint); background: transparent; transform: none; }
+.reorder-arrow:hover {
+  border-color: var(--border-h);
+  color: var(--text-dim);
+  background: var(--surface);
+}
+.reorder-arrow:active {
+  transform: scale(0.9);
+}
+.reorder-arrow:disabled {
+  opacity: 0.15;
+  cursor: default;
+}
+.reorder-arrow:disabled:hover {
+  border-color: var(--border);
+  color: var(--text-faint);
+  background: transparent;
+  transform: none;
+}
 
 /* ── Faction header NPC card ── */
 .npc-row.faction-header {
@@ -181,10 +250,12 @@
   border-left: 3px solid var(--gold);
   background: rgba(201, 168, 76, 0.04);
 }
-.npc-row.faction-header:hover { border-color: var(--gold); }
+.npc-row.faction-header:hover {
+  border-color: var(--gold);
+}
 
 .faction-header-badge {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 7px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -206,7 +277,7 @@
 }
 
 .add-npc-panel h3 {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -221,6 +292,43 @@
   align-items: end;
 }
 
+/* ── Options Panel ── */
+
+.favor-options {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.favor-option-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+
+.favor-option-toggle input[type="checkbox"] {
+  accent-color: var(--gold);
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+}
+
+.favor-option-toggle:hover {
+  color: var(--text);
+}
+
 /* ── Legend ── */
 .favor-legend {
   display: flex;
@@ -230,5 +338,16 @@
   padding-top: 1.25rem;
   border-top: 1px solid var(--border);
 }
-.leg-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-dim); }
-.leg-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.leg-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
