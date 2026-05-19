@@ -246,6 +246,11 @@ body {
   background: rgba(180, 60, 60, 0.08);
   border-color: rgba(180, 60, 60, 0.5);
 }
+.btn-danger.active {
+  background: rgba(180, 60, 60, 0.12);
+  border-color: rgba(180, 60, 60, 0.6);
+  color: #e08080;
+}
 
 .btn-sm {
   padding: 4px 9px;

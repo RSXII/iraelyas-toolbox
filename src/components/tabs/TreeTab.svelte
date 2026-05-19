@@ -457,6 +457,13 @@
   <div class="tree-toolbar">
     <span class="tree-house-label">House</span>
     <span class="tree-title">{houseTitle}</span>
+    {#if data?.colors && data.colors.length > 0}
+      <div class="tree-house-colors">
+        {#each data.colors as color}
+          <div class="tree-color-swatch" style="background:{color}"></div>
+        {/each}
+      </div>
+    {/if}
     <div class="tree-toolbar-right">
       <select
         class="topbar-select"

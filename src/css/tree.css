@@ -34,6 +34,20 @@
   letter-spacing: 0.06em;
 }
 
+.tree-house-colors {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.tree-color-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+}
+
 .tree-toolbar-right {
   margin-left: auto;
   display: flex;

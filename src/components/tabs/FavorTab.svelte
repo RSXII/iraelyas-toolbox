@@ -88,15 +88,26 @@
   }
 
   // ─── Add NPC form ─────────────────────────────────────────────
-  let npcName    = $state('');
-  let npcRole    = $state('');
-  let npcFaction = $state('');
-  let npcHeader  = $state(false);
+  let npcName          = $state('');
+  let npcRole          = $state('');
+  let npcFactionSelect = $state('');
+  let npcFactionNew    = $state('');
+  let npcHeader        = $state(false);
 
   function addNPC(): void {
-    const name    = npcName.trim();
-    const role    = npcRole.trim();
-    const faction = npcFaction.trim();
+    const name = npcName.trim();
+    const role = npcRole.trim();
+
+    let faction: string;
+    if (npcFactionSelect === '__new__') {
+      const raw = npcFactionNew.trim();
+      // Re-use an existing faction if it matches case-insensitively
+      const match = factions.find((f) => f.toLowerCase() === raw.toLowerCase());
+      faction = match ?? (raw || 'Unaffiliated');
+    } else {
+      faction = npcFactionSelect || 'Unaffiliated';
+    }
+
     if (!name) { showToast('Name required'); return; }
     if (!cid)  { showToast('Select a campaign first'); return; }
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
@@ -107,10 +118,10 @@
     store.addNPC(cid, {
       id, name,
       role: role || '—',
-      faction: faction || 'Unaffiliated',
+      faction,
       isFactionHeader: npcHeader || undefined,
     });
-    npcName = ''; npcRole = ''; npcFaction = ''; npcHeader = false;
+    npcName = ''; npcRole = ''; npcFactionSelect = ''; npcFactionNew = ''; npcHeader = false;
     showToast(`${name} added`);
   }
 
@@ -248,7 +259,22 @@
         </div>
         <div class="field-group">
           <label class="field-label" for="new-npc-faction-svelte">Faction</label>
-          <input id="new-npc-faction-svelte" type="text" bind:value={npcFaction} placeholder="Faction" />
+          <select id="new-npc-faction-svelte" class="topbar-select" style="width:100%;min-width:0" bind:value={npcFactionSelect}>
+            <option value="">— none —</option>
+            <option value="__new__">+ New Faction</option>
+            {#each factions as f}
+              <option value={f}>{f}</option>
+            {/each}
+          </select>
+          {#if npcFactionSelect === '__new__'}
+            <input
+              class="faction-new-input"
+              type="text"
+              bind:value={npcFactionNew}
+              placeholder="New faction name…"
+              style="margin-top:6px"
+            />
+          {/if}
         </div>
         <button class="btn btn-gold" style="align-self: end" onclick={addNPC}>Add</button>
       </div>

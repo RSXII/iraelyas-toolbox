@@ -217,7 +217,48 @@ function renderMainPanel(): void {
   document.getElementById("te-panel-subtitle")!.textContent =
     house.subtitle ?? "";
 
+  renderColorPickers();
   renderMemberList();
+}
+
+function renderColorPickers(): void {
+  const house = houses[selectedHouseId];
+  if (!house) return;
+
+  const count = house.colors?.length ?? 0;
+  const countSel = document.getElementById("te-color-count") as HTMLSelectElement;
+  countSel.value = String(count);
+
+  const container = document.getElementById("te-color-pickers")!;
+  container.innerHTML = "";
+
+  const colors = house.colors ?? [];
+  for (let i = 0; i < count; i++) {
+    const wrap = document.createElement("div");
+    wrap.className = "te-color-picker-row";
+
+    const input = document.createElement("input");
+    input.type = "color";
+    input.className = "te-color-input";
+    input.value = colors[i] ?? "#c9a84c";
+    input.dataset.index = String(i);
+
+    const label = document.createElement("span");
+    label.className = "te-color-picker-label";
+    label.textContent = `Color ${i + 1}`;
+
+    input.addEventListener("change", async () => {
+      const h = houses[selectedHouseId];
+      if (!h) return;
+      if (!h.colors) h.colors = [];
+      h.colors[i] = input.value;
+      await persistHouse(selectedHouseId);
+    });
+
+    wrap.appendChild(input);
+    wrap.appendChild(label);
+    container.appendChild(wrap);
+  }
 }
 
 function renderMemberList(): void {
@@ -613,6 +654,23 @@ function wireEvents(): void {
   document
     .getElementById("te-add-member-btn")!
     .addEventListener("click", () => openMemberModal("add", null));
+
+  document
+    .getElementById("te-color-count")!
+    .addEventListener("change", async () => {
+      const house = houses[selectedHouseId];
+      if (!house) return;
+      const countSel = document.getElementById("te-color-count") as HTMLSelectElement;
+      const newCount = parseInt(countSel.value);
+      const existing = house.colors ?? [];
+      if (newCount === 0) {
+        delete house.colors;
+      } else {
+        house.colors = Array.from({ length: newCount }, (_, i) => existing[i] ?? "#c9a84c");
+      }
+      await persistHouse(selectedHouseId);
+      renderColorPickers();
+    });
 
   // ── Tree modal ──
   document
