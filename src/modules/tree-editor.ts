@@ -226,7 +226,9 @@ function renderColorPickers(): void {
   if (!house) return;
 
   const count = house.colors?.length ?? 0;
-  const countSel = document.getElementById("te-color-count") as HTMLSelectElement;
+  const countSel = document.getElementById(
+    "te-color-count",
+  ) as HTMLSelectElement;
   countSel.value = String(count);
 
   const container = document.getElementById("te-color-pickers")!;
@@ -660,13 +662,18 @@ function wireEvents(): void {
     .addEventListener("change", async () => {
       const house = houses[selectedHouseId];
       if (!house) return;
-      const countSel = document.getElementById("te-color-count") as HTMLSelectElement;
+      const countSel = document.getElementById(
+        "te-color-count",
+      ) as HTMLSelectElement;
       const newCount = parseInt(countSel.value);
       const existing = house.colors ?? [];
       if (newCount === 0) {
         delete house.colors;
       } else {
-        house.colors = Array.from({ length: newCount }, (_, i) => existing[i] ?? "#c9a84c");
+        house.colors = Array.from(
+          { length: newCount },
+          (_, i) => existing[i] ?? "#c9a84c",
+        );
       }
       await persistHouse(selectedHouseId);
       renderColorPickers();

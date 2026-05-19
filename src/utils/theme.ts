@@ -80,7 +80,9 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
 function rgbToHex(r: number, g: number, b: number): string {
   return (
     "#" +
-    [r, g, b].map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0")).join("")
+    [r, g, b]
+      .map((v) => Math.max(0, Math.min(255, v)).toString(16).padStart(2, "0"))
+      .join("")
   );
 }
 

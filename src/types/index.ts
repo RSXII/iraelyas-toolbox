@@ -326,10 +326,10 @@ export interface UIState {
 // ═══════════════════════════════════════════════════════════════
 
 export interface ThemeSettings {
-  uiScale: number;      // 0.80 – 1.20, applied as CSS zoom on <html>
-  bgColor: string;      // hex — base background; surface/card stack derived from this
-  textColor: string;    // hex — primary text color (--text)
-  accentColor: string;  // hex — accent color; gold scale derived from this
+  uiScale: number; // 0.80 – 1.20, applied as CSS zoom on <html>
+  bgColor: string; // hex — base background; surface/card stack derived from this
+  textColor: string; // hex — primary text color (--text)
+  accentColor: string; // hex — accent color; gold scale derived from this
 }
 
 // ═══════════════════════════════════════════════════════════════
