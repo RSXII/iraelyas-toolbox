@@ -72,7 +72,9 @@ async function init(): Promise<void> {
   activeCampaign = ctx.activeCampaign;
 
   // Populate campaign selector
-  const sel = document.getElementById("te-campaign-select") as HTMLSelectElement;
+  const sel = document.getElementById(
+    "te-campaign-select",
+  ) as HTMLSelectElement;
   sel.innerHTML = "";
   if (!campaigns.length) {
     sel.innerHTML = '<option value="">No campaigns</option>';
@@ -120,7 +122,8 @@ async function persistHouse(houseId: string): Promise<void> {
     houseId,
     houses[houseId],
   );
-  if (!result?.ok) showToast(`Save failed: ${result?.error ?? "unknown error"}`);
+  if (!result?.ok)
+    showToast(`Save failed: ${result?.error ?? "unknown error"}`);
 }
 
 async function deleteHouseById(houseId: string): Promise<void> {
@@ -165,14 +168,20 @@ function renderTreeList(): void {
 
     const actions = document.createElement("div");
     actions.className = "te-tree-row-actions";
-    actions.appendChild(makeIconBtn("✎", false, (e) => { e.stopPropagation(); openTreeModal("edit", hid); }));
-    actions.appendChild(makeIconBtn("✕", true, (e) => {
-      e.stopPropagation();
-      promptConfirm(
-        `Delete "${house.house}"? This cannot be undone.`,
-        () => deleteHouseById(hid),
-      );
-    }));
+    actions.appendChild(
+      makeIconBtn("✎", false, (e) => {
+        e.stopPropagation();
+        openTreeModal("edit", hid);
+      }),
+    );
+    actions.appendChild(
+      makeIconBtn("✕", true, (e) => {
+        e.stopPropagation();
+        promptConfirm(`Delete "${house.house}"? This cannot be undone.`, () =>
+          deleteHouseById(hid),
+        );
+      }),
+    );
 
     row.appendChild(nameEl);
     row.appendChild(actions);
@@ -262,13 +271,16 @@ function renderMemberList(): void {
 
     const actions = document.createElement("div");
     actions.className = "te-member-actions";
-    actions.appendChild(makeIconBtn("✎", false, () => openMemberModal("edit", member.id)));
-    actions.appendChild(makeIconBtn("✕", true, () => {
-      promptConfirm(
-        `Remove "${member.label}" from this tree?`,
-        () => deleteMemberById(member.id),
-      );
-    }));
+    actions.appendChild(
+      makeIconBtn("✎", false, () => openMemberModal("edit", member.id)),
+    );
+    actions.appendChild(
+      makeIconBtn("✕", true, () => {
+        promptConfirm(`Remove "${member.label}" from this tree?`, () =>
+          deleteMemberById(member.id),
+        );
+      }),
+    );
 
     row.appendChild(info);
     row.appendChild(actions);
@@ -294,19 +306,21 @@ function openTreeModal(mode: "add" | "edit", houseId?: string): void {
   treeCtx = { mode };
   const title = document.getElementById("modal-tree-title")!;
   const nameEl = document.getElementById("tree-name") as HTMLInputElement;
-  const subEl  = document.getElementById("tree-subtitle") as HTMLInputElement;
+  const subEl = document.getElementById("tree-subtitle") as HTMLInputElement;
 
   if (mode === "edit" && houseId && houses[houseId]) {
     title.textContent = "Edit Tree";
     nameEl.value = houses[houseId].house;
-    subEl.value  = houses[houseId].subtitle ?? "";
+    subEl.value = houses[houseId].subtitle ?? "";
     // Store the houseId we're editing
-    (document.getElementById("modal-tree") as HTMLElement).dataset.editId = houseId;
+    (document.getElementById("modal-tree") as HTMLElement).dataset.editId =
+      houseId;
   } else {
     title.textContent = "New Tree";
     nameEl.value = "";
-    subEl.value  = "";
-    delete (document.getElementById("modal-tree") as HTMLElement).dataset.editId;
+    subEl.value = "";
+    delete (document.getElementById("modal-tree") as HTMLElement).dataset
+      .editId;
   }
 
   openModal("modal-tree");
@@ -315,7 +329,7 @@ function openTreeModal(mode: "add" | "edit", houseId?: string): void {
 
 async function saveTreeModal(): Promise<void> {
   const nameEl = document.getElementById("tree-name") as HTMLInputElement;
-  const subEl  = document.getElementById("tree-subtitle") as HTMLInputElement;
+  const subEl = document.getElementById("tree-subtitle") as HTMLInputElement;
   const modalEl = document.getElementById("modal-tree") as HTMLElement;
 
   const name = nameEl.value.trim();
@@ -327,7 +341,7 @@ async function saveTreeModal(): Promise<void> {
   const editId = modalEl.dataset.editId;
 
   if (treeCtx?.mode === "edit" && editId && houses[editId]) {
-    houses[editId].house    = name;
+    houses[editId].house = name;
     houses[editId].subtitle = subEl.value.trim() || undefined;
     await persistHouse(editId);
     closeModal("modal-tree");
@@ -338,9 +352,9 @@ async function saveTreeModal(): Promise<void> {
     // New tree — generate a GUID for the key
     const houseId = crypto.randomUUID();
     houses[houseId] = {
-      house:    name,
+      house: name,
       subtitle: subEl.value.trim() || undefined,
-      members:  [],
+      members: [],
     };
     await persistHouse(houseId);
     closeModal("modal-tree");
@@ -358,46 +372,48 @@ async function saveTreeModal(): Promise<void> {
 function openMemberModal(mode: "add" | "edit", memberId: string | null): void {
   memberCtx = { mode, memberId };
 
-  const title    = document.getElementById("modal-member-title")!;
-  const labelEl  = document.getElementById("mem-label")  as HTMLInputElement;
-  const typeEl   = document.getElementById("mem-type")   as HTMLSelectElement;
-  const rowEl    = document.getElementById("mem-row")    as HTMLInputElement;
-  const colEl    = document.getElementById("mem-col")    as HTMLSelectElement;
-  const noteEl   = document.getElementById("mem-note")   as HTMLTextAreaElement;
-  const imgEl    = document.getElementById("mem-img")    as HTMLInputElement;
+  const title = document.getElementById("modal-member-title")!;
+  const labelEl = document.getElementById("mem-label") as HTMLInputElement;
+  const typeEl = document.getElementById("mem-type") as HTMLSelectElement;
+  const rowEl = document.getElementById("mem-row") as HTMLInputElement;
+  const colEl = document.getElementById("mem-col") as HTMLSelectElement;
+  const noteEl = document.getElementById("mem-note") as HTMLTextAreaElement;
+  const imgEl = document.getElementById("mem-img") as HTMLInputElement;
 
-  const house   = houses[selectedHouseId];
+  const house = houses[selectedHouseId];
   const members = house?.members ?? [];
 
   // Build relationship dropdowns from current members (excluding self)
   const othersForSelect = members.filter((m) => m.id !== memberId);
-  ["mem-mother", "mem-father", "mem-spouse", "mem-adoptive"].forEach((selId) => {
-    populateRelSelect(selId, othersForSelect, null);
-  });
+  ["mem-mother", "mem-father", "mem-spouse", "mem-adoptive"].forEach(
+    (selId) => {
+      populateRelSelect(selId, othersForSelect, null);
+    },
+  );
 
   if (mode === "edit" && memberId) {
     const member = members.find((m) => m.id === memberId);
     if (!member) return;
-    title.textContent  = "Edit Member";
-    labelEl.value      = member.label;
-    typeEl.value       = member.type;
-    rowEl.value        = String(member.row);
-    colEl.value        = String(member.col);
-    noteEl.value       = member.note ?? "";
-    imgEl.value        = member.img  ?? "";
+    title.textContent = "Edit Member";
+    labelEl.value = member.label;
+    typeEl.value = member.type;
+    rowEl.value = String(member.row);
+    colEl.value = String(member.col);
+    noteEl.value = member.note ?? "";
+    imgEl.value = member.img ?? "";
     // Set relationship dropdown values
-    setRelSelect("mem-mother",   member.mother);
-    setRelSelect("mem-father",   member.father);
-    setRelSelect("mem-spouse",   member.spouse);
+    setRelSelect("mem-mother", member.mother);
+    setRelSelect("mem-father", member.father);
+    setRelSelect("mem-spouse", member.spouse);
     setRelSelect("mem-adoptive", member.adoptive);
   } else {
-    title.textContent  = "New Member";
-    labelEl.value      = "";
-    typeEl.value       = "bio";
-    rowEl.value        = "1";
-    colEl.value        = "1";
-    noteEl.value       = "";
-    imgEl.value        = "";
+    title.textContent = "New Member";
+    labelEl.value = "";
+    typeEl.value = "bio";
+    rowEl.value = "1";
+    colEl.value = "1";
+    noteEl.value = "";
+    imgEl.value = "";
   }
 
   openModal("modal-member");
@@ -445,11 +461,11 @@ function setRelSelect(selId: string, value: string | null): void {
 
 async function saveMemberModal(): Promise<void> {
   const labelEl = document.getElementById("mem-label") as HTMLInputElement;
-  const typeEl  = document.getElementById("mem-type")  as HTMLSelectElement;
-  const rowEl   = document.getElementById("mem-row")   as HTMLInputElement;
-  const colEl   = document.getElementById("mem-col")   as HTMLSelectElement;
-  const noteEl  = document.getElementById("mem-note")  as HTMLTextAreaElement;
-  const imgEl   = document.getElementById("mem-img")   as HTMLInputElement;
+  const typeEl = document.getElementById("mem-type") as HTMLSelectElement;
+  const rowEl = document.getElementById("mem-row") as HTMLInputElement;
+  const colEl = document.getElementById("mem-col") as HTMLSelectElement;
+  const noteEl = document.getElementById("mem-note") as HTMLTextAreaElement;
+  const imgEl = document.getElementById("mem-img") as HTMLInputElement;
 
   const label = labelEl.value.trim();
   if (!label) {
@@ -460,14 +476,14 @@ async function saveMemberModal(): Promise<void> {
   const rowRaw = parseInt(rowEl.value);
   const row = isNaN(rowRaw) || rowRaw < 1 ? 1 : rowRaw;
   const colRaw = colEl.value;
-  const col: ColValue = colRaw === "spine" ? "spine" : (parseInt(colRaw) || 1);
+  const col: ColValue = colRaw === "spine" ? "spine" : parseInt(colRaw) || 1;
 
   const house = houses[selectedHouseId];
 
   // Resolve relationship fields — may create stub members for "+ New Member" picks
-  const mother   = resolveRelField("mem-mother");
-  const father   = resolveRelField("mem-father");
-  const spouse   = resolveRelField("mem-spouse");
+  const mother = resolveRelField("mem-mother");
+  const father = resolveRelField("mem-father");
+  const spouse = resolveRelField("mem-spouse");
   const adoptive = resolveRelField("mem-adoptive");
 
   if (memberCtx?.mode === "edit" && memberCtx.memberId) {
@@ -475,12 +491,12 @@ async function saveMemberModal(): Promise<void> {
     if (idx !== -1) {
       house.members[idx] = {
         ...house.members[idx],
-        label:    label,
-        type:     typeEl.value as MemberType,
+        label: label,
+        type: typeEl.value as MemberType,
         row,
         col,
-        note:     noteEl.value.trim() || null,
-        img:      imgEl.value.trim() || null,
+        note: noteEl.value.trim() || null,
+        img: imgEl.value.trim() || null,
         mother,
         father,
         spouse,
@@ -489,13 +505,13 @@ async function saveMemberModal(): Promise<void> {
     }
   } else {
     const newMember: HouseMember = {
-      id:       crypto.randomUUID(),
+      id: crypto.randomUUID(),
       label,
-      type:     typeEl.value as MemberType,
+      type: typeEl.value as MemberType,
       row,
       col,
-      note:     noteEl.value.trim() || null,
-      img:      imgEl.value.trim() || null,
+      note: noteEl.value.trim() || null,
+      img: imgEl.value.trim() || null,
       mother,
       father,
       spouse,
@@ -526,17 +542,17 @@ function resolveRelField(selId: string): string | null {
   if (!name) return null;
 
   const stub: HouseMember = {
-    id:       crypto.randomUUID(),
-    label:    name,
-    type:     "bio",
-    row:      1,
-    col:      1,
-    mother:   null,
-    father:   null,
+    id: crypto.randomUUID(),
+    label: name,
+    type: "bio",
+    row: 1,
+    col: 1,
+    mother: null,
+    father: null,
     adoptive: null,
-    spouse:   null,
-    img:      null,
-    note:     null,
+    spouse: null,
+    img: null,
+    note: null,
   };
   houses[selectedHouseId].members.push(stub);
   return stub.id;
@@ -621,31 +637,33 @@ function wireEvents(): void {
     .addEventListener("click", () => saveMemberModal());
 
   // Show/hide "new member" text inputs for each relationship select
-  ["mem-mother", "mem-father", "mem-spouse", "mem-adoptive"].forEach((selId) => {
-    const sel = document.getElementById(selId) as HTMLSelectElement;
-    sel.addEventListener("change", () => {
-      const newInputId = (sel.dataset.newId as string) ?? selId + "-new";
-      const newInput = document.getElementById(newInputId) as HTMLInputElement;
-      if (sel.value === "__new__") {
-        newInput.style.display = "";
-        newInput.focus();
-      } else {
-        newInput.style.display = "none";
-        newInput.value = "";
-      }
-    });
-  });
+  ["mem-mother", "mem-father", "mem-spouse", "mem-adoptive"].forEach(
+    (selId) => {
+      const sel = document.getElementById(selId) as HTMLSelectElement;
+      sel.addEventListener("change", () => {
+        const newInputId = (sel.dataset.newId as string) ?? selId + "-new";
+        const newInput = document.getElementById(
+          newInputId,
+        ) as HTMLInputElement;
+        if (sel.value === "__new__") {
+          newInput.style.display = "";
+          newInput.focus();
+        } else {
+          newInput.style.display = "none";
+          newInput.value = "";
+        }
+      });
+    },
+  );
 
   // Image picker
   document
     .getElementById("mem-img-browse")!
     .addEventListener("click", () => pickPortraitImage());
 
-  document
-    .getElementById("mem-img-clear")!
-    .addEventListener("click", () => {
-      (document.getElementById("mem-img") as HTMLInputElement).value = "";
-    });
+  document.getElementById("mem-img-clear")!.addEventListener("click", () => {
+    (document.getElementById("mem-img") as HTMLInputElement).value = "";
+  });
 
   // ── Confirm modal ──
   document
@@ -655,14 +673,12 @@ function wireEvents(): void {
       closeModal("modal-confirm");
     });
 
-  document
-    .getElementById("modal-confirm-ok")!
-    .addEventListener("click", () => {
-      const fn = confirmCtx?.onConfirm;
-      confirmCtx = null;
-      closeModal("modal-confirm");
-      fn?.();
-    });
+  document.getElementById("modal-confirm-ok")!.addEventListener("click", () => {
+    const fn = confirmCtx?.onConfirm;
+    confirmCtx = null;
+    closeModal("modal-confirm");
+    fn?.();
+  });
 
   // Close modals on overlay click
   document.querySelectorAll(".modal-overlay").forEach((overlay) => {

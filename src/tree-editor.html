@@ -1,215 +1,294 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tree Editor</title>
-  <link rel="stylesheet" href="./css/tree-editor.css">
-</head>
-<body>
-
-<div class="te-shell">
-
-  <!-- ── Header ── -->
-  <div class="te-header">
-    <div class="te-header-top">
-      <span class="te-title">Tree Editor</span>
-      <select class="ed-campaign-select" id="te-campaign-select"></select>
-    </div>
-    <div class="te-campaign-label" id="te-campaign-label">No campaign selected</div>
-  </div>
-
-  <!-- ── Two-pane body ── -->
-  <div class="te-body">
-
-    <!-- ── Left sidebar: tree list ── -->
-    <div class="te-sidebar">
-      <button class="te-add-tree-btn" id="te-add-tree-btn">+ New Tree</button>
-      <div class="te-tree-list" id="te-tree-list">
-        <!-- Rendered by tree-editor.ts -->
-      </div>
-    </div>
-
-    <!-- ── Right panel ── -->
-    <div class="te-main" id="te-main">
-      <!-- Empty state — shown when no tree selected -->
-      <div class="te-empty" id="te-empty">
-        <div class="te-empty-text">Select a tree from the sidebar<br>or create a new one.</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tree Editor</title>
+    <link rel="stylesheet" href="./css/tree-editor.css" />
+  </head>
+  <body>
+    <div class="te-shell">
+      <!-- ── Header ── -->
+      <div class="te-header">
+        <div class="te-header-top">
+          <span class="te-title">Tree Editor</span>
+          <select class="ed-campaign-select" id="te-campaign-select"></select>
+        </div>
+        <div class="te-campaign-label" id="te-campaign-label">
+          No campaign selected
+        </div>
       </div>
 
-      <!-- Tree panel — shown when a tree is selected -->
-      <div class="te-panel" id="te-panel" style="display:none">
-
-        <!-- Tree header -->
-        <div class="te-panel-header">
-          <div class="te-panel-name-wrap">
-            <span class="te-panel-name" id="te-panel-name"></span>
-            <span class="te-panel-subtitle" id="te-panel-subtitle"></span>
+      <!-- ── Two-pane body ── -->
+      <div class="te-body">
+        <!-- ── Left sidebar: tree list ── -->
+        <div class="te-sidebar">
+          <button class="te-add-tree-btn" id="te-add-tree-btn">
+            + New Tree
+          </button>
+          <div class="te-tree-list" id="te-tree-list">
+            <!-- Rendered by tree-editor.ts -->
           </div>
-          <button class="btn-icon te-edit-tree-btn" id="te-edit-tree-btn" title="Edit tree name">✎</button>
         </div>
 
-        <!-- Members section -->
-        <div class="te-members-header">
-          <span class="te-members-label">Members</span>
-          <button class="btn btn-sm btn-gold" id="te-add-member-btn">+ Add Member</button>
+        <!-- ── Right panel ── -->
+        <div class="te-main" id="te-main">
+          <!-- Empty state — shown when no tree selected -->
+          <div class="te-empty" id="te-empty">
+            <div class="te-empty-text">
+              Select a tree from the sidebar<br />or create a new one.
+            </div>
+          </div>
+
+          <!-- Tree panel — shown when a tree is selected -->
+          <div class="te-panel" id="te-panel" style="display: none">
+            <!-- Tree header -->
+            <div class="te-panel-header">
+              <div class="te-panel-name-wrap">
+                <span class="te-panel-name" id="te-panel-name"></span>
+                <span class="te-panel-subtitle" id="te-panel-subtitle"></span>
+              </div>
+              <button
+                class="btn-icon te-edit-tree-btn"
+                id="te-edit-tree-btn"
+                title="Edit tree name"
+              >
+                ✎
+              </button>
+            </div>
+
+            <!-- Members section -->
+            <div class="te-members-header">
+              <span class="te-members-label">Members</span>
+              <button class="btn btn-sm btn-gold" id="te-add-member-btn">
+                + Add Member
+              </button>
+            </div>
+
+            <!-- Member rows (rendered by tree-editor.ts) -->
+            <div class="te-member-list" id="te-member-list"></div>
+          </div>
         </div>
-
-        <!-- Member rows (rendered by tree-editor.ts) -->
-        <div class="te-member-list" id="te-member-list"></div>
-
       </div>
     </div>
 
-  </div>
-
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
+    <!-- ═══════════════════════════════════════════════════════════════
      TREE MODAL  (new / edit tree)
 ═══════════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modal-tree">
-  <div class="modal">
-    <h3 id="modal-tree-title">New Tree</h3>
+    <div class="modal-overlay" id="modal-tree">
+      <div class="modal">
+        <h3 id="modal-tree-title">New Tree</h3>
 
-    <div class="field-group">
-      <label class="field-label">House / Group Name <span class="req">*</span></label>
-      <input type="text" id="tree-name" placeholder="e.g. House of Aramis">
+        <div class="field-group">
+          <label class="field-label"
+            >House / Group Name <span class="req">*</span></label
+          >
+          <input
+            type="text"
+            id="tree-name"
+            placeholder="e.g. House of Aramis"
+          />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Subtitle (optional)</label>
+          <input
+            type="text"
+            id="tree-subtitle"
+            placeholder="e.g. Noble family of the First City"
+          />
+        </div>
+
+        <div class="modal-foot">
+          <button class="btn" id="modal-tree-cancel">Cancel</button>
+          <button class="btn btn-gold" id="modal-tree-save">Save</button>
+        </div>
+      </div>
     </div>
 
-    <div class="field-group">
-      <label class="field-label">Subtitle (optional)</label>
-      <input type="text" id="tree-subtitle" placeholder="e.g. Noble family of the First City">
-    </div>
-
-    <div class="modal-foot">
-      <button class="btn" id="modal-tree-cancel">Cancel</button>
-      <button class="btn btn-gold" id="modal-tree-save">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
+    <!-- ═══════════════════════════════════════════════════════════════
      MEMBER MODAL  (add / edit member)
 ═══════════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modal-member">
-  <div class="modal modal-wide">
-    <h3 id="modal-member-title">New Member</h3>
+    <div class="modal-overlay" id="modal-member">
+      <div class="modal modal-wide">
+        <h3 id="modal-member-title">New Member</h3>
 
-    <!-- Row 1: name + type -->
-    <div class="field-row-2">
-      <div class="field-group">
-        <label class="field-label">Name <span class="req">*</span></label>
-        <input type="text" id="mem-label" placeholder="e.g. Lady Mira">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Type</label>
-        <select class="form-select" id="mem-type">
-          <option value="bio">Bio (biological)</option>
-          <option value="current">Current head</option>
-          <option value="heir">Heir</option>
-          <option value="priestess">Priestess / Former</option>
-          <option value="unknown">Unknown</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Row 2: row + col -->
-    <div class="field-row-2">
-      <div class="field-group">
-        <label class="field-label">Generation (row)</label>
-        <input type="number" id="mem-row" min="1" max="20" value="1" placeholder="1">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Column</label>
-        <select class="form-select" id="mem-col">
-          <option value="spine">Spine (succession line)</option>
-          <option value="1" selected>1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
-          <option value="9">9</option>
-          <option value="10">10</option>
-          <option value="11">11</option>
-          <option value="12">12</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Relationships -->
-    <div class="te-rel-section">
-      <div class="te-rel-label">Relationships</div>
-
-      <div class="field-row-2">
-        <div class="field-group">
-          <label class="field-label">Mother</label>
-          <select class="form-select rel-select" id="mem-mother" data-new-id="mem-mother-new"></select>
-          <input type="text" class="rel-new-input" id="mem-mother-new" placeholder="New member name…" style="display:none">
+        <!-- Row 1: name + type -->
+        <div class="field-row-2">
+          <div class="field-group">
+            <label class="field-label">Name <span class="req">*</span></label>
+            <input type="text" id="mem-label" placeholder="e.g. Lady Mira" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Type</label>
+            <select class="form-select" id="mem-type">
+              <option value="bio">Bio (biological)</option>
+              <option value="current">Current head</option>
+              <option value="heir">Heir</option>
+              <option value="priestess">Priestess / Former</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </div>
         </div>
+
+        <!-- Row 2: row + col -->
+        <div class="field-row-2">
+          <div class="field-group">
+            <label class="field-label">Generation (row)</label>
+            <input
+              type="number"
+              id="mem-row"
+              min="1"
+              max="20"
+              value="1"
+              placeholder="1"
+            />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Column</label>
+            <select class="form-select" id="mem-col">
+              <option value="spine">Spine (succession line)</option>
+              <option value="1" selected>1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8">8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Relationships -->
+        <div class="te-rel-section">
+          <div class="te-rel-label">Relationships</div>
+
+          <div class="field-row-2">
+            <div class="field-group">
+              <label class="field-label">Mother</label>
+              <select
+                class="form-select rel-select"
+                id="mem-mother"
+                data-new-id="mem-mother-new"
+              ></select>
+              <input
+                type="text"
+                class="rel-new-input"
+                id="mem-mother-new"
+                placeholder="New member name…"
+                style="display: none"
+              />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Father</label>
+              <select
+                class="form-select rel-select"
+                id="mem-father"
+                data-new-id="mem-father-new"
+              ></select>
+              <input
+                type="text"
+                class="rel-new-input"
+                id="mem-father-new"
+                placeholder="New member name…"
+                style="display: none"
+              />
+            </div>
+          </div>
+
+          <div class="field-row-2">
+            <div class="field-group">
+              <label class="field-label">Spouse</label>
+              <select
+                class="form-select rel-select"
+                id="mem-spouse"
+                data-new-id="mem-spouse-new"
+              ></select>
+              <input
+                type="text"
+                class="rel-new-input"
+                id="mem-spouse-new"
+                placeholder="New member name…"
+                style="display: none"
+              />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Adoptive / Predecessor</label>
+              <select
+                class="form-select rel-select"
+                id="mem-adoptive"
+                data-new-id="mem-adoptive-new"
+              ></select>
+              <input
+                type="text"
+                class="rel-new-input"
+                id="mem-adoptive-new"
+                placeholder="New member name…"
+                style="display: none"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Note -->
         <div class="field-group">
-          <label class="field-label">Father</label>
-          <select class="form-select rel-select" id="mem-father" data-new-id="mem-father-new"></select>
-          <input type="text" class="rel-new-input" id="mem-father-new" placeholder="New member name…" style="display:none">
+          <label class="field-label">Note (tooltip text, optional)</label>
+          <textarea
+            id="mem-note"
+            rows="2"
+            placeholder="Appears in the hover tooltip on the tree…"
+          ></textarea>
+        </div>
+
+        <!-- Portrait image -->
+        <div class="field-group">
+          <label class="field-label">Portrait Image</label>
+          <div class="te-img-row">
+            <input
+              type="text"
+              id="mem-img"
+              placeholder="No image selected"
+              readonly
+            />
+            <button class="btn btn-sm" id="mem-img-browse">Browse…</button>
+            <button
+              class="btn btn-sm btn-danger"
+              id="mem-img-clear"
+              title="Clear image"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-foot">
+          <button class="btn" id="modal-member-cancel">Cancel</button>
+          <button class="btn btn-gold" id="modal-member-save">Save</button>
         </div>
       </div>
-
-      <div class="field-row-2">
-        <div class="field-group">
-          <label class="field-label">Spouse</label>
-          <select class="form-select rel-select" id="mem-spouse" data-new-id="mem-spouse-new"></select>
-          <input type="text" class="rel-new-input" id="mem-spouse-new" placeholder="New member name…" style="display:none">
-        </div>
-        <div class="field-group">
-          <label class="field-label">Adoptive / Predecessor</label>
-          <select class="form-select rel-select" id="mem-adoptive" data-new-id="mem-adoptive-new"></select>
-          <input type="text" class="rel-new-input" id="mem-adoptive-new" placeholder="New member name…" style="display:none">
-        </div>
-      </div>
     </div>
 
-    <!-- Note -->
-    <div class="field-group">
-      <label class="field-label">Note (tooltip text, optional)</label>
-      <textarea id="mem-note" rows="2" placeholder="Appears in the hover tooltip on the tree…"></textarea>
-    </div>
-
-    <!-- Portrait image -->
-    <div class="field-group">
-      <label class="field-label">Portrait Image</label>
-      <div class="te-img-row">
-        <input type="text" id="mem-img" placeholder="No image selected" readonly>
-        <button class="btn btn-sm" id="mem-img-browse">Browse…</button>
-        <button class="btn btn-sm btn-danger" id="mem-img-clear" title="Clear image">✕</button>
-      </div>
-    </div>
-
-    <div class="modal-foot">
-      <button class="btn" id="modal-member-cancel">Cancel</button>
-      <button class="btn btn-gold" id="modal-member-save">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
+    <!-- ═══════════════════════════════════════════════════════════════
      DELETE CONFIRM MODAL
 ═══════════════════════════════════════════════════════════════ -->
-<div class="modal-overlay" id="modal-confirm">
-  <div class="modal">
-    <h3>Confirm Delete</h3>
-    <p class="te-confirm-msg" id="te-confirm-msg"></p>
-    <div class="modal-foot">
-      <button class="btn" id="modal-confirm-cancel">Cancel</button>
-      <button class="btn btn-danger" id="modal-confirm-ok">Delete</button>
+    <div class="modal-overlay" id="modal-confirm">
+      <div class="modal">
+        <h3>Confirm Delete</h3>
+        <p class="te-confirm-msg" id="te-confirm-msg"></p>
+        <div class="modal-foot">
+          <button class="btn" id="modal-confirm-cancel">Cancel</button>
+          <button class="btn btn-danger" id="modal-confirm-ok">Delete</button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<div id="toast"></div>
+    <div id="toast"></div>
 
-<script type="module" src="./modules/tree-editor.ts"></script>
-</body>
+    <script type="module" src="./modules/tree-editor.ts"></script>
+  </body>
 </html>

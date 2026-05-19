@@ -1,41 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap");
 
 /* ─── Reset & root ───────────────────────────────────────────── */
 :root {
-  --bg:        #09090b;
-  --surface:   #111113;
-  --card:      #18181c;
-  --border:    rgba(180,150,90,0.13);
-  --border-h:  rgba(180,150,90,0.32);
-  --gold:      #c9a84c;
-  --gold-dim:  #7a6230;
+  --bg: #09090b;
+  --surface: #111113;
+  --card: #18181c;
+  --border: rgba(180, 150, 90, 0.13);
+  --border-h: rgba(180, 150, 90, 0.32);
+  --gold: #c9a84c;
+  --gold-dim: #7a6230;
   --gold-pale: #f0dfa0;
-  --gold-glow: rgba(201,168,76,0.15);
-  --text:      #e2d8c8;
-  --text-dim:  #8a7f6e;
-  --text-faint:#3a3530;
-  --danger:    #b84040;
-  --danger-dim:rgba(180,60,60,0.5);
-  --danger-bg: rgba(180,60,60,0.08);
-  --radius:    6px;
+  --gold-glow: rgba(201, 168, 76, 0.15);
+  --text: #e2d8c8;
+  --text-dim: #8a7f6e;
+  --text-faint: #3a3530;
+  --danger: #b84040;
+  --danger-dim: rgba(180, 60, 60, 0.5);
+  --danger-bg: rgba(180, 60, 60, 0.08);
+  --radius: 6px;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-html, body {
+html,
+body {
   height: 100%;
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: "Crimson Pro", Georgia, serif;
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-::-webkit-scrollbar       { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gold-dim);
+  border-radius: 2px;
+}
 
 /* ─── Shell: header + two-pane body ─────────────────────────── */
 .te-shell {
@@ -52,7 +66,9 @@ html, body {
   flex-shrink: 0;
   -webkit-app-region: drag;
 }
-.te-header > * { -webkit-app-region: no-drag; }
+.te-header > * {
+  -webkit-app-region: no-drag;
+}
 
 .te-header-top {
   display: flex;
@@ -62,7 +78,7 @@ html, body {
 }
 
 .te-title {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -81,7 +97,7 @@ html, body {
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--gold-pale);
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 11px;
   padding: 3px 22px 3px 8px;
   border-radius: var(--radius);
@@ -92,7 +108,10 @@ html, body {
   background-position: right 7px center;
   transition: border-color 0.15s;
 }
-.ed-campaign-select:focus { outline: none; border-color: var(--gold-dim); }
+.ed-campaign-select:focus {
+  outline: none;
+  border-color: var(--gold-dim);
+}
 
 /* ─── Two-pane body ──────────────────────────────────────────── */
 .te-body {
@@ -113,7 +132,7 @@ html, body {
 }
 
 .te-add-tree-btn {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -131,7 +150,10 @@ html, body {
   transition: all 0.15s;
   flex-shrink: 0;
 }
-.te-add-tree-btn:hover { color: var(--gold); background: var(--gold-glow); }
+.te-add-tree-btn:hover {
+  color: var(--gold);
+  background: var(--gold-glow);
+}
 
 .te-tree-list {
   flex: 1;
@@ -153,7 +175,10 @@ html, body {
   border: 1px solid transparent;
   transition: all 0.12s;
 }
-.te-tree-row:hover { background: var(--card); border-color: var(--border); }
+.te-tree-row:hover {
+  background: var(--card);
+  border-color: var(--border);
+}
 .te-tree-row.active {
   background: var(--card);
   border-color: var(--gold-dim);
@@ -168,7 +193,9 @@ html, body {
   text-overflow: ellipsis;
   min-width: 0;
 }
-.te-tree-row.active .te-tree-row-name { color: var(--gold-pale); }
+.te-tree-row.active .te-tree-row-name {
+  color: var(--gold-pale);
+}
 
 .te-tree-row-actions {
   display: flex;
@@ -178,7 +205,9 @@ html, body {
   transition: opacity 0.12s;
 }
 .te-tree-row:hover .te-tree-row-actions,
-.te-tree-row.active .te-tree-row-actions { opacity: 1; }
+.te-tree-row.active .te-tree-row-actions {
+  opacity: 1;
+}
 
 /* ─── Right main panel ───────────────────────────────────────── */
 .te-main {
@@ -197,7 +226,7 @@ html, body {
 }
 
 .te-empty-text {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -230,7 +259,7 @@ html, body {
 
 .te-panel-name {
   display: block;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -263,7 +292,7 @@ html, body {
 }
 
 .te-members-label {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -290,7 +319,9 @@ html, body {
   border-radius: var(--radius);
   transition: border-color 0.12s;
 }
-.te-member-row:hover { border-color: var(--border-h); }
+.te-member-row:hover {
+  border-color: var(--border-h);
+}
 
 .te-member-info {
   flex: 1;
@@ -321,7 +352,7 @@ html, body {
 .te-no-members {
   padding: 24px 0;
   text-align: center;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -344,12 +375,20 @@ html, body {
   transition: all 0.12s;
   flex-shrink: 0;
 }
-.btn-icon:hover { border-color: var(--border-h); color: var(--text); background: var(--surface); }
-.btn-icon.danger:hover { border-color: var(--danger-dim); color: var(--danger); background: var(--danger-bg); }
+.btn-icon:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+  background: var(--surface);
+}
+.btn-icon.danger:hover {
+  border-color: var(--danger-dim);
+  color: var(--danger);
+  background: var(--danger-bg);
+}
 
 /* ─── General buttons ────────────────────────────────────────── */
 .btn {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -362,24 +401,45 @@ html, body {
   transition: all 0.15s;
   white-space: nowrap;
 }
-.btn:hover    { border-color: var(--border-h); color: var(--text); }
-.btn-gold     { border-color: var(--gold-dim); color: var(--gold); }
-.btn-gold:hover { background: var(--gold-glow); border-color: var(--gold); color: var(--gold-pale); }
-.btn-sm       { padding: 3px 8px; font-size: 8px; }
-.btn-danger   { border-color: var(--danger-dim); color: var(--danger); }
-.btn-danger:hover { background: var(--danger-bg); border-color: var(--danger); }
+.btn:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+}
+.btn-gold {
+  border-color: var(--gold-dim);
+  color: var(--gold);
+}
+.btn-gold:hover {
+  background: var(--gold-glow);
+  border-color: var(--gold);
+  color: var(--gold-pale);
+}
+.btn-sm {
+  padding: 3px 8px;
+  font-size: 8px;
+}
+.btn-danger {
+  border-color: var(--danger-dim);
+  color: var(--danger);
+}
+.btn-danger:hover {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+}
 
 /* ─── Modal overlay ──────────────────────────────────────────── */
 .modal-overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.72);
+  background: rgba(0, 0, 0, 0.72);
   z-index: 200;
   align-items: center;
   justify-content: center;
 }
-.modal-overlay.open { display: flex; }
+.modal-overlay.open {
+  display: flex;
+}
 
 .modal {
   background: var(--card);
@@ -398,7 +458,7 @@ html, body {
 }
 
 .modal h3 {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -422,14 +482,16 @@ html, body {
 }
 
 .field-label {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 8px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 
-.field-label .req { color: var(--gold-dim); }
+.field-label .req {
+  color: var(--gold-dim);
+}
 
 /* 2-column field row */
 .field-row-2 {
@@ -445,19 +507,28 @@ select.form-select {
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
-  font-family: 'Crimson Pro', serif;
+  font-family: "Crimson Pro", serif;
   font-size: 14px;
   padding: 6px 10px;
   border-radius: var(--radius);
   width: 100%;
   transition: border-color 0.15s;
 }
-input:focus, textarea:focus, select.form-select:focus {
+input:focus,
+textarea:focus,
+select.form-select:focus {
   outline: none;
   border-color: var(--gold-dim);
 }
-input::placeholder, textarea::placeholder { color: var(--text-dim); opacity: 0.5; }
-textarea { resize: vertical; min-height: 56px; }
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+textarea {
+  resize: vertical;
+  min-height: 56px;
+}
 
 /* ─── Relationship section ───────────────────────────────────── */
 .te-rel-section {
@@ -465,11 +536,11 @@ textarea { resize: vertical; min-height: 56px; }
   border-radius: var(--radius);
   padding: 10px 12px 2px;
   margin-bottom: 10px;
-  background: rgba(0,0,0,0.15);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .te-rel-label {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 8px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -490,7 +561,11 @@ textarea { resize: vertical; min-height: 56px; }
   gap: 6px;
   align-items: center;
 }
-.te-img-row input { flex: 1; font-size: 12px !important; cursor: default; }
+.te-img-row input {
+  flex: 1;
+  font-size: 12px !important;
+  cursor: default;
+}
 
 /* ─── Confirm modal message ──────────────────────────────────── */
 .te-confirm-msg {
@@ -508,7 +583,7 @@ textarea { resize: vertical; min-height: 56px; }
   background: var(--card);
   border: 1px solid var(--border-h);
   color: var(--gold-pale);
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -516,8 +591,13 @@ textarea { resize: vertical; min-height: 56px; }
   border-radius: var(--radius);
   opacity: 0;
   transform: translateY(4px);
-  transition: opacity 0.2s, transform 0.2s;
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
   pointer-events: none;
   z-index: 999;
 }
-#toast.show { opacity: 1; transform: translateY(0); }
+#toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
