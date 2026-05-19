@@ -26,6 +26,7 @@ mac:
 
 dmg:
   title: "Iraelya's 5e Toolbox"
+  background: null
   window:
     width: 540
     height: 380
