@@ -5,6 +5,7 @@ import type {
   ConvoPC,
   ConvoState,
   HouseData,
+  HouseMember,
   NPC,
   PlayerData,
   Schema,
@@ -296,6 +297,52 @@ class Store {
 
   getHouse(campaignId: string, houseId: string): HouseData | null {
     return this.getCampaignData(campaignId).houses[houseId] ?? null;
+  }
+
+  deleteHouse(campaignId: string, houseId: string): void {
+    const cd = this.getCampaignData(campaignId);
+    delete cd.houses[houseId];
+    if (this._state.ui.activeHouse === houseId) {
+      this._state.ui.activeHouse = Object.keys(cd.houses)[0] ?? "";
+    }
+    this.save();
+  }
+
+  /** Reload just the houses for one campaign from disk (called after tree editor saves). */
+  async refreshHouses(campaignId: string): Promise<void> {
+    const ctx = await window.toolbox.getTreeContext(campaignId);
+    if (!ctx) return;
+    const cd = this.getCampaignData(campaignId);
+    cd.houses = ctx.houses;
+    // No save() — we just synced from disk; saving would race with the editor
+  }
+
+  addMember(campaignId: string, houseId: string, member: HouseMember): void {
+    const house = this.getCampaignData(campaignId).houses[houseId];
+    if (!house) return;
+    house.members.push(member);
+    this.save();
+  }
+
+  updateMember(
+    campaignId: string,
+    houseId: string,
+    memberId: string,
+    updates: Partial<HouseMember>,
+  ): void {
+    const house = this.getCampaignData(campaignId).houses[houseId];
+    if (!house) return;
+    const idx = house.members.findIndex((m) => m.id === memberId);
+    if (idx === -1) return;
+    house.members[idx] = { ...house.members[idx], ...updates };
+    this.save();
+  }
+
+  deleteMember(campaignId: string, houseId: string, memberId: string): void {
+    const house = this.getCampaignData(campaignId).houses[houseId];
+    if (!house) return;
+    house.members = house.members.filter((m) => m.id !== memberId);
+    this.save();
   }
 
   // ── Timeline helpers ──────────────────────────────────────────

@@ -1,23 +1,24 @@
-import { defineConfig } from 'vite';
-import path from 'path';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { defineConfig } from "vite";
+import path from "path";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 export default defineConfig({
   plugins: [svelte()],
-  root: 'src',
-  base: './',
+  root: "src",
+  base: "./",
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
   build: {
-    outDir: '../dist/renderer',
+    outDir: "../dist/renderer",
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main:   path.resolve(__dirname, 'src/index.html'),
-        editor: path.resolve(__dirname, 'src/editor.html'),
+        main: path.resolve(__dirname, "src/index.html"),
+        editor: path.resolve(__dirname, "src/editor.html"),
+        treeEditor: path.resolve(__dirname, "src/tree-editor.html"),
       },
     },
   },
