@@ -13,11 +13,11 @@ A Dungeon Master's dashboard for 5e campaigns. Built with Electron + Vite + Type
 
 ## For Users
 
-| Mac (Apple Silicon) | [Download](https://github.com/RSXII/iraelyas-toolbox/releases/latest/download/Iraelyas-5e-Toolbox-mac-arm64.dmg)
+### | Mac (Apple Silicon) | [Download](https://github.com/RSXII/iraelyas-toolbox/releases/latest/download/Iraelyas-5e-Toolbox-mac-arm64.dmg)
 
-| Mac (Intel) | [Download](https://github.com/RSXII/iraelyas-toolbox/releases/latest/download/Iraelyas-5e-Toolbox-mac-x64.dmg)
+### | Mac (Intel) | [Download](https://github.com/RSXII/iraelyas-toolbox/releases/latest/download/Iraelyas-5e-Toolbox-mac-x64.dmg)
 
-| Windows | [Download](https://github.com/RSXII/iraelyas-toolbox/releases/latest/download/Iraelyas-5e-Toolbox-Setup-windows.exe)
+### | Windows | [Download](https://github.com/RSXII/iraelyas-toolbox/releases/latest/download/Iraelyas-5e-Toolbox-Setup-windows.exe)
 
 Download the latest release from the [Releases page](https://github.com/RSXII/iraelyas-toolbox/releases):
 
