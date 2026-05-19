@@ -7,8 +7,15 @@ import type {
   TintConfig,
   Campaign,
 } from "@/types/index";
-import { showToast } from "./ui/toast";
-import { openModal, closeModal } from "./ui/modal";
+import { showToast } from "@/state/toast.svelte";
+
+function openModal(id: string): void {
+  document.getElementById(id)?.classList.add("open");
+}
+
+function closeModal(id: string): void {
+  document.getElementById(id)?.classList.remove("open");
+}
 
 // ═══════════════════════════════════════════════════════════════
 // STATE
