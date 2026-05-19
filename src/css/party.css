@@ -160,6 +160,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  min-width: 0;
   transition: border-color 0.15s;
 }
 .pc-card:hover {
@@ -183,7 +184,7 @@
 }
 
 /* Inline editable name */
-.pc-name {
+input.pc-name {
   font-family: "Cinzel", serif;
   font-size: 14px;
   font-weight: 600;
@@ -241,7 +242,7 @@
 }
 
 /* Inline editable value */
-.pc-field-value {
+input.pc-field-value {
   font-size: 14px;
   color: var(--text);
   text-align: right;
@@ -259,17 +260,17 @@
   cursor: text;
   width: 100%;
 }
-.pc-field-value:hover {
+input.pc-field-value:hover {
   border-bottom-color: var(--border);
 }
-.pc-field-value:focus {
+input.pc-field-value:focus {
   outline: none;
   border-bottom-color: var(--gold-dim);
   background: rgba(255, 255, 255, 0.03);
 }
 
 /* Currency fields are numbers */
-.pc-field-value.currency {
+input.pc-field-value.currency {
   font-family: "Cinzel", serif;
   font-size: 13px;
   font-weight: 600;
@@ -303,7 +304,7 @@
   color: var(--text-dim);
 }
 
-.pc-save-val {
+input.pc-save-val {
   font-family: "Cinzel", serif;
   font-size: 13px;
   font-weight: 600;
@@ -316,12 +317,11 @@
   padding: 0 2px;
   transition: border-color 0.12s;
   cursor: text;
-  font-size: 13px;
 }
-.pc-save-val:hover {
+input.pc-save-val:hover {
   border-bottom-color: var(--border);
 }
-.pc-save-val:focus {
+input.pc-save-val:focus {
   outline: none;
   border-bottom-color: var(--gold-dim);
 }
@@ -334,58 +334,57 @@
 }
 
 .pc-custom-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 80px 1fr 16px;
   align-items: center;
   gap: 6px;
   padding: 2px 0;
-  width: 100%;
-  overflow: hidden;
 }
 
-.pc-custom-name {
+input.pc-custom-name {
   font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-dim);
-  flex-shrink: 0;
-  width: 80px;
-  min-width: 0;
   /* inline edit */
   background: transparent;
   border: none;
   border-bottom: 1px solid transparent;
+  border-radius: 0;
   padding: 1px 2px;
   cursor: text;
   transition: border-color 0.12s;
+  width: 100%;
+  overflow: hidden;
 }
-.pc-custom-name:hover {
+input.pc-custom-name:hover {
   border-bottom-color: var(--border);
 }
-.pc-custom-name:focus {
+input.pc-custom-name:focus {
   outline: none;
   border-bottom-color: var(--gold-dim);
 }
 
-.pc-custom-value {
-  flex: 1;
-  min-width: 0;
-  width: 0;
+input.pc-custom-value {
+  width: 100%;
+  overflow: hidden;
   font-size: 13px;
   color: var(--text);
   text-align: right;
   background: transparent;
   border: none;
   border-bottom: 1px solid transparent;
+  border-radius: 0;
   padding: 1px 4px;
   cursor: text;
   font-family: "Crimson Pro", Georgia, serif;
   transition: border-color 0.12s;
 }
-.pc-custom-value:hover {
+input.pc-custom-value:hover {
   border-bottom-color: var(--border);
 }
-.pc-custom-value:focus {
+input.pc-custom-value:focus {
   outline: none;
   border-bottom-color: var(--gold-dim);
 }
