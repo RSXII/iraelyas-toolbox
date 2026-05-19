@@ -19,7 +19,7 @@
 }
 
 .chronicle-title {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--gold-pale);
@@ -34,7 +34,7 @@
 }
 
 .chronicle-yr-label {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -47,12 +47,15 @@
   padding: 1.5rem 2rem 2rem;
   /* Parchment page background */
   background-color: #e8e2d6;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23e8e2d6'/%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23d8d0c0' opacity='0.4'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='%23e8e2d6'/%3E%3Ccircle cx='1' cy='1' r='0.6' fill='%23d8d0c0' opacity='0.4'/%3E%3C/svg%3E");
   scrollbar-color: #c8bfae #e8e2d6;
 }
-.chronicle-scroll::-webkit-scrollbar-track { background: #e8e2d6; }
-.chronicle-scroll::-webkit-scrollbar-thumb { background: #c8bfae; }
+.chronicle-scroll::-webkit-scrollbar-track {
+  background: #e8e2d6;
+}
+.chronicle-scroll::-webkit-scrollbar-thumb {
+  background: #c8bfae;
+}
 
 /* ── Page header ── */
 .tl-page-header {
@@ -65,7 +68,7 @@
 }
 
 .tl-page-title {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 22px;
   font-weight: 500;
   color: #2e2921;
@@ -90,7 +93,9 @@
 }
 
 /* ── Layout ── */
-.tl-body { display: flex; }
+.tl-body {
+  display: flex;
+}
 
 .tl-label-col {
   width: 90px;
@@ -109,7 +114,7 @@
 }
 
 .tl-section-label {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 8px;
   font-weight: 500;
   letter-spacing: 0.12em;
@@ -126,11 +131,20 @@
   scrollbar-width: thin;
   scrollbar-color: #c8bfae transparent;
 }
-.tl-scroll-area::-webkit-scrollbar        { height: 6px; }
-.tl-scroll-area::-webkit-scrollbar-track  { background: transparent; }
-.tl-scroll-area::-webkit-scrollbar-thumb  { background: #c8bfae; border-radius: 3px; }
+.tl-scroll-area::-webkit-scrollbar {
+  height: 6px;
+}
+.tl-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tl-scroll-area::-webkit-scrollbar-thumb {
+  background: #c8bfae;
+  border-radius: 3px;
+}
 
-.tl-grid-inner { display: block; }
+.tl-grid-inner {
+  display: block;
+}
 
 /* ── Axis ── */
 .tl-axis-row {
@@ -141,13 +155,15 @@
 
 .tl-year-cell {
   flex-shrink: 0;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 8px;
   color: #a09080;
   padding: 0 0 5px 4px;
   border-left: 0.5px solid #ddd5c5;
 }
-.tl-year-cell:first-child { border-left: none; }
+.tl-year-cell:first-child {
+  border-left: none;
+}
 
 /* ── Section grid ── */
 .tl-section-grid {
@@ -174,7 +190,10 @@
 
 .tl-col-lines {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   pointer-events: none;
   overflow: hidden;
@@ -184,7 +203,9 @@
   flex-shrink: 0;
   border-left: 0.5px solid rgba(200, 185, 155, 0.3);
 }
-.tl-col-line:first-child { border-left: none; }
+.tl-col-line:first-child {
+  border-left: none;
+}
 
 /* ── Bars ── */
 .tl-bar {
@@ -196,14 +217,16 @@
   display: flex;
   align-items: center;
   padding: 0 7px;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 8px;
   font-weight: 500;
   white-space: nowrap;
   cursor: default;
   transition: filter 0.15s;
 }
-.tl-bar:hover { filter: brightness(0.93); }
+.tl-bar:hover {
+  filter: brightness(0.93);
+}
 .tl-bar > span {
   position: sticky;
   left: 7px;
@@ -228,11 +251,11 @@
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.6);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
 }
 
 .tl-point-label {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 8px;
   font-weight: 500;
 }
@@ -264,7 +287,7 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   color: #9a8870;
 }
@@ -290,13 +313,17 @@
   margin-left: auto;
   font-weight: 500;
 }
-#tl-jump-now:hover { opacity: 0.8; text-decoration: underline; text-underline-offset: 2px; }
+#tl-jump-now:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 
 /* ── Empty state ── */
 .tl-empty {
   padding: 3rem 2rem;
   text-align: center;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;

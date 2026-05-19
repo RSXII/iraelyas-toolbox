@@ -71,7 +71,20 @@
     if (!confirm(`Remove ${pc.name} from the party?`)) return;
     store.deletePC(cid, pc.id);
   }
-</script>
+
+  // ─── Card collapse state ──────────────────────────────────────
+  let collapsedCards = $state(new Set<string>());
+
+  function toggleCollapse(id: string): void {
+    const next = new Set(collapsedCards);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    collapsedCards = next;
+  }
+
+  function collapseAll(): void { collapsedCards = new Set(pcs.map(p => p.id)); }
+  function expandAll(): void   { collapsedCards = new Set(); }
+  // ─── Delete toggle ───────────────────────────────────────────────────────
+  let deleteEnabled = $state(false);</script>
 
 <div class="tab-panel" id="panel-party" class:active>
   <div class="party-inner">
@@ -83,11 +96,27 @@
         <span class="tally-icon">◆</span>
         <span class="tally-value">{totalPP.toLocaleString()}</span>
         <span class="tally-unit">pp</span>
+        <div class="tally-tooltip">
+          {#each pcs as pc}
+            <div class="tally-tooltip-row">
+              <span class="tally-tooltip-name">{pc.name}</span>
+              <span class="tally-tooltip-val">{(pc.currency.platinum || 0).toLocaleString()} pp</span>
+            </div>
+          {/each}
+        </div>
       </div>
       <div class="party-tally-item">
         <span class="tally-icon">◈</span>
         <span class="tally-value">{totalGP.toLocaleString()}</span>
         <span class="tally-unit">gp</span>
+        <div class="tally-tooltip">
+          {#each pcs as pc}
+            <div class="tally-tooltip-row">
+              <span class="tally-tooltip-name">{pc.name}</span>
+              <span class="tally-tooltip-val">{(pc.currency.gold || 0).toLocaleString()} gp</span>
+            </div>
+          {/each}
+        </div>
       </div>
       <span class="party-tally-members">{pcs.length} member{pcs.length !== 1 ? 's' : ''}</span>
     </div>
@@ -97,7 +126,15 @@
       <div style='font-family:"Cinzel",serif;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold-dim)'>
         Party Members
       </div>
-      <button class="btn btn-gold btn-sm" onclick={openAdd}>+ Add PC</button>
+      <div class="party-header-actions">
+        <button class="btn btn-sm" onclick={collapseAll}>Collapse All</button>
+        <button class="btn btn-sm" onclick={expandAll}>Expand All</button>
+        <button class="btn btn-sm btn-danger" class:active={deleteEnabled}
+          onclick={() => deleteEnabled = !deleteEnabled}>
+          {deleteEnabled ? 'Disable Deletion' : 'Enable Deletion'}
+        </button>
+        <button class="btn btn-gold btn-sm" onclick={openAdd}>+ Add PC</button>
+      </div>
     </div>
 
     <!-- Card grid -->
@@ -123,7 +160,13 @@
                 />
               </div>
               <div class="pc-card-head-actions">
-                <button class="btn-icon danger" title="Remove PC" onclick={() => deletePC(pc)}>✕</button>
+                <button class="btn-icon pc-collapse-btn" title={collapsedCards.has(pc.id) ? 'Expand card' : 'Collapse card'}
+                  onclick={() => toggleCollapse(pc.id)}
+                  class:collapsed={collapsedCards.has(pc.id)}>
+                  ▾
+                </button>
+                <button class="btn-icon danger" title="Remove PC" onclick={() => deletePC(pc)}
+                  style="display: {deleteEnabled ? 'flex' : 'none'}">✕</button>
               </div>
             </div>
 
@@ -149,6 +192,9 @@
                   </div>
                 {/each}
               </div>
+
+              <!-- Collapsible lower sections -->
+              <div class="pc-card-extra" class:collapsed={collapsedCards.has(pc.id)}>
 
               <!-- Passives -->
               <div class="pc-section-label">Passives</div>
@@ -192,6 +238,8 @@
                 onclick={() => { pc.custom.push({ id: genId(), name: 'Field', value: '' }); store.save(); }}>
                 + Add Field
               </button>
+
+              </div><!-- /pc-card-extra -->
 
             </div><!-- /pc-card-body -->
           </div><!-- /pc-card -->

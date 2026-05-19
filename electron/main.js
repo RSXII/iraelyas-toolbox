@@ -203,7 +203,7 @@ ipcMain.handle("delete-house", (_event, campaignId, houseId) => {
   }
 });
 
-// Open a native image file picker and return the chosen absolute path
+// Open a native image file picker and return a base64 data URL
 ipcMain.handle("pick-image", async () => {
   const win =
     treeEditorWindow && !treeEditorWindow.isDestroyed()
@@ -219,7 +219,19 @@ ipcMain.handle("pick-image", async () => {
     ],
   });
   if (result.canceled || !result.filePaths.length) return null;
-  return result.filePaths[0];
+  const filePath = result.filePaths[0];
+  const ext = path.extname(filePath).toLowerCase().slice(1);
+  const mimeMap = {
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    gif: "image/gif",
+    webp: "image/webp",
+    svg: "image/svg+xml",
+  };
+  const mime = mimeMap[ext] ?? "image/png";
+  const data = fs.readFileSync(filePath);
+  return `data:${mime};base64,${data.toString("base64")}`;
 });
 
 // ─── IPC: Timeline-specific data ops ─────────────────────────────────────────

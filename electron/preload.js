@@ -73,7 +73,7 @@ contextBridge.exposeInMainWorld("toolbox", {
   deleteHouse: (campaignId, houseId) =>
     ipcRenderer.invoke("delete-house", campaignId, houseId),
 
-  /** Open a native image file picker; returns absolute path or null */
+  /** Open a native image file picker; returns a base64 data URL or null */
   pickImage: () => ipcRenderer.invoke("pick-image"),
 
   /** Listen for tree-updated events pushed from main process */

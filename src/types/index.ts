@@ -150,6 +150,7 @@ export interface HouseData {
   subtitle?: string;
   spine?: SpineConfig;
   layout?: TreeLayoutConfig;
+  colors?: string[];
   members: HouseMember[];
 }
 
@@ -321,6 +322,17 @@ export interface UIState {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════════════════
+
+export interface ThemeSettings {
+  uiScale: number; // 0.80 – 1.20, applied as CSS zoom on <html>
+  bgColor: string; // hex — base background; surface/card stack derived from this
+  textColor: string; // hex — primary text color (--text)
+  accentColor: string; // hex — accent color; gold scale derived from this
+}
+
+// ═══════════════════════════════════════════════════════════════
 // ROOT APP STATE
 // ═══════════════════════════════════════════════════════════════
 
@@ -329,6 +341,7 @@ export interface AppState {
   campaigns: Campaign[];
   campaignData: Record<string, CampaignData>;
   ui: UIState;
+  theme: ThemeSettings;
 }
 
 // ═══════════════════════════════════════════════════════════════
