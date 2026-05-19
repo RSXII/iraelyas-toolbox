@@ -1,50 +1,65 @@
 import type {
-  AppState, Campaign, CampaignData, ConvoPC, ConvoState,
-  HouseData, NPC, PlayerData, Schema, TabId,
-  TimelineData, UIState, TrackerData, TrackerEntry,
-  PartyData, PCCard,
-} from '@/types/index';
+  AppState,
+  Campaign,
+  CampaignData,
+  ConvoPC,
+  ConvoState,
+  HouseData,
+  NPC,
+  PlayerData,
+  Schema,
+  TabId,
+  TimelineData,
+  UIState,
+  TrackerData,
+  TrackerEntry,
+  PartyData,
+  PCCard,
+} from "@/types/index";
 
 // ═══════════════════════════════════════════════════════════════
 // DEFAULTS
 // ═══════════════════════════════════════════════════════════════
 
 const DEFAULT_CONVO_PCS: ConvoPC[] = Array.from({ length: 6 }, (_, i) => ({
-  name:  `PC ${i + 1}`,
+  name: `PC ${i + 1}`,
   score: 5,
 }));
 
 const DEFAULT_CONVO: ConvoState = {
-  title:   'Generic Conversation',
+  title: "Generic Conversation",
   pcCount: 4,
-  pcs:     DEFAULT_CONVO_PCS,
+  pcs: DEFAULT_CONVO_PCS,
 };
 
 const DEFAULT_UI: UIState = {
-  activeCampaign: '',
-  activePlayer:   '',
-  activeHouse:    '',
-  activeTab:      'favor',
-  convo:          DEFAULT_CONVO,
+  activeCampaign: "",
+  activePlayer: "",
+  activeHouse: "",
+  activeTab: "favor",
+  convo: DEFAULT_CONVO,
 };
 
 function defaultCampaignData(): CampaignData {
   return {
-    schema:   { npcs: [] },
-    players:  {},
-    houses:   {},
+    schema: { npcs: [] },
+    players: {},
+    houses: {},
     timeline: null,
-    tracker:  { entries: [] },
-    party:    { pcs: [] },
+    tracker: { entries: [] },
+    party: { pcs: [] },
   };
 }
 
 function defaultState(): AppState {
   return {
-    version:      1,
-    campaigns:    [],
+    version: 1,
+    campaigns: [],
     campaignData: {},
-    ui:           { ...DEFAULT_UI, convo: { ...DEFAULT_CONVO, pcs: [...DEFAULT_CONVO_PCS] } },
+    ui: {
+      ...DEFAULT_UI,
+      convo: { ...DEFAULT_CONVO, pcs: [...DEFAULT_CONVO_PCS] },
+    },
   };
 }
 
@@ -66,7 +81,7 @@ class Store {
       this._state = this._migrate(saved);
       return true;
     } catch (err) {
-      console.error('Store.load failed:', err);
+      console.error("Store.load failed:", err);
       return false;
     }
   }
@@ -75,7 +90,7 @@ class Store {
   private _migrate(raw: AppState): AppState {
     const s = { ...defaultState(), ...raw };
     // Ensure every campaign has a full data bucket
-    s.campaigns.forEach(c => {
+    s.campaigns.forEach((c) => {
       if (!s.campaignData[c.id]) {
         s.campaignData[c.id] = defaultCampaignData();
       }
@@ -103,7 +118,7 @@ class Store {
     try {
       await window.toolbox.saveData(this._state);
     } catch (err) {
-      console.error('Store._flush failed:', err);
+      console.error("Store._flush failed:", err);
     }
   }
 
@@ -142,7 +157,7 @@ class Store {
   }
 
   addCampaign(campaign: Campaign): void {
-    if (this._state.campaigns.find(c => c.id === campaign.id)) return;
+    if (this._state.campaigns.find((c) => c.id === campaign.id)) return;
     this._state.campaigns.push(campaign);
     this._state.campaignData[campaign.id] = defaultCampaignData();
     this.save();
@@ -150,8 +165,15 @@ class Store {
 
   setActiveCampaign(id: string): void {
     this._state.ui.activeCampaign = id;
-    this._state.ui.activePlayer   = '';
-    this._state.ui.activeHouse    = '';
+    this._state.ui.activePlayer = "";
+    this._state.ui.activeHouse = "";
+    this.save();
+  }
+
+  renameCampaign(id: string, label: string): void {
+    const campaign = this._state.campaigns.find((c) => c.id === id);
+    if (!campaign) return;
+    campaign.label = label;
     this.save();
   }
 
@@ -181,14 +203,22 @@ class Store {
     const pd = cd.players[playerId];
     if (!pd) return false;
     let patched = false;
-    cd.schema.npcs.forEach(n => {
-      if (!(n.id in pd.scores)) { pd.scores[n.id] = 50; patched = true; }
+    cd.schema.npcs.forEach((n) => {
+      if (!(n.id in pd.scores)) {
+        pd.scores[n.id] = 50;
+        patched = true;
+      }
     });
     if (patched) this.save();
     return patched;
   }
 
-  adjustFavorScore(campaignId: string, playerId: string, npcId: string, delta: number): void {
+  adjustFavorScore(
+    campaignId: string,
+    playerId: string,
+    npcId: string,
+    delta: number,
+  ): void {
     const pd = this.getCampaignData(campaignId).players[playerId];
     if (!pd) return;
     const current = pd.scores[npcId] ?? 50;
@@ -204,10 +234,10 @@ class Store {
 
   addNPC(campaignId: string, npc: NPC): void {
     const cd = this.getCampaignData(campaignId);
-    if (cd.schema.npcs.find(n => n.id === npc.id)) return;
+    if (cd.schema.npcs.find((n) => n.id === npc.id)) return;
     cd.schema.npcs.push(npc);
     // Patch all existing players
-    Object.values(cd.players).forEach(pd => {
+    Object.values(cd.players).forEach((pd) => {
       if (!(npc.id in pd.scores)) pd.scores[npc.id] = 50;
     });
     this.save();
@@ -215,23 +245,23 @@ class Store {
 
   /** Move an NPC up or down within its faction group only */
   reorderNPC(campaignId: string, npcId: string, direction: -1 | 1): void {
-    const cd   = this.getCampaignData(campaignId);
+    const cd = this.getCampaignData(campaignId);
     const npcs = cd.schema.npcs;
-    const idx  = npcs.findIndex(n => n.id === npcId);
+    const idx = npcs.findIndex((n) => n.id === npcId);
     if (idx === -1) return;
 
-    const faction     = npcs[idx].faction;
+    const faction = npcs[idx].faction;
     // All indices in this faction group, in order
-    const groupIdxs   = npcs.reduce<number[]>((acc, n, i) => {
+    const groupIdxs = npcs.reduce<number[]>((acc, n, i) => {
       if (n.faction === faction) acc.push(i);
       return acc;
     }, []);
 
-    const posInGroup  = groupIdxs.indexOf(idx);
-    const targetPos   = posInGroup + direction;
+    const posInGroup = groupIdxs.indexOf(idx);
+    const targetPos = posInGroup + direction;
     if (targetPos < 0 || targetPos >= groupIdxs.length) return;
 
-    const targetIdx   = groupIdxs[targetPos];
+    const targetIdx = groupIdxs[targetPos];
     // Swap in the flat npcs array
     [npcs[idx], npcs[targetIdx]] = [npcs[targetIdx], npcs[idx]];
     this.save();
@@ -299,7 +329,9 @@ class Store {
   }
 
   resetConvo(): void {
-    this._state.ui.convo.pcs.forEach(pc => { pc.score = 5; });
+    this._state.ui.convo.pcs.forEach((pc) => {
+      pc.score = 5;
+    });
     this.save();
   }
 
@@ -324,7 +356,7 @@ class Store {
 
   upsertTrackerEntry(campaignId: string, entry: TrackerEntry): void {
     const tracker = this.getTracker(campaignId);
-    const idx     = tracker.entries.findIndex(e => e.id === entry.id);
+    const idx = tracker.entries.findIndex((e) => e.id === entry.id);
     if (idx >= 0) {
       tracker.entries[idx] = entry;
     } else {
@@ -335,35 +367,42 @@ class Store {
 
   adjustTrackerValue(campaignId: string, entryId: string, delta: number): void {
     const tracker = this.getTracker(campaignId);
-    const entry   = tracker.entries.find(e => e.id === entryId);
+    const entry = tracker.entries.find((e) => e.id === entryId);
     if (!entry) return;
-    entry.current = Math.max(entry.min, Math.min(entry.max, entry.current + delta));
+    entry.current = Math.max(
+      entry.min,
+      Math.min(entry.max, entry.current + delta),
+    );
     this.save();
   }
 
   deleteTrackerEntry(campaignId: string, entryId: string): void {
-    const tracker   = this.getTracker(campaignId);
-    tracker.entries = tracker.entries.filter(e => e.id !== entryId);
+    const tracker = this.getTracker(campaignId);
+    tracker.entries = tracker.entries.filter((e) => e.id !== entryId);
     this.save();
   }
 
-  reorderTrackerEntry(campaignId: string, entryId: string, direction: -1 | 1): void {
-    const tracker  = this.getTracker(campaignId);
-    const entries  = tracker.entries;
-    const idx      = entries.findIndex(e => e.id === entryId);
+  reorderTrackerEntry(
+    campaignId: string,
+    entryId: string,
+    direction: -1 | 1,
+  ): void {
+    const tracker = this.getTracker(campaignId);
+    const entries = tracker.entries;
+    const idx = entries.findIndex((e) => e.id === entryId);
     if (idx === -1) return;
 
-    const category   = entries[idx].category;
-    const groupIdxs  = entries.reduce<number[]>((acc, e, i) => {
+    const category = entries[idx].category;
+    const groupIdxs = entries.reduce<number[]>((acc, e, i) => {
       if (e.category === category) acc.push(i);
       return acc;
     }, []);
 
     const posInGroup = groupIdxs.indexOf(idx);
-    const targetPos  = posInGroup + direction;
+    const targetPos = posInGroup + direction;
     if (targetPos < 0 || targetPos >= groupIdxs.length) return;
 
-    const targetIdx  = groupIdxs[targetPos];
+    const targetIdx = groupIdxs[targetPos];
     [entries[idx], entries[targetIdx]] = [entries[targetIdx], entries[idx]];
     this.save();
   }
@@ -383,14 +422,14 @@ class Store {
 
   updatePC(campaignId: string, pc: PCCard): void {
     const party = this.getParty(campaignId);
-    const idx   = party.pcs.findIndex(p => p.id === pc.id);
+    const idx = party.pcs.findIndex((p) => p.id === pc.id);
     if (idx >= 0) party.pcs[idx] = pc;
     this.save();
   }
 
   deletePC(campaignId: string, pcId: string): void {
-    const party   = this.getParty(campaignId);
-    party.pcs     = party.pcs.filter(p => p.id !== pcId);
+    const party = this.getParty(campaignId);
+    party.pcs = party.pcs.filter((p) => p.id !== pcId);
     this.save();
   }
 
@@ -404,8 +443,8 @@ class Store {
 
   /** Merge imported campaigns into existing state without wiping */
   mergeImport(incoming: AppState): void {
-    incoming.campaigns.forEach(c => {
-      if (!this._state.campaigns.find(x => x.id === c.id)) {
+    incoming.campaigns.forEach((c) => {
+      if (!this._state.campaigns.find((x) => x.id === c.id)) {
         this._state.campaigns.push(c);
       }
     });
