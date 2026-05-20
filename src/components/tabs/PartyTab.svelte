@@ -65,11 +65,20 @@
     showToast(`${name} added`);
   }
 
-  function deletePC(pc: PCCard): void {
+  // ─── Delete PC modal ──────────────────────────────────────────
+  let deletePending = $state<PCCard | null>(null);
+
+  function promptDeletePC(pc: PCCard): void {
+    deletePending = pc;
+  }
+
+  function confirmDeletePC(removeFavor: boolean): void {
     const cid = store.activeCampaignId;
-    if (!cid) return;
-    if (!confirm(`Remove ${pc.name} from the party?`)) return;
-    store.deletePC(cid, pc.id);
+    if (!cid || !deletePending) return;
+    if (removeFavor) store.removeFavorPlayer(cid, deletePending.id);
+    store.deletePC(cid, deletePending.id);
+    showToast(`${deletePending.name} removed`);
+    deletePending = null;
   }
 
   // ─── Card collapse state ──────────────────────────────────────
@@ -156,7 +165,17 @@
                   value={pc.name}
                   placeholder="Character name"
                   style='font-family:"Cinzel",serif;font-size:14px;font-weight:600;color:var(--gold-pale);letter-spacing:0.04em;text-align:left;'
-                  onchange={(e) => { pc.name = (e.target as HTMLInputElement).value.trim() || 'Unnamed'; store.save(); }}
+                  onchange={(e) => {
+                    const newName = (e.target as HTMLInputElement).value.trim() || 'Unnamed';
+                    pc.name = newName;
+                    // Sync display name into favor tracker (key/GUID unchanged)
+                    const cid = store.activeCampaignId;
+                    if (cid) {
+                      const pd = store.getCampaignData(cid).players[pc.id];
+                      if (pd) pd.player = newName;
+                    }
+                    store.save();
+                  }}
                 />
               </div>
               <div class="pc-card-head-actions">
@@ -165,7 +184,7 @@
                   class:collapsed={collapsedCards.has(pc.id)}>
                   ▾
                 </button>
-                <button class="btn-icon danger" title="Remove PC" onclick={() => deletePC(pc)}
+                <button class="btn-icon danger" title="Remove PC" onclick={() => promptDeletePC(pc)}
                   style="display: {deleteEnabled ? 'flex' : 'none'}">✕</button>
               </div>
             </div>
@@ -249,6 +268,23 @@
 
   </div><!-- /party-inner -->
 </div><!-- /tab-panel -->
+
+<!-- Delete PC modal -->
+{#if deletePending}
+<div class="modal-overlay open">
+  <div class="modal">
+    <h3>Remove {deletePending.name}?</h3>
+    <p style="color: var(--text-dim); font-size: 13px; margin: 8px 0 16px">
+      What should happen to their favor tracker history?
+    </p>
+    <div class="modal-foot" style="gap: 8px; flex-wrap: wrap">
+      <button class="btn" onclick={() => (deletePending = null)}>Cancel</button>
+      <button class="btn" onclick={() => confirmDeletePC(false)}>Keep Favor Data</button>
+      <button class="btn btn-danger" onclick={() => confirmDeletePC(true)}>Delete Favor Data Too</button>
+    </div>
+  </div>
+</div>
+{/if}
 
 <!-- Add PC modal -->
 <div class="modal-overlay" class:open={showAddModal}>

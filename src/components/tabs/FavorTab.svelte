@@ -26,17 +26,30 @@
   // ─── Reactive campaign data ───────────────────────────────────
   const cid      = $derived(store.activeCampaignId);
   const cd       = $derived(store.activeCampaignData);
-  const players  = $derived(cd ? Object.keys(cd.players) : []);
+  // Player list is now driven entirely by the party roster
+  const players  = $derived(cid ? store.getParty(cid).pcs : []);
   const pid      = $derived(store.activePlayerId);
   const pd       = $derived(pid && cd ? cd.players[pid] : null);
   const factions = $derived(cd ? [...new Set(cd.schema.npcs.map((n) => n.faction))] : []);
 
   // Auto-select first player if none is valid for this campaign
   $effect(() => {
-    if (cid && players.length && (!pid || !cd?.players[pid])) {
-      store.setActivePlayer(players[0]);
-      store.patchPlayerScores(cid, players[0]);
+    if (cid && players.length && (!pid || !players.find((p) => p.id === pid))) {
+      store.setActivePlayer(players[0].id);
+      store.patchPlayerScores(cid, players[0].id);
     }
+  });
+
+  // Auto-initialise PlayerData for any party PC that doesn't have an entry yet
+  // (handles manual JSON migration: existing entries keyed by GUID just work)
+  $effect(() => {
+    if (!cid || !cd) return;
+    players.forEach((pc) => {
+      if (!cd.players[pc.id]) {
+        store.upsertPlayer(cid, pc.id, { player: pc.name, scores: {} });
+        store.patchPlayerScores(cid, pc.id);
+      }
+    });
   });
 
   // ─── Filter & display state ───────────────────────────────────
@@ -48,43 +61,17 @@
   );
 
   // ─── Player actions ───────────────────────────────────────────
-  function switchPlayer(name: string): void {
-    if (!name || !cid) return;
-    store.setActivePlayer(name);
-    store.patchPlayerScores(cid, name);
+  function switchPlayer(id: string): void {
+    if (!id || !cid) return;
+    store.setActivePlayer(id);
+    store.patchPlayerScores(cid, id);
   }
 
   async function savePlayer(): Promise<void> {
     if (!cid || !pid) return;
     store.patchPlayerScores(cid, pid);
     await store.forceSave();
-    showToast(`${cap(pid)} saved`);
-  }
-
-  // ─── Add Player modal ─────────────────────────────────────────
-  let showAddPlayer = $state(false);
-  let newPlayerName = $state('');
-  let playerNameEl  = $state<HTMLInputElement | null>(null);
-
-  function openAddPlayer(): void {
-    newPlayerName = '';
-    showAddPlayer = true;
-    setTimeout(() => playerNameEl?.focus(), 50);
-  }
-
-  function confirmAddPlayer(): void {
-    const raw = newPlayerName.trim();
-    if (!raw) return;
-    if (!cid) { showToast('Select a campaign first'); return; }
-    const key = raw.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-    const cdNow = store.getCampaignData(cid);
-    const scores: Record<string, number> = {};
-    cdNow.schema.npcs.forEach((n) => { scores[n.id] = 50; });
-    store.upsertPlayer(cid, key, { player: raw, scores });
-    store.setActivePlayer(key);
-    store.patchPlayerScores(cid, key);
-    showAddPlayer = false;
-    showToast(`${raw} created`);
+    showToast(`${pd?.player ?? pid} saved`);
   }
 
   // ─── Add NPC form ─────────────────────────────────────────────
@@ -145,7 +132,7 @@
     <div class="favor-header">
       <div class="favor-player-block">
         <h2>Viewing as</h2>
-        <div class="favor-player-name">{pid ? cap(pid) : '—'}</div>
+        <div class="favor-player-name">{pd?.player ?? '—'}</div>
       </div>
       <div class="favor-controls">
         <select
@@ -155,15 +142,14 @@
           onchange={(e) => switchPlayer((e.target as HTMLSelectElement).value)}
         >
           {#if players.length}
-            {#each players as p}
-              <option value={p}>{cap(p)}</option>
+            {#each players as pc}
+              <option value={pc.id}>{pc.name}</option>
             {/each}
           {:else}
             <option value="">No players</option>
           {/if}
         </select>
         <button class="btn btn-gold btn-sm" onclick={savePlayer}>Save</button>
-        <button class="btn btn-sm" onclick={openAddPlayer}>+ Player</button>
       </div>
     </div>
 
@@ -182,6 +168,8 @@
         <div class="empty-state">Select or create a campaign to begin.</div>
       {:else if !cd.schema.npcs.length}
         <div class="empty-state">No NPCs in schema yet — add one below.</div>
+      {:else if !players.length}
+        <div class="empty-state">Add players in the Party tab to track favor.</div>
       {:else if !visibleFactions.length}
         <div class="empty-state">No NPCs in this faction.</div>
       {:else}
@@ -314,24 +302,4 @@
   </div>
 </div>
 
-<!-- Add Player modal -->
-<div class="modal-overlay" class:open={showAddPlayer}>
-  <div class="modal">
-    <h3>New Player</h3>
-    <div class="field-group">
-      <label class="field-label" for="new-player-name-svelte">Player name</label>
-      <input
-        id="new-player-name-svelte"
-        type="text"
-        bind:this={playerNameEl}
-        bind:value={newPlayerName}
-        placeholder="e.g. Anna"
-        onkeydown={(e) => { if (e.key === 'Enter') confirmAddPlayer(); }}
-      />
-    </div>
-    <div class="modal-foot">
-      <button class="btn" onclick={() => (showAddPlayer = false)}>Cancel</button>
-      <button class="btn btn-gold" onclick={confirmAddPlayer}>Create</button>
-    </div>
-  </div>
-</div>
+<!-- (Add Player modal removed — players are managed in the Party tab) -->

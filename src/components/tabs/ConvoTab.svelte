@@ -1,8 +1,18 @@
 <script lang="ts">
   import { store } from '@/state/store.svelte';
+  import { showToast } from '@/state/toast.svelte';
 
   interface Props { active?: boolean; }
   let { active = false }: Props = $props();
+
+  function syncFromParty(): void {
+    const cid = store.activeCampaignId;
+    if (!cid) { showToast('Select a campaign first'); return; }
+    const count = store.getParty(cid).pcs.length;
+    if (!count) { showToast('No party members to sync'); return; }
+    store.syncConvoPCsFromParty(cid);
+    showToast('Synced from party');
+  }
 
   // ─── Mood helper ─────────────────────────────────────────────
   function mood(score: number): { word: string; color: string } {
@@ -45,7 +55,8 @@
           >{n}</button>
         {/each}
       </div>
-      <div style="margin-left: auto">
+      <div style="margin-left: auto; display: flex; gap: 6px">
+        <button class="btn btn-sm" onclick={syncFromParty}>Sync from Party</button>
         <button class="btn btn-sm" onclick={() => store.resetConvo()}>Reset to 5</button>
       </div>
     </div>
