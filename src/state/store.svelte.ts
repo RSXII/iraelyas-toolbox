@@ -491,6 +491,29 @@ class Store {
 
   addPC(campaignId: string, pc: PCCard): void {
     this.getParty(campaignId).pcs.push(pc);
+    // Auto-initialise the favor tracker entry keyed by the PC's GUID
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.players[pc.id]) {
+      cd.players[pc.id] = { player: pc.name, scores: {} };
+      cd.schema.npcs.forEach((n) => {
+        cd.players[pc.id].scores[n.id] = 50;
+      });
+    }
+    this.save();
+  }
+
+  removeFavorPlayer(campaignId: string, pcId: string): void {
+    const cd = this.getCampaignData(campaignId);
+    delete cd.players[pcId];
+    this.save();
+  }
+
+  syncConvoPCsFromParty(campaignId: string): void {
+    const pcs = this.getParty(campaignId).pcs.slice(0, 6);
+    pcs.forEach((pc, i) => {
+      this._state.ui.convo.pcs[i].name = pc.name;
+    });
+    this._state.ui.convo.pcCount = Math.max(1, pcs.length);
     this.save();
   }
 
