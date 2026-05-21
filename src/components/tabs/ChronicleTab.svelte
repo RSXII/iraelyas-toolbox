@@ -60,12 +60,12 @@
   // ── Functions ──────────────────────────────────────────────────
   function alignLabels(): void {
     if (!labelColEl || !gridInnerEl) return;
-    const axisEl = gridInnerEl.querySelector('.tl-axis-row');
-    const axisH = axisEl ? (axisEl as HTMLElement).offsetHeight : 0;
+    const baseTop = gridInnerEl.getBoundingClientRect().top;
     const newPos: Record<string, { top: number; height: number }> = {};
     gridInnerEl.querySelectorAll<HTMLElement>('.tl-section-grid').forEach(grid => {
       const id = grid.dataset.sectionId!;
-      newPos[id] = { top: axisH + grid.offsetTop, height: grid.offsetHeight };
+      const rect = grid.getBoundingClientRect();
+      newPos[id] = { top: rect.top - baseTop, height: rect.height };
     });
     labelPositions = newPos;
   }
