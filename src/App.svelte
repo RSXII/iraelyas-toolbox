@@ -12,6 +12,7 @@
   import FavorTab from '@/components/tabs/FavorTab.svelte';
   import ChronicleTab from '@/components/tabs/ChronicleTab.svelte';
   import TreeTab from '@/components/tabs/TreeTab.svelte';
+  import FactionsTab from '@/components/tabs/FactionsTab.svelte';
 
   // ─── App state ────────────────────────────────────────────────
   let showMigrationOverlay = $state(true);
@@ -504,6 +505,14 @@
   </button>
   <button
     class="tab-btn"
+    class:active={activeTab === 'factions'}
+    id="tab-factions"
+    onclick={() => switchTab('factions')}
+  >
+    <span class="tab-icon">🛄</span> Factions
+  </button>
+  <button
+    class="tab-btn"
     class:active={activeTab === 'convo'}
     id="tab-convo"
     onclick={() => switchTab('convo')}
@@ -566,6 +575,9 @@
 
   <!-- ── PARTY QUICK VIEW ── -->
   <PartyTab active={activeTab === 'party'} />
+
+  <!-- ── FACTION MEMBERSHIPS ── -->
+  <FactionsTab active={activeTab === 'factions'} />
 
 </div>
 <!-- /content-area -->

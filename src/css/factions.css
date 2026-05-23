@@ -1,0 +1,474 @@
+/* ═══════════════════════════════════════════════════════════════
+   FACTIONS TAB
+═══════════════════════════════════════════════════════════════ */
+#panel-factions {
+  padding: 1.5rem 2rem 3rem;
+}
+
+/* ── Layout ── */
+.factions-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.factions-title {
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin: 0;
+}
+
+/* ── Add-faction bar ── */
+.add-faction-bar,
+.add-member-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  margin-bottom: 1rem;
+}
+
+/* ── Selects used inside bars ── */
+.faction-select,
+.rank-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: "Crimson Pro", serif;
+  font-size: 14px;
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.15s;
+  min-width: 160px;
+}
+.faction-select:hover,
+.rank-select:hover {
+  border-color: var(--border-h);
+}
+.faction-select:focus,
+.rank-select:focus {
+  outline: none;
+  border-color: var(--gold-dim);
+}
+
+/* ── Action buttons used in bars ── */
+.btn-add-faction,
+.btn-add-member {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 13px;
+  border-radius: var(--radius);
+  border: 1px solid var(--gold-dim);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-add-faction:hover,
+.btn-add-member:hover {
+  background: var(--gold-glow);
+  border-color: var(--gold);
+  color: var(--gold-pale);
+}
+
+.btn-confirm {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 13px;
+  border-radius: var(--radius);
+  border: 1px solid var(--gold-dim);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-confirm:hover:not(:disabled) {
+  background: var(--gold-glow);
+  border-color: var(--gold);
+  color: var(--gold-pale);
+}
+.btn-confirm:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 13px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-cancel:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+}
+
+/* ── Faction cards grid ── */
+.faction-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 860px;
+}
+
+.faction-card {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold-dim);
+  border-radius: var(--radius);
+  background: var(--card);
+  overflow: hidden;
+}
+
+/* ── Card header ── */
+.faction-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.faction-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.faction-name {
+  font-family: "Cinzel", serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gold-pale);
+  letter-spacing: 0.04em;
+}
+
+.faction-role {
+  font-family: "Crimson Pro", serif;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.btn-delete-faction {
+  font-size: 11px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.btn-delete-faction:hover {
+  border-color: rgba(180, 60, 60, 0.4);
+  color: #c06060;
+  background: rgba(180, 60, 60, 0.08);
+}
+
+/* ── Ranks section ── */
+.ranks-section {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.ranks-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.section-label {
+  font-family: "Cinzel", serif;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  white-space: nowrap;
+}
+
+.rank-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.rank-chip {
+  font-family: "Crimson Pro", serif;
+  font-size: 12px;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2px 9px;
+}
+
+.btn-edit-ranks {
+  font-family: "Cinzel", serif;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-left: auto;
+}
+.btn-edit-ranks:hover {
+  border-color: var(--gold-dim);
+  color: var(--gold);
+}
+
+/* Rank editor */
+.ranks-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ranks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.rank-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.rank-num {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  color: var(--gold-dim);
+  min-width: 16px;
+  text-align: right;
+}
+
+.rank-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: "Crimson Pro", serif;
+  font-size: 14px;
+  padding: 4px 9px;
+  border-radius: var(--radius);
+  flex: 1;
+  transition: border-color 0.15s;
+}
+.rank-input:focus {
+  outline: none;
+  border-color: var(--gold-dim);
+}
+.rank-input::placeholder {
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+.rank-add-row {
+  margin-top: 2px;
+}
+
+.btn-add-rank {
+  font-size: 15px;
+  font-weight: 400;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--gold-dim);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-add-rank:hover {
+  background: var(--gold-glow);
+  border-color: var(--gold);
+}
+
+.ranks-editor-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 4px;
+}
+
+/* ── Members section ── */
+.members-section {
+  padding: 10px 16px 14px;
+}
+
+.members-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 8px;
+}
+
+.members-table-head {
+  display: grid;
+  grid-template-columns: 1fr 160px 180px 28px;
+  gap: 10px;
+  padding: 4px 8px 6px;
+  font-family: "Cinzel", serif;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+.member-row {
+  display: grid;
+  grid-template-columns: 1fr 160px 180px 28px;
+  gap: 10px;
+  align-items: center;
+  padding: 7px 8px;
+  border-top: 1px solid var(--border);
+  transition: background 0.12s;
+}
+.member-row:hover {
+  background: var(--card-hover);
+}
+
+.member-name {
+  font-family: "Crimson Pro", serif;
+  font-size: 15px;
+  color: var(--text);
+}
+
+/* ── Favor cell ── */
+.favor-cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.favor-word {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  min-width: 52px;
+}
+
+.favor-bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 40px;
+}
+
+.favor-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.25s ease;
+}
+
+.favor-num {
+  font-family: "Crimson Pro", serif;
+  font-size: 12px;
+  color: var(--text-dim);
+  min-width: 24px;
+  text-align: right;
+}
+
+/* ── Remove member icon button ── */
+.btn-remove-member {
+  font-size: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-remove-member:hover {
+  border-color: rgba(180, 60, 60, 0.4);
+  color: #c06060;
+  background: rgba(180, 60, 60, 0.08);
+}
+
+/* ── Reuse shared icon button from favor ── */
+.btn-icon {
+  font-size: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.btn-icon:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+}
+
+/* ── Add member bar ── */
+.add-member-bar {
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+/* ── Utility ── */
+.empty-msg {
+  font-family: "Crimson Pro", serif;
+  font-size: 14px;
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.hint-text {
+  font-family: "Crimson Pro", serif;
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}

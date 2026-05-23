@@ -4,6 +4,8 @@ import type {
   CampaignData,
   ConvoPC,
   ConvoState,
+  FactionRank,
+  FactionsData,
   HouseData,
   HouseMember,
   NPC,
@@ -51,6 +53,7 @@ function defaultCampaignData(): CampaignData {
     timeline: null,
     tracker: { entries: [] },
     party: { pcs: [] },
+    factions: { factions: [] },
   };
 }
 
@@ -99,6 +102,10 @@ class Store {
     s.campaigns.forEach((c) => {
       if (!s.campaignData[c.id]) {
         s.campaignData[c.id] = defaultCampaignData();
+      }
+      // Lazy-init factions for older saves that predate this field
+      if (!s.campaignData[c.id].factions) {
+        s.campaignData[c.id].factions = { factions: [] };
       }
     });
     // Ensure convo pcs array always has 6 entries
@@ -527,6 +534,90 @@ class Store {
   deletePC(campaignId: string, pcId: string): void {
     const party = this.getParty(campaignId);
     party.pcs = party.pcs.filter((p) => p.id !== pcId);
+    this.save();
+  }
+
+  // ── Factions helpers ─────────────────────────────────────────────
+
+  getFactions(campaignId: string): FactionsData {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.factions) cd.factions = { factions: [] };
+    return cd.factions;
+  }
+
+  addFactionConfig(campaignId: string, factionNpcId: string): void {
+    const fd = this.getFactions(campaignId);
+    if (fd.factions.find((fc) => fc.factionNpcId === factionNpcId)) return;
+    const id = `fc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    fd.factions.push({ id, factionNpcId, ranks: [], members: [] });
+    this.save();
+  }
+
+  removeFactionConfig(campaignId: string, factionId: string): void {
+    const fd = this.getFactions(campaignId);
+    fd.factions = fd.factions.filter((fc) => fc.id !== factionId);
+    this.save();
+  }
+
+  setFactionRanks(
+    campaignId: string,
+    factionId: string,
+    ranks: FactionRank[],
+  ): void {
+    const fc = this.getFactions(campaignId).factions.find(
+      (f) => f.id === factionId,
+    );
+    if (!fc) return;
+    const validIds = new Set(ranks.map((r) => r.id));
+    // Reset any member whose rankId no longer exists
+    fc.members.forEach((m) => {
+      if (m.rankId && !validIds.has(m.rankId)) m.rankId = "";
+    });
+    fc.ranks = ranks;
+    this.save();
+  }
+
+  addFactionMember(
+    campaignId: string,
+    factionId: string,
+    pcId: string,
+    rankId: string,
+  ): void {
+    const fc = this.getFactions(campaignId).factions.find(
+      (f) => f.id === factionId,
+    );
+    if (!fc) return;
+    if (fc.members.find((m) => m.pcId === pcId)) return;
+    fc.members.push({ pcId, rankId });
+    this.save();
+  }
+
+  setMemberRank(
+    campaignId: string,
+    factionId: string,
+    pcId: string,
+    rankId: string,
+  ): void {
+    const fc = this.getFactions(campaignId).factions.find(
+      (f) => f.id === factionId,
+    );
+    if (!fc) return;
+    const member = fc.members.find((m) => m.pcId === pcId);
+    if (!member) return;
+    member.rankId = rankId;
+    this.save();
+  }
+
+  removeFactionMember(
+    campaignId: string,
+    factionId: string,
+    pcId: string,
+  ): void {
+    const fc = this.getFactions(campaignId).factions.find(
+      (f) => f.id === factionId,
+    );
+    if (!fc) return;
+    fc.members = fc.members.filter((m) => m.pcId !== pcId);
     this.save();
   }
 
