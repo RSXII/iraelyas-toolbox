@@ -307,6 +307,7 @@ export interface FactionConfig {
   factionNpcId: string; // references NPC.id where isFactionHeader === true
   ranks: FactionRank[];
   members: FactionMember[];
+  npcRanks: Record<string, string>; // npcId → rankId
 }
 
 export interface FactionsData {

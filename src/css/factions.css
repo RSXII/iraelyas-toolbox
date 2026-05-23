@@ -429,6 +429,126 @@
   background: rgba(180, 60, 60, 0.08);
 }
 
+/* ── NPC members section ── */
+.npc-members-section {
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.npc-members-header {
+  margin-bottom: 6px;
+}
+
+.npc-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.npc-member-row {
+  display: grid;
+  grid-template-columns: 1fr auto 140px;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 8px;
+  border-top: 1px solid var(--border);
+  transition: background 0.12s;
+}
+.npc-member-row:first-child {
+  border-top: none;
+}
+.npc-member-row:hover {
+  background: var(--card-hover);
+}
+
+.npc-member-name {
+  font-family: "Crimson Pro", serif;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.npc-member-role {
+  font-family: "Crimson Pro", serif;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.npc-rank-select {
+  min-width: 0;
+  width: 100%;
+}
+
+.npc-rank-hint {
+  justify-self: end;
+}
+
+.npc-members-empty {
+  padding: 4px 8px;
+  margin: 0;
+}
+
+/* ── NPC members section ── */
+.npc-members-section {
+  padding: 10px 16px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.npc-members-header {
+  margin-bottom: 6px;
+}
+
+.npc-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.npc-member-row {
+  display: grid;
+  grid-template-columns: 1fr auto 140px;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 8px;
+  border-top: 1px solid var(--border);
+  transition: background 0.12s;
+}
+.npc-member-row:first-child {
+  border-top: none;
+}
+.npc-member-row:hover {
+  background: var(--card-hover);
+}
+
+.npc-member-name {
+  font-family: "Crimson Pro", serif;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.npc-member-role {
+  font-family: "Crimson Pro", serif;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.npc-rank-select {
+  min-width: 0;
+  width: 100%;
+}
+
+.npc-rank-hint {
+  justify-self: end;
+}
+
+.npc-members-empty {
+  padding: 4px 8px;
+  margin: 0;
+}
+
 /* ── Reuse shared icon button from favor ── */
 .btn-icon {
   font-size: 10px;

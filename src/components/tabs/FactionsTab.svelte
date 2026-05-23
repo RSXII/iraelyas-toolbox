@@ -51,6 +51,11 @@
     return cd?.party.pcs.filter((p) => !memberIds.has(p.id)) ?? [];
   }
 
+  function getFactionNPCs(factionLabel: string | null | undefined): NonNullable<typeof cd>['schema']['npcs'] {
+    if (!factionLabel || !cd) return [];
+    return cd.schema.npcs.filter((n) => n.faction === factionLabel && !n.isFactionHeader);
+  }
+
   // ─── UI state ────────────────────────────────────────────────
   let showAddFaction  = $state(false);
   let newFactionNpcId = $state('');
@@ -318,7 +323,46 @@
               {/if}
             </div>
 
-          </div>
+            <!-- NPC members section -->
+            <div class="npc-members-section">
+              <div class="npc-members-header">
+                <span class="section-label">NPCs</span>
+              </div>
+              {#if getFactionNPCs(factionNPC?.faction).length === 0}
+                <p class="hint-text npc-members-empty">No NPCs in this faction yet.</p>
+              {:else if fc.ranks.length === 0}
+                <div class="npc-members-list">
+                  {#each getFactionNPCs(factionNPC?.faction) as npc (npc.id)}
+                    <div class="npc-member-row">
+                      <span class="npc-member-name">{npc.name}</span>
+                      <span class="npc-member-role">{npc.role}</span>
+                      <span class="hint-text npc-rank-hint">Set up ranks first</span>
+                    </div>
+                  {/each}
+                </div>
+              {:else}
+                <div class="npc-members-list">
+                  {#each getFactionNPCs(factionNPC?.faction) as npc (npc.id)}
+                    <div class="npc-member-row">
+                      <span class="npc-member-name">{npc.name}</span>
+                      <span class="npc-member-role">{npc.role}</span>
+                      <select
+                        class="rank-select npc-rank-select"
+                        value={fc.npcRanks?.[npc.id] ?? ''}
+                        onchange={(e) => store.setNPCRank(campaignId!, fc.id, npc.id, (e.target as HTMLSelectElement).value)}
+                      >
+                        <option value="">— no rank —</option>
+                        {#each fc.ranks as rank (rank.id)}
+                          <option value={rank.id}>{rank.name}</option>
+                        {/each}
+                      </select>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+
+          </div><!-- /faction-card -->
         {/each}
       </div>
     {/if}

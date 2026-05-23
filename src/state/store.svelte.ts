@@ -107,6 +107,10 @@ class Store {
       if (!s.campaignData[c.id].factions) {
         s.campaignData[c.id].factions = { factions: [] };
       }
+      // Lazy-init npcRanks on any FactionConfig that predates the field
+      s.campaignData[c.id].factions.factions.forEach((fc) => {
+        if (!fc.npcRanks) fc.npcRanks = {};
+      });
     });
     // Ensure convo pcs array always has 6 entries
     while (s.ui.convo.pcs.length < 6) {
@@ -250,6 +254,26 @@ class Store {
   addNPC(campaignId: string, npc: NPC): void {
     const cd = this.getCampaignData(campaignId);
     if (cd.schema.npcs.find((n) => n.id === npc.id)) return;
+    // Auto-create a faction header if this faction doesn't have one yet
+    if (
+      !npc.isFactionHeader &&
+      !cd.schema.npcs.some(
+        (n) => n.isFactionHeader && n.faction === npc.faction,
+      )
+    ) {
+      const headerId = `faction_header_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
+      const headerNpc: NPC = {
+        id: headerId,
+        name: npc.faction,
+        role: "Faction",
+        faction: npc.faction,
+        isFactionHeader: true,
+      };
+      cd.schema.npcs.push(headerNpc);
+      Object.values(cd.players).forEach((pd) => {
+        if (!(headerId in pd.scores)) pd.scores[headerId] = 50;
+      });
+    }
     cd.schema.npcs.push(npc);
     // Patch all existing players
     Object.values(cd.players).forEach((pd) => {
@@ -558,7 +582,13 @@ class Store {
     const fd = this.getFactions(campaignId);
     if (fd.factions.find((fc) => fc.factionNpcId === factionNpcId)) return;
     const id = `fc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
-    fd.factions.push({ id, factionNpcId, ranks: [], members: [] });
+    fd.factions.push({
+      id,
+      factionNpcId,
+      ranks: [],
+      members: [],
+      npcRanks: {},
+    });
     this.save();
   }
 
@@ -578,10 +608,16 @@ class Store {
     );
     if (!fc) return;
     const validIds = new Set(ranks.map((r) => r.id));
-    // Reset any member whose rankId no longer exists
+    // Reset any PC member whose rankId no longer exists
     fc.members.forEach((m) => {
       if (m.rankId && !validIds.has(m.rankId)) m.rankId = "";
     });
+    // Remove any NPC rank entries whose rankId no longer exists
+    if (fc.npcRanks) {
+      for (const npcId of Object.keys(fc.npcRanks)) {
+        if (!validIds.has(fc.npcRanks[npcId])) delete fc.npcRanks[npcId];
+      }
+    }
     fc.ranks = ranks;
     this.save();
   }
@@ -627,6 +663,25 @@ class Store {
     );
     if (!fc) return;
     fc.members = fc.members.filter((m) => m.pcId !== pcId);
+    this.save();
+  }
+
+  setNPCRank(
+    campaignId: string,
+    factionId: string,
+    npcId: string,
+    rankId: string,
+  ): void {
+    const fc = this.getFactions(campaignId).factions.find(
+      (f) => f.id === factionId,
+    );
+    if (!fc) return;
+    if (!fc.npcRanks) fc.npcRanks = {};
+    if (rankId) {
+      fc.npcRanks[npcId] = rankId;
+    } else {
+      delete fc.npcRanks[npcId];
+    }
     this.save();
   }
 
