@@ -103,6 +103,29 @@
   text-overflow: ellipsis;
 }
 
+.npc-role-input {
+  font-family: "Crimson Pro", serif;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 0 2px;
+  width: 100%;
+  min-width: 80px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.npc-role-input:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+  color: var(--text);
+}
+.npc-role-input::placeholder {
+  color: var(--text-dim);
+  opacity: 0.4;
+}
+
 .npc-right {
   display: flex;
   align-items: center;

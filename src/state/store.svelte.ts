@@ -267,6 +267,15 @@ class Store {
     this.save();
   }
 
+  updateNPCRole(campaignId: string, npcId: string, role: string): void {
+    const npc = this.getCampaignData(campaignId).schema.npcs.find(
+      (n) => n.id === npcId,
+    );
+    if (!npc) return;
+    npc.role = role;
+    this.save();
+  }
+
   /** Move an NPC up or down within its faction group only */
   reorderNPC(campaignId: string, npcId: string, direction: -1 | 1): void {
     const cd = this.getCampaignData(campaignId);
