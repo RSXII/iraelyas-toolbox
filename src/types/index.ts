@@ -89,6 +89,18 @@ export interface Campaign {
 // FAVOR TRACKER
 // ═══════════════════════════════════════════════════════════════
 
+export interface FavorTier {
+  id: string; // stable slug identifier
+  label: string; // display name (e.g. "Hostile")
+  threshold: number; // minimum score for this tier (0–99)
+  color: string; // hex color, e.g. "#b84040"
+}
+
+export interface FavorSettings {
+  tiers: FavorTier[];
+  increment: 1 | 5 | 10 | 25;
+}
+
 export interface NPC {
   id: string;
   name: string;
@@ -326,6 +338,7 @@ export interface CampaignData {
   tracker: TrackerData;
   party: PartyData;
   factions: FactionsData;
+  favor?: FavorSettings;
 }
 
 // ═══════════════════════════════════════════════════════════════

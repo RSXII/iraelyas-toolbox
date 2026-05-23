@@ -1,18 +1,19 @@
 <script lang="ts">
+  import { slide } from 'svelte/transition';
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
-  import type { NPC, FactionConfig } from '@/types/index';
+  import type { NPC, FactionConfig, FavorTier } from '@/types/index';
 
   interface Props { active?: boolean; }
   let { active = false }: Props = $props();
 
   // ─── Helpers ─────────────────────────────────────────────────
-  function favorMeta(s: number): { word: string; color: string } {
-    if (s < 20) return { word: 'Hostile',  color: 'var(--hostile)'  };
-    if (s < 40) return { word: 'Wary',     color: 'var(--wary)'     };
-    if (s < 60) return { word: 'Neutral',  color: 'var(--neutral)'  };
-    if (s < 80) return { word: 'Friendly', color: 'var(--friendly)' };
-    return             { word: 'Allied',   color: 'var(--allied)'   };
+  function favorMeta(score: number, tiers: FavorTier[]): { word: string; color: string } {
+    const sorted = [...tiers].sort((a, b) => b.threshold - a.threshold);
+    const match = sorted.find((t) => score >= t.threshold);
+    const fallback = sorted[sorted.length - 1] ?? { label: '—', color: '#888888' };
+    const tier = match ?? fallback;
+    return { word: tier.label, color: tier.color };
   }
 
   function initials(name: string): string {
@@ -31,6 +32,14 @@
   const pid      = $derived(store.activePlayerId);
   const pd       = $derived(pid && cd ? cd.players[pid] : null);
   const factions = $derived(cd ? [...new Set(cd.schema.npcs.map((n) => n.faction))] : []);
+
+  // Favor settings (tiers + increment) for the active campaign
+  const favorSettings = $derived(cid ? store.getFavorSettings(cid) : null);
+  const tiers         = $derived(favorSettings?.tiers ?? []);
+  const increment     = $derived(favorSettings?.increment ?? 5);
+
+  // Tiers sorted ascending for display (legend, tier editor)
+  const tiersAsc = $derived([...tiers].sort((a, b) => a.threshold - b.threshold));
 
   // Map from faction label → FactionConfig (for rank dropdown in edit mode)
   const factionConfigMap = $derived(() => {
@@ -65,8 +74,8 @@
   });
 
   // ─── Filter & display state ───────────────────────────────────
-  let activeFilter  = $state('all');
-  let editEnabled = $state(false);
+  let activeFilter = $state('all');
+  let editEnabled  = $state(false);
 
   const visibleFactions = $derived(
     activeFilter === 'all' ? factions : factions.filter((f) => f === activeFilter)
@@ -135,6 +144,70 @@
     if (!cid || !pid) { showToast('Select a player first'); return; }
     store.adjustFavorScore(cid, pid, npcId, delta);
   }
+
+  // ─── Tier editor helpers ──────────────────────────────────────
+  const STEP_OPTIONS = [1, 5, 10, 25] as const;
+
+  function setIncrement(v: 1 | 5 | 10 | 25): void {
+    if (!cid) return;
+    store.setFavorIncrement(cid, v);
+  }
+
+  function addTier(): void {
+    if (!cid) return;
+    // Default new tier at midpoint of last gap or at 50
+    const maxThreshold = tiers.length ? Math.max(...tiers.map((t) => t.threshold)) : 0;
+    const newThreshold = Math.min(99, maxThreshold + 10);
+    store.addFavorTier(cid, { label: 'New Tier', threshold: newThreshold, color: '#888888' });
+  }
+
+  function updateTierLabel(tier: FavorTier, value: string): void {
+    if (!cid) return;
+    store.updateFavorTier(cid, tier.id, { label: value });
+  }
+
+  function updateTierThreshold(tier: FavorTier, value: number): void {
+    if (!cid) return;
+    const clamped = Math.max(0, Math.min(99, Math.round(value)));
+    store.updateFavorTier(cid, tier.id, { threshold: clamped });
+  }
+
+  function updateTierColor(tier: FavorTier, value: string): void {
+    if (!cid) return;
+    store.updateFavorTier(cid, tier.id, { color: value });
+  }
+
+  function deleteTier(tier: FavorTier): void {
+    if (!cid || tiers.length <= 1) return;
+    store.deleteFavorTier(cid, tier.id);
+  }
+
+  // ─── Scroll anchor: keep options row pinned when tier editor expands ──
+  let tierEditorEl = $state<HTMLElement | null>(null);
+  let optionsEl    = $state<HTMLElement | null>(null);
+
+  $effect(() => {
+    if (!tierEditorEl || !optionsEl) return;
+
+    const panel = tierEditorEl.closest<HTMLElement>('.tab-panel');
+    if (!panel) return;
+
+    // Only anchor when options row is near the bottom of the panel viewport
+    const panelRect   = panel.getBoundingClientRect();
+    const optionsRect = optionsEl.getBoundingClientRect();
+    const distFromBottom = panelRect.bottom - optionsRect.bottom;
+    if (distFromBottom > 200) return;
+
+    let lastHeight = 0;
+    const ro = new ResizeObserver((entries) => {
+      const newHeight = entries[0].contentRect.height;
+      const delta = newHeight - lastHeight;
+      lastHeight = newHeight;
+      if (delta > 0) panel.scrollBy({ top: delta, behavior: 'instant' });
+    });
+    ro.observe(tierEditorEl);
+    return () => ro.disconnect();
+  });
 </script>
 
 <div class="tab-panel" id="panel-favor" class:active>
@@ -194,7 +267,7 @@
             </div>
             {#each group as npc, i (npc.id)}
               {@const score      = pd?.scores[npc.id] ?? 50}
-              {@const { word, color } = favorMeta(score)}
+              {@const { word, color } = favorMeta(score, tiers)}
               <div class="npc-row" class:faction-header={npc.isFactionHeader === true}>
 
                 <!-- Left: delete btn + reorder + badge + info -->
@@ -250,8 +323,8 @@
                     </div>
                   </div>
                   <div class="step-btns">
-                    <button class="step-btn" onclick={() => adjust(npc.id, -5)}>−</button>
-                    <button class="step-btn" onclick={() => adjust(npc.id, 5)}>+</button>
+                    <button class="step-btn" onclick={() => adjust(npc.id, -increment)}>−</button>
+                    <button class="step-btn" onclick={() => adjust(npc.id, increment)}>+</button>
                   </div>
                 </div>
 
@@ -311,21 +384,79 @@
       </div>
     </div>
 
+    <!-- Tier editor (visible when editing is enabled) -->
+    {#if editEnabled && cid}
+      <div class="tier-editor" transition:slide={{ duration: 220 }} bind:this={tierEditorEl}>
+        <div class="tier-editor-header">
+          <span class="tier-editor-title">Favor Tiers</span>
+          <button class="btn btn-sm" onclick={addTier}>+ Add Tier</button>
+        </div>
+        <!-- Increment step selector -->
+        <div class="tier-editor-step-row">
+          <span class="tier-threshold-label">Score increment</span>
+          <div class="step-selector">
+            {#each STEP_OPTIONS as v}
+              <button
+                class="step-sel-btn"
+                class:active={increment === v}
+                onclick={() => setIncrement(v)}
+              >±{v}</button>
+            {/each}
+          </div>
+        </div>
+        {#each tiersAsc as tier (tier.id)}
+          <div class="tier-editor-row">
+            <input
+              class="tier-color-swatch"
+              type="color"
+              value={tier.color}
+              oninput={(e) => updateTierColor(tier, (e.target as HTMLInputElement).value)}
+              title="Tier color"
+            />
+            <input
+              class="tier-label-input"
+              type="text"
+              value={tier.label}
+              placeholder="Tier name"
+              onchange={(e) => updateTierLabel(tier, (e.target as HTMLInputElement).value)}
+            />
+            <span class="tier-threshold-label">from</span>
+            <input
+              class="tier-threshold-input"
+              type="number"
+              min="0"
+              max="99"
+              value={tier.threshold}
+              onchange={(e) => updateTierThreshold(tier, parseInt((e.target as HTMLInputElement).value, 10))}
+            />
+            <button
+              class="btn-icon danger"
+              title="Delete tier"
+              disabled={tiers.length <= 1}
+              onclick={() => deleteTier(tier)}
+            >✕</button>
+          </div>
+        {/each}
+      </div>
+    {/if}
+
     <!-- Edit toggle -->
-    <div class="favor-options">
+    <div class="favor-options" bind:this={optionsEl}>
       <label class="favor-option-toggle">
         <input type="checkbox" bind:checked={editEnabled} />
         <span>Enable NPC editing</span>
       </label>
     </div>
 
-    <!-- Legend -->
+    <!-- Legend (dynamic, from campaign tiers) -->
     <div class="favor-legend">
-      <div class="leg-item"><div class="leg-dot" style="background: var(--hostile)"></div>Hostile (0–19)</div>
-      <div class="leg-item"><div class="leg-dot" style="background: var(--wary)"></div>Wary (20–39)</div>
-      <div class="leg-item"><div class="leg-dot" style="background: var(--neutral)"></div>Neutral (40–59)</div>
-      <div class="leg-item"><div class="leg-dot" style="background: var(--friendly)"></div>Friendly (60–79)</div>
-      <div class="leg-item"><div class="leg-dot" style="background: var(--allied)"></div>Allied (80–100)</div>
+      {#each tiersAsc as t, i}
+        {@const nextThreshold = tiersAsc[i + 1]?.threshold ?? 101}
+        <div class="leg-item">
+          <div class="leg-dot" style="background: {t.color}"></div>
+          {t.label} ({t.threshold}–{nextThreshold - 1})
+        </div>
+      {/each}
     </div>
 
   </div>
