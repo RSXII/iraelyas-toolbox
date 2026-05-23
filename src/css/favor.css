@@ -114,7 +114,9 @@
   padding: 0 2px;
   width: 100%;
   min-width: 80px;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 .npc-role-input:focus {
   outline: none;
