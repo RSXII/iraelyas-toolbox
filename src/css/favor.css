@@ -385,3 +385,137 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+/* ── Step selector (always-visible ±N buttons) ── */
+.step-selector {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.step-sel-btn {
+  padding: 2px 8px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-dim);
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.step-sel-btn:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+  background: var(--surface);
+}
+.step-sel-btn.active {
+  border-color: var(--gold-dim);
+  color: var(--gold-pale);
+  background: rgba(201, 168, 76, 0.08);
+}
+
+/* ── Tier editor ── */
+.tier-editor {
+  margin-top: 1.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.tier-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+
+.tier-editor-step-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.9rem;
+}
+
+.tier-editor-title {
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+.tier-editor-row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto 56px 28px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tier-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  padding: 2px;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.tier-color-swatch::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.tier-color-swatch::-webkit-color-swatch {
+  border: none;
+  border-radius: 3px;
+}
+
+.tier-label-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  padding: 2px 4px;
+  transition: border-color 0.15s;
+}
+.tier-label-input:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+}
+
+.tier-threshold-label {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.tier-threshold-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  text-align: center;
+  padding: 2px 4px;
+  transition: border-color 0.15s;
+  -moz-appearance: textfield;
+}
+.tier-threshold-input:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+}
+.tier-threshold-input::-webkit-inner-spin-button,
+.tier-threshold-input::-webkit-outer-spin-button {
+  display: none;
+}

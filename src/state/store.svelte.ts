@@ -5,6 +5,8 @@ import type {
   ConvoPC,
   ConvoState,
   FactionRank,
+  FavorSettings,
+  FavorTier,
   FactionsData,
   HouseData,
   HouseMember,
@@ -45,6 +47,26 @@ const DEFAULT_UI: UIState = {
   convo: DEFAULT_CONVO,
 };
 
+export const DEFAULT_FAVOR_TIERS: FavorTier[] = [
+  { id: "hostile", label: "Hostile", threshold: 0, color: "#b84040" },
+  { id: "wary", label: "Wary", threshold: 20, color: "#c08840" },
+  { id: "neutral", label: "Neutral", threshold: 40, color: "#7a7060" },
+  { id: "friendly", label: "Friendly", threshold: 60, color: "#4a8c60" },
+  { id: "allied", label: "Allied", threshold: 80, color: "#4a70b0" },
+];
+
+export const DEFAULT_FAVOR_SETTINGS: FavorSettings = {
+  tiers: DEFAULT_FAVOR_TIERS,
+  increment: 5,
+};
+
+function defaultFavorSettings(): FavorSettings {
+  return {
+    tiers: DEFAULT_FAVOR_TIERS.map((t) => ({ ...t })),
+    increment: 5,
+  };
+}
+
 function defaultCampaignData(): CampaignData {
   return {
     schema: { npcs: [] },
@@ -54,6 +76,7 @@ function defaultCampaignData(): CampaignData {
     tracker: { entries: [] },
     party: { pcs: [] },
     factions: { factions: [] },
+    favor: defaultFavorSettings(),
   };
 }
 
@@ -111,6 +134,10 @@ class Store {
       s.campaignData[c.id].factions.factions.forEach((fc) => {
         if (!fc.npcRanks) fc.npcRanks = {};
       });
+      // Lazy-init favor settings for saves that predate this field
+      if (!s.campaignData[c.id].favor) {
+        s.campaignData[c.id].favor = defaultFavorSettings();
+      }
     });
     // Ensure convo pcs array always has 6 entries
     while (s.ui.convo.pcs.length < 6) {
@@ -242,6 +269,52 @@ class Store {
     if (!pd) return;
     const current = pd.scores[npcId] ?? 50;
     pd.scores[npcId] = Math.max(0, Math.min(100, current + delta));
+    this.save();
+  }
+
+  // ── Favor settings helpers ────────────────────────────────────
+
+  getFavorSettings(campaignId: string): FavorSettings {
+    return this.getCampaignData(campaignId).favor ?? defaultFavorSettings();
+  }
+
+  setFavorIncrement(campaignId: string, step: 1 | 5 | 10 | 25): void {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.favor) cd.favor = defaultFavorSettings();
+    cd.favor.increment = step;
+    this.save();
+  }
+
+  addFavorTier(campaignId: string, partial: Omit<FavorTier, "id">): void {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.favor) cd.favor = defaultFavorSettings();
+    const id = `tier_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    cd.favor.tiers.push({ id, ...partial });
+    cd.favor.tiers.sort((a, b) => a.threshold - b.threshold);
+    this.save();
+  }
+
+  updateFavorTier(
+    campaignId: string,
+    tierId: string,
+    patch: Partial<Omit<FavorTier, "id">>,
+  ): void {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.favor) cd.favor = defaultFavorSettings();
+    const tier = cd.favor.tiers.find((t) => t.id === tierId);
+    if (!tier) return;
+    if (patch.label !== undefined) tier.label = patch.label;
+    if (patch.threshold !== undefined) tier.threshold = patch.threshold;
+    if (patch.color !== undefined) tier.color = patch.color;
+    cd.favor.tiers.sort((a, b) => a.threshold - b.threshold);
+    this.save();
+  }
+
+  deleteFavorTier(campaignId: string, tierId: string): void {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.favor) return;
+    if (cd.favor.tiers.length <= 1) return; // must keep at least one
+    cd.favor.tiers = cd.favor.tiers.filter((t) => t.id !== tierId);
     this.save();
   }
 
