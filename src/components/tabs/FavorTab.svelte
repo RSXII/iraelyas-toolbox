@@ -1,7 +1,7 @@
 <script lang="ts">
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
-  import type { NPC } from '@/types/index';
+  import type { NPC, FactionConfig } from '@/types/index';
 
   interface Props { active?: boolean; }
   let { active = false }: Props = $props();
@@ -32,6 +32,18 @@
   const pd       = $derived(pid && cd ? cd.players[pid] : null);
   const factions = $derived(cd ? [...new Set(cd.schema.npcs.map((n) => n.faction))] : []);
 
+  // Map from faction label → FactionConfig (for rank dropdown in edit mode)
+  const factionConfigMap = $derived(() => {
+    const map = new Map<string, FactionConfig>();
+    if (!cid) return map;
+    const fd = store.getFactions(cid);
+    for (const fc of fd.factions) {
+      const headerNpc = cd?.schema.npcs.find((n) => n.id === fc.factionNpcId);
+      if (headerNpc) map.set(headerNpc.faction, fc);
+    }
+    return map;
+  });
+
   // Auto-select first player if none is valid for this campaign
   $effect(() => {
     if (cid && players.length && (!pid || !players.find((p) => p.id === pid))) {
@@ -54,7 +66,7 @@
 
   // ─── Filter & display state ───────────────────────────────────
   let activeFilter  = $state('all');
-  let deleteEnabled = $state(false);
+  let editEnabled = $state(false);
 
   const visibleFactions = $derived(
     activeFilter === 'all' ? factions : factions.filter((f) => f === activeFilter)
@@ -190,7 +202,7 @@
                   <button
                     class="btn-icon danger"
                     title="Remove NPC"
-                    style="display: {deleteEnabled ? 'flex' : 'none'}"
+                    style="display: {editEnabled ? 'flex' : 'none'}"
                     onclick={() => deleteNPC(npc)}
                   >✕</button>
                   <div class="reorder-btns">
@@ -205,7 +217,24 @@
                       {npc.name}
                       {#if npc.isFactionHeader}<span class="faction-header-badge">Renown</span>{/if}
                     </div>
-                    <div class="npc-role">{npc.role}</div>
+                    {#if editEnabled}
+                      <input
+                        class="npc-role-input"
+                        type="text"
+                        value={npc.role}
+                        placeholder="Role or title"
+                        onchange={(e) => store.updateNPCRole(cid!, npc.id, (e.target as HTMLInputElement).value)}
+                      />
+                    {:else}
+                      <div class="npc-role">{npc.role}</div>
+                    {/if}
+                    {#if !npc.isFactionHeader}
+                      {@const fc = factionConfigMap().get(npc.faction)}
+                      {@const rankName = fc?.ranks.find((r) => r.id === fc.npcRanks?.[npc.id])?.name}
+                      {#if rankName}
+                        <div class="npc-rank-label">{rankName}</div>
+                      {/if}
+                    {/if}
                   </div>
                 </div>
 
@@ -282,11 +311,11 @@
       </div>
     </div>
 
-    <!-- Delete toggle -->
+    <!-- Edit toggle -->
     <div class="favor-options">
       <label class="favor-option-toggle">
-        <input type="checkbox" bind:checked={deleteEnabled} />
-        <span>Enable NPC deletion</span>
+        <input type="checkbox" bind:checked={editEnabled} />
+        <span>Enable NPC editing</span>
       </label>
     </div>
 

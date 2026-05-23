@@ -289,6 +289,32 @@ export interface PartyData {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// FACTIONS
+// ═══════════════════════════════════════════════════════════════
+
+export interface FactionRank {
+  id: string;
+  name: string;
+}
+
+export interface FactionMember {
+  pcId: string;
+  rankId: string;
+}
+
+export interface FactionConfig {
+  id: string;
+  factionNpcId: string; // references NPC.id where isFactionHeader === true
+  ranks: FactionRank[];
+  members: FactionMember[];
+  npcRanks: Record<string, string>; // npcId → rankId
+}
+
+export interface FactionsData {
+  factions: FactionConfig[];
+}
+
+// ═══════════════════════════════════════════════════════════════
 // CAMPAIGN DATA (per-campaign bucket)
 // ═══════════════════════════════════════════════════════════════
 
@@ -299,6 +325,7 @@ export interface CampaignData {
   timeline: TimelineData | null;
   tracker: TrackerData;
   party: PartyData;
+  factions: FactionsData;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -311,7 +338,8 @@ export type TabId =
   | "tree"
   | "chronicle"
   | "tracker"
-  | "party";
+  | "party"
+  | "factions";
 
 export interface UIState {
   activeCampaign: string;
