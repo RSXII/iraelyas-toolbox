@@ -87,6 +87,11 @@
     showToast('Faction removed');
   }
 
+  function moveFaction(factionId: string, direction: 'up' | 'down') {
+    if (!campaignId) return;
+    store.moveFactionConfig(campaignId, factionId, direction);
+  }
+
   function openRankEditor(fc: FactionConfig) {
     editingRanksFor = fc.id;
     rankDraft = fc.ranks.map((r) => ({ ...r }));
@@ -180,7 +185,7 @@
       <p class="empty-msg">No factions configured yet. Use "Add Faction" to get started.</p>
     {:else}
       <div class="faction-cards">
-        {#each factions as fc (fc.id)}
+        {#each factions as fc, fcIdx (fc.id)}
           {@const factionNPC = getFactionNPC(fc.factionNpcId)}
           <div class="faction-card">
 
@@ -192,11 +197,25 @@
                   <span class="faction-role">{factionNPC.role}</span>
                 {/if}
               </div>
-              <button
-                class="btn-icon btn-delete-faction"
-                onclick={() => removeFaction(fc.id)}
-                title="Remove faction config"
-              >✕</button>
+              <div class="faction-card-actions">
+                <button
+                  class="btn-icon btn-reorder"
+                  onclick={() => moveFaction(fc.id, 'up')}
+                  disabled={fcIdx === 0}
+                  title="Move up"
+                >▲</button>
+                <button
+                  class="btn-icon btn-reorder"
+                  onclick={() => moveFaction(fc.id, 'down')}
+                  disabled={fcIdx === factions.length - 1}
+                  title="Move down"
+                >▼</button>
+                <button
+                  class="btn-icon btn-delete-faction"
+                  onclick={() => removeFaction(fc.id)}
+                  title="Remove faction config"
+                >✕</button>
+              </div>
             </div>
 
             <!-- Ranks section -->

@@ -358,6 +358,13 @@ body {
   background: var(--border);
 }
 
+.faction-reorder-btns {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    FORM ELEMENTS
 ═══════════════════════════════════════════════════════════════ */
