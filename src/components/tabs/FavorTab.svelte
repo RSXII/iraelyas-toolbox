@@ -73,12 +73,29 @@
     });
   });
 
+  // ─── Faction ordering ─────────────────────────────────────────
+  // Factions ordered by FactionConfig store order first, then any unconfigured ones
+  const factionsSorted = $derived.by(() => {
+    const all = cd ? [...new Set(cd.schema.npcs.map((n) => n.faction))] : [];
+    if (!cid || !cd) return all;
+    const fd = store.getFactions(cid);
+    const ordered: string[] = [];
+    for (const fc of fd.factions) {
+      const headerNpc = cd.schema.npcs.find((n) => n.id === fc.factionNpcId);
+      if (headerNpc && !ordered.includes(headerNpc.faction)) {
+        ordered.push(headerNpc.faction);
+      }
+    }
+    const orderedSet = new Set(ordered);
+    return [...ordered, ...all.filter((f) => !orderedSet.has(f))];
+  });
+
   // ─── Filter & display state ───────────────────────────────────
   let activeFilter = $state('all');
   let editEnabled  = $state(false);
 
   const visibleFactions = $derived(
-    activeFilter === 'all' ? factions : factions.filter((f) => f === activeFilter)
+    activeFilter === 'all' ? factionsSorted : factionsSorted.filter((f) => f === activeFilter)
   );
 
   // ─── Player actions ───────────────────────────────────────────
@@ -143,6 +160,27 @@
   function adjust(npcId: string, delta: number): void {
     if (!cid || !pid) { showToast('Select a player first'); return; }
     store.adjustFavorScore(cid, pid, npcId, delta);
+  }
+
+  function moveFaction(factionLabel: string, direction: 'up' | 'down'): void {
+    if (!cid) return;
+    const fc = factionConfigMap().get(factionLabel);
+    if (!fc) return;
+    store.moveFactionConfig(cid, fc.id, direction);
+  }
+
+  function factionConfigIdx(factionLabel: string): number {
+    if (!cid) return -1;
+    const fd = store.getFactions(cid);
+    return fd.factions.findIndex((fc) => {
+      const headerNpc = cd?.schema.npcs.find((n) => n.id === fc.factionNpcId);
+      return headerNpc?.faction === factionLabel;
+    });
+  }
+
+  function configuredFactionCount(): number {
+    if (!cid) return 0;
+    return store.getFactions(cid).factions.length;
   }
 
   // ─── Tier editor helpers ──────────────────────────────────────
@@ -242,7 +280,7 @@
     <div class="filter-row">
       <span class="filter-label">Filter:</span>
       <button class="filter-chip" class:active={activeFilter === 'all'} onclick={() => (activeFilter = 'all')}>All</button>
-      {#each factions as f}
+      {#each factionsSorted as f}
         <button class="filter-chip" class:active={activeFilter === f} onclick={() => (activeFilter = f)}>{f}</button>
       {/each}
     </div>
@@ -263,6 +301,25 @@
           {#if group.length}
             <div class="section-head">
               <span class="section-name">{f}</span>
+              {#if editEnabled}
+                {@const cfgIdx = factionConfigIdx(f)}
+                {#if cfgIdx >= 0}
+                  <div class="faction-reorder-btns">
+                    <button
+                      class="reorder-arrow"
+                      title="Move faction up"
+                      disabled={cfgIdx === 0}
+                      onclick={() => moveFaction(f, 'up')}
+                    >▲</button>
+                    <button
+                      class="reorder-arrow"
+                      title="Move faction down"
+                      disabled={cfgIdx >= configuredFactionCount() - 1}
+                      onclick={() => moveFaction(f, 'down')}
+                    >▼</button>
+                  </div>
+                {/if}
+              {/if}
               <div class="section-line"></div>
             </div>
             {#each group as npc, i (npc.id)}
