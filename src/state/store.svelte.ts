@@ -671,13 +671,20 @@ class Store {
     this.save();
   }
 
-  moveFactionConfig(campaignId: string, factionId: string, direction: 'up' | 'down'): void {
+  moveFactionConfig(
+    campaignId: string,
+    factionId: string,
+    direction: "up" | "down",
+  ): void {
     const fd = this.getFactions(campaignId);
     const idx = fd.factions.findIndex((fc) => fc.id === factionId);
     if (idx === -1) return;
-    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= fd.factions.length) return;
-    [fd.factions[idx], fd.factions[swapIdx]] = [fd.factions[swapIdx], fd.factions[idx]];
+    [fd.factions[idx], fd.factions[swapIdx]] = [
+      fd.factions[swapIdx],
+      fd.factions[idx],
+    ];
     this.save();
   }
 
