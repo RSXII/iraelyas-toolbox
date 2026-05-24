@@ -1,7 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════
    PARTY QUICK VIEW
 ═══════════════════════════════════════════════════════════════ */
-#panel-party { padding: 1.5rem 2rem 3rem; }
+#panel-party {
+  padding: 1.5rem 2rem 3rem;
+}
 
 .party-inner {
   max-width: 1400px;
@@ -23,7 +25,7 @@
 }
 
 .party-tally-label {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -35,6 +37,68 @@
   display: flex;
   align-items: center;
   gap: 7px;
+  position: relative;
+  cursor: default;
+}
+.party-tally-item:hover .tally-tooltip {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tally-tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 160px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+  z-index: 50;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.tally-tooltip::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  border-top: 1px solid var(--border);
+}
+
+.tally-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.tally-tooltip-name {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+.tally-tooltip-val {
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--gold-pale);
+  white-space: nowrap;
 }
 
 .tally-icon {
@@ -43,7 +107,7 @@
 }
 
 .tally-value {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 16px;
   font-weight: 600;
   color: var(--gold-pale);
@@ -51,7 +115,7 @@
 }
 
 .tally-unit {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -60,7 +124,7 @@
 
 .party-tally-members {
   margin-left: auto;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -74,6 +138,12 @@
   justify-content: space-between;
   margin-bottom: 1.25rem;
   gap: 1rem;
+}
+
+.party-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 /* ── Responsive card grid ── */
@@ -90,9 +160,12 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  min-width: 0;
   transition: border-color 0.15s;
 }
-.pc-card:hover { border-color: var(--border-h); }
+.pc-card:hover {
+  border-color: var(--border-h);
+}
 
 /* Card header */
 .pc-card-head {
@@ -111,8 +184,8 @@
 }
 
 /* Inline editable name */
-.pc-name {
-  font-family: 'Cinzel', serif;
+input.pc-name {
+  font-family: "Cinzel", serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--gold-pale);
@@ -135,7 +208,7 @@
 
 /* Section label inside card */
 .pc-section-label {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 8px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -144,7 +217,9 @@
   padding-bottom: 3px;
   border-bottom: 1px solid var(--border);
 }
-.pc-section-label:first-child { margin-top: 0; }
+.pc-section-label:first-child {
+  margin-top: 0;
+}
 
 /* Field rows */
 .pc-field-row {
@@ -157,7 +232,7 @@
 }
 
 .pc-field-label {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -167,7 +242,7 @@
 }
 
 /* Inline editable value */
-.pc-field-value {
+input.pc-field-value {
   font-size: 14px;
   color: var(--text);
   text-align: right;
@@ -178,17 +253,25 @@
   border-bottom: 1px solid transparent;
   border-radius: 0;
   padding: 1px 4px;
-  transition: border-color 0.15s, background 0.15s;
-  font-family: 'Crimson Pro', Georgia, serif;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+  font-family: "Crimson Pro", Georgia, serif;
   cursor: text;
   width: 100%;
 }
-.pc-field-value:hover  { border-bottom-color: var(--border); }
-.pc-field-value:focus  { outline: none; border-bottom-color: var(--gold-dim); background: rgba(255,255,255,0.03); }
+input.pc-field-value:hover {
+  border-bottom-color: var(--border);
+}
+input.pc-field-value:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+  background: rgba(255, 255, 255, 0.03);
+}
 
 /* Currency fields are numbers */
-.pc-field-value.currency {
-  font-family: 'Cinzel', serif;
+input.pc-field-value.currency {
+  font-family: "Cinzel", serif;
   font-size: 13px;
   font-weight: 600;
   color: var(--gold-pale);
@@ -214,15 +297,15 @@
 }
 
 .pc-save-abbr {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 7px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 
-.pc-save-val {
-  font-family: 'Cinzel', serif;
+input.pc-save-val {
+  font-family: "Cinzel", serif;
   font-size: 13px;
   font-weight: 600;
   color: var(--text);
@@ -234,10 +317,14 @@
   padding: 0 2px;
   transition: border-color 0.12s;
   cursor: text;
-  font-size: 13px;
 }
-.pc-save-val:hover { border-bottom-color: var(--border); }
-.pc-save-val:focus { outline: none; border-bottom-color: var(--gold-dim); }
+input.pc-save-val:hover {
+  border-bottom-color: var(--border);
+}
+input.pc-save-val:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+}
 
 /* Custom fields */
 .pc-custom-list {
@@ -247,46 +334,60 @@
 }
 
 .pc-custom-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 80px 1fr 16px;
   align-items: center;
   gap: 6px;
   padding: 2px 0;
 }
 
-.pc-custom-name {
-  font-family: 'Cinzel', serif;
+input.pc-custom-name {
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-dim);
-  flex-shrink: 0;
-  min-width: 80px;
   /* inline edit */
   background: transparent;
   border: none;
   border-bottom: 1px solid transparent;
+  border-radius: 0;
   padding: 1px 2px;
   cursor: text;
   transition: border-color 0.12s;
+  width: 100%;
+  overflow: hidden;
 }
-.pc-custom-name:hover { border-bottom-color: var(--border); }
-.pc-custom-name:focus { outline: none; border-bottom-color: var(--gold-dim); }
+input.pc-custom-name:hover {
+  border-bottom-color: var(--border);
+}
+input.pc-custom-name:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+}
 
-.pc-custom-value {
-  flex: 1;
+input.pc-custom-value {
+  width: 100%;
+  overflow: hidden;
   font-size: 13px;
   color: var(--text);
   text-align: right;
   background: transparent;
   border: none;
   border-bottom: 1px solid transparent;
+  border-radius: 0;
   padding: 1px 4px;
   cursor: text;
-  font-family: 'Crimson Pro', Georgia, serif;
+  font-family: "Crimson Pro", Georgia, serif;
   transition: border-color 0.12s;
 }
-.pc-custom-value:hover { border-bottom-color: var(--border); }
-.pc-custom-value:focus { outline: none; border-bottom-color: var(--gold-dim); }
+input.pc-custom-value:hover {
+  border-bottom-color: var(--border);
+}
+input.pc-custom-value:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+}
 
 .pc-custom-del {
   width: 16px;
@@ -304,11 +405,14 @@
   flex-shrink: 0;
   padding: 0;
 }
-.pc-custom-del:hover { color: var(--hostile); background: rgba(184,64,64,0.1); }
+.pc-custom-del:hover {
+  color: var(--hostile);
+  background: rgba(184, 64, 64, 0.1);
+}
 
 /* Add custom field button */
 .pc-add-field {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 8px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -323,7 +427,42 @@
   transition: all 0.15s;
   text-align: center;
 }
-.pc-add-field:hover { border-color: var(--gold-dim); color: var(--gold-dim); }
+.pc-add-field:hover {
+  border-color: var(--gold-dim);
+  color: var(--gold-dim);
+}
+
+/* ── Card collapse ── */
+.pc-collapse-btn {
+  font-size: 12px;
+  color: var(--text-faint);
+  transition:
+    transform 0.2s,
+    color 0.1s;
+  transform-origin: center;
+  line-height: 1;
+}
+.pc-collapse-btn:hover {
+  color: var(--gold-dim);
+}
+.pc-collapse-btn.collapsed {
+  transform: rotate(-90deg);
+}
+
+.pc-card-extra {
+  overflow: hidden;
+  max-height: 600px;
+  transition:
+    max-height 0.25s ease,
+    opacity 0.2s ease;
+  opacity: 1;
+}
+.pc-card-extra.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
 
 /* ── Add PC modal ── */
-.modal-party { width: 360px; }
+.modal-party {
+  width: 360px;
+}

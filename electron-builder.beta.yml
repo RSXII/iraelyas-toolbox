@@ -13,6 +13,8 @@ files:
 
 extraMetadata:
   main: electron/main.js
+  name: "iraelyas-toolbox-beta"
+  productName: "Iraelya's 5e Toolbox Beta"
 
 mac:
   category: public.app-category.entertainment
@@ -43,6 +45,7 @@ nsis:
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: "Iraelya's 5e Toolbox (Beta)"
+  include: assets/installer.beta.nsh
 
 linux:
   icon: assets/icon.png

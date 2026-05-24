@@ -75,6 +75,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Svelte mounts inside #app — extend the body flex column through it */
+#app {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+}
+
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -237,6 +246,11 @@ body {
   background: rgba(180, 60, 60, 0.08);
   border-color: rgba(180, 60, 60, 0.5);
 }
+.btn-danger.active {
+  background: rgba(180, 60, 60, 0.12);
+  border-color: rgba(180, 60, 60, 0.6);
+  color: #e08080;
+}
 
 .btn-sm {
   padding: 4px 9px;
@@ -342,6 +356,13 @@ body {
   flex: 1;
   height: 1px;
   background: var(--border);
+}
+
+.faction-reorder-btns {
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════

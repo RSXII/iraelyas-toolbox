@@ -23,6 +23,7 @@ export interface ToolboxBridge {
   getDataPath: () => Promise<string>;
   openExternal: (url: string) => Promise<void>;
   platform: "darwin" | "win32" | "linux";
+  isBeta: boolean;
 
   // Timeline editor window
   openTimelineEditor: () => Promise<void>;
@@ -34,6 +35,22 @@ export interface ToolboxBridge {
   getEditorContext: () => Promise<EditorContext | null>;
   onTimelineUpdated: (cb: () => void) => void;
   offTimelineUpdated: (cb: () => void) => void;
+
+  // Tree editor window
+  openTreeEditor: () => Promise<void>;
+  getTreeContext: (campaignId: string) => Promise<TreeEditorContext | null>;
+  saveHouse: (
+    campaignId: string,
+    houseId: string,
+    data: HouseData,
+  ) => Promise<{ ok: boolean; error?: string }>;
+  deleteHouse: (
+    campaignId: string,
+    houseId: string,
+  ) => Promise<{ ok: boolean; error?: string }>;
+  pickImage: () => Promise<string | null>;
+  onTreeUpdated: (cb: (campaignId: string) => void) => void;
+  offTreeUpdated: (cb: (campaignId: string) => void) => void;
 }
 
 export interface FileFilter {
@@ -44,6 +61,12 @@ export interface FileFilter {
 export interface EditorContext {
   campaigns: Campaign[];
   activeCampaign: string;
+}
+
+export interface TreeEditorContext {
+  campaigns: Campaign[];
+  activeCampaign: string;
+  houses: Record<string, HouseData>;
 }
 
 // Augment Window so TypeScript knows about the bridge
@@ -65,6 +88,18 @@ export interface Campaign {
 // ═══════════════════════════════════════════════════════════════
 // FAVOR TRACKER
 // ═══════════════════════════════════════════════════════════════
+
+export interface FavorTier {
+  id: string; // stable slug identifier
+  label: string; // display name (e.g. "Hostile")
+  threshold: number; // minimum score for this tier (0–99)
+  color: string; // hex color, e.g. "#b84040"
+}
+
+export interface FavorSettings {
+  tiers: FavorTier[];
+  increment: 1 | 5 | 10 | 25;
+}
 
 export interface NPC {
   id: string;
@@ -127,6 +162,7 @@ export interface HouseData {
   subtitle?: string;
   spine?: SpineConfig;
   layout?: TreeLayoutConfig;
+  colors?: string[];
   members: HouseMember[];
 }
 
@@ -265,6 +301,32 @@ export interface PartyData {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// FACTIONS
+// ═══════════════════════════════════════════════════════════════
+
+export interface FactionRank {
+  id: string;
+  name: string;
+}
+
+export interface FactionMember {
+  pcId: string;
+  rankId: string;
+}
+
+export interface FactionConfig {
+  id: string;
+  factionNpcId: string; // references NPC.id where isFactionHeader === true
+  ranks: FactionRank[];
+  members: FactionMember[];
+  npcRanks: Record<string, string>; // npcId → rankId
+}
+
+export interface FactionsData {
+  factions: FactionConfig[];
+}
+
+// ═══════════════════════════════════════════════════════════════
 // CAMPAIGN DATA (per-campaign bucket)
 // ═══════════════════════════════════════════════════════════════
 
@@ -275,6 +337,8 @@ export interface CampaignData {
   timeline: TimelineData | null;
   tracker: TrackerData;
   party: PartyData;
+  factions: FactionsData;
+  favor?: FavorSettings;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -287,7 +351,8 @@ export type TabId =
   | "tree"
   | "chronicle"
   | "tracker"
-  | "party";
+  | "party"
+  | "factions";
 
 export interface UIState {
   activeCampaign: string;
@@ -295,6 +360,17 @@ export interface UIState {
   activeHouse: string;
   activeTab: TabId;
   convo: ConvoState;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════════════════
+
+export interface ThemeSettings {
+  uiScale: number; // 0.80 – 1.20, applied as CSS zoom on <html>
+  bgColor: string; // hex — base background; surface/card stack derived from this
+  textColor: string; // hex — primary text color (--text)
+  accentColor: string; // hex — accent color; gold scale derived from this
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -306,6 +382,7 @@ export interface AppState {
   campaigns: Campaign[];
   campaignData: Record<string, CampaignData>;
   ui: UIState;
+  theme: ThemeSettings;
 }
 
 // ═══════════════════════════════════════════════════════════════

@@ -4,11 +4,17 @@ import type {
   CampaignData,
   ConvoPC,
   ConvoState,
+  FactionRank,
+  FavorSettings,
+  FavorTier,
+  FactionsData,
   HouseData,
+  HouseMember,
   NPC,
   PlayerData,
   Schema,
   TabId,
+  ThemeSettings,
   TimelineData,
   UIState,
   TrackerData,
@@ -16,6 +22,7 @@ import type {
   PartyData,
   PCCard,
 } from "@/types/index";
+import { DEFAULT_THEME } from "@/utils/theme";
 
 // ═══════════════════════════════════════════════════════════════
 // DEFAULTS
@@ -40,6 +47,26 @@ const DEFAULT_UI: UIState = {
   convo: DEFAULT_CONVO,
 };
 
+export const DEFAULT_FAVOR_TIERS: FavorTier[] = [
+  { id: "hostile", label: "Hostile", threshold: 0, color: "#b84040" },
+  { id: "wary", label: "Wary", threshold: 20, color: "#c08840" },
+  { id: "neutral", label: "Neutral", threshold: 40, color: "#7a7060" },
+  { id: "friendly", label: "Friendly", threshold: 60, color: "#4a8c60" },
+  { id: "allied", label: "Allied", threshold: 80, color: "#4a70b0" },
+];
+
+export const DEFAULT_FAVOR_SETTINGS: FavorSettings = {
+  tiers: DEFAULT_FAVOR_TIERS,
+  increment: 5,
+};
+
+function defaultFavorSettings(): FavorSettings {
+  return {
+    tiers: DEFAULT_FAVOR_TIERS.map((t) => ({ ...t })),
+    increment: 5,
+  };
+}
+
 function defaultCampaignData(): CampaignData {
   return {
     schema: { npcs: [] },
@@ -48,6 +75,8 @@ function defaultCampaignData(): CampaignData {
     timeline: null,
     tracker: { entries: [] },
     party: { pcs: [] },
+    factions: { factions: [] },
+    favor: defaultFavorSettings(),
   };
 }
 
@@ -60,6 +89,7 @@ function defaultState(): AppState {
       ...DEFAULT_UI,
       convo: { ...DEFAULT_CONVO, pcs: [...DEFAULT_CONVO_PCS] },
     },
+    theme: { ...DEFAULT_THEME },
   };
 }
 
@@ -68,7 +98,7 @@ function defaultState(): AppState {
 // ═══════════════════════════════════════════════════════════════
 
 class Store {
-  private _state: AppState = defaultState();
+  private _state = $state<AppState>(defaultState());
   private _dirty = false;
   private _saveTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -89,10 +119,24 @@ class Store {
   /** Run any version migrations needed on loaded data */
   private _migrate(raw: AppState): AppState {
     const s = { ...defaultState(), ...raw };
+    // Ensure theme keys added in later versions are present with defaults
+    s.theme = { ...DEFAULT_THEME, ...raw.theme };
     // Ensure every campaign has a full data bucket
     s.campaigns.forEach((c) => {
       if (!s.campaignData[c.id]) {
         s.campaignData[c.id] = defaultCampaignData();
+      }
+      // Lazy-init factions for older saves that predate this field
+      if (!s.campaignData[c.id].factions) {
+        s.campaignData[c.id].factions = { factions: [] };
+      }
+      // Lazy-init npcRanks on any FactionConfig that predates the field
+      s.campaignData[c.id].factions.factions.forEach((fc) => {
+        if (!fc.npcRanks) fc.npcRanks = {};
+      });
+      // Lazy-init favor settings for saves that predate this field
+      if (!s.campaignData[c.id].favor) {
+        s.campaignData[c.id].favor = defaultFavorSettings();
       }
     });
     // Ensure convo pcs array always has 6 entries
@@ -116,7 +160,9 @@ class Store {
     if (!this._dirty) return;
     this._dirty = false;
     try {
-      await window.toolbox.saveData(this._state);
+      // $state.snapshot() converts the reactive proxy to a plain object
+      // so Electron's IPC structured-clone serialization works correctly
+      await window.toolbox.saveData($state.snapshot(this._state));
     } catch (err) {
       console.error("Store._flush failed:", err);
     }
@@ -226,6 +272,52 @@ class Store {
     this.save();
   }
 
+  // ── Favor settings helpers ────────────────────────────────────
+
+  getFavorSettings(campaignId: string): FavorSettings {
+    return this.getCampaignData(campaignId).favor ?? defaultFavorSettings();
+  }
+
+  setFavorIncrement(campaignId: string, step: 1 | 5 | 10 | 25): void {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.favor) cd.favor = defaultFavorSettings();
+    cd.favor.increment = step;
+    this.save();
+  }
+
+  addFavorTier(campaignId: string, partial: Omit<FavorTier, "id">): void {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.favor) cd.favor = defaultFavorSettings();
+    const id = `tier_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    cd.favor.tiers.push({ id, ...partial });
+    cd.favor.tiers.sort((a, b) => a.threshold - b.threshold);
+    this.save();
+  }
+
+  updateFavorTier(
+    campaignId: string,
+    tierId: string,
+    patch: Partial<Omit<FavorTier, "id">>,
+  ): void {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.favor) cd.favor = defaultFavorSettings();
+    const tier = cd.favor.tiers.find((t) => t.id === tierId);
+    if (!tier) return;
+    if (patch.label !== undefined) tier.label = patch.label;
+    if (patch.threshold !== undefined) tier.threshold = patch.threshold;
+    if (patch.color !== undefined) tier.color = patch.color;
+    cd.favor.tiers.sort((a, b) => a.threshold - b.threshold);
+    this.save();
+  }
+
+  deleteFavorTier(campaignId: string, tierId: string): void {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.favor) return;
+    if (cd.favor.tiers.length <= 1) return; // must keep at least one
+    cd.favor.tiers = cd.favor.tiers.filter((t) => t.id !== tierId);
+    this.save();
+  }
+
   // ── Schema helpers ────────────────────────────────────────────
 
   getSchema(campaignId: string): Schema {
@@ -235,6 +327,26 @@ class Store {
   addNPC(campaignId: string, npc: NPC): void {
     const cd = this.getCampaignData(campaignId);
     if (cd.schema.npcs.find((n) => n.id === npc.id)) return;
+    // Auto-create a faction header if this faction doesn't have one yet
+    if (
+      !npc.isFactionHeader &&
+      !cd.schema.npcs.some(
+        (n) => n.isFactionHeader && n.faction === npc.faction,
+      )
+    ) {
+      const headerId = `faction_header_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
+      const headerNpc: NPC = {
+        id: headerId,
+        name: npc.faction,
+        role: "Faction",
+        faction: npc.faction,
+        isFactionHeader: true,
+      };
+      cd.schema.npcs.push(headerNpc);
+      Object.values(cd.players).forEach((pd) => {
+        if (!(headerId in pd.scores)) pd.scores[headerId] = 50;
+      });
+    }
     cd.schema.npcs.push(npc);
     // Patch all existing players
     Object.values(cd.players).forEach((pd) => {
@@ -249,6 +361,15 @@ class Store {
     Object.values(cd.players).forEach((pd) => {
       delete pd.scores[npcId];
     });
+    this.save();
+  }
+
+  updateNPCRole(campaignId: string, npcId: string, role: string): void {
+    const npc = this.getCampaignData(campaignId).schema.npcs.find(
+      (n) => n.id === npcId,
+    );
+    if (!npc) return;
+    npc.role = role;
     this.save();
   }
 
@@ -294,6 +415,52 @@ class Store {
 
   getHouse(campaignId: string, houseId: string): HouseData | null {
     return this.getCampaignData(campaignId).houses[houseId] ?? null;
+  }
+
+  deleteHouse(campaignId: string, houseId: string): void {
+    const cd = this.getCampaignData(campaignId);
+    delete cd.houses[houseId];
+    if (this._state.ui.activeHouse === houseId) {
+      this._state.ui.activeHouse = Object.keys(cd.houses)[0] ?? "";
+    }
+    this.save();
+  }
+
+  /** Reload just the houses for one campaign from disk (called after tree editor saves). */
+  async refreshHouses(campaignId: string): Promise<void> {
+    const ctx = await window.toolbox.getTreeContext(campaignId);
+    if (!ctx) return;
+    const cd = this.getCampaignData(campaignId);
+    cd.houses = ctx.houses;
+    // No save() — we just synced from disk; saving would race with the editor
+  }
+
+  addMember(campaignId: string, houseId: string, member: HouseMember): void {
+    const house = this.getCampaignData(campaignId).houses[houseId];
+    if (!house) return;
+    house.members.push(member);
+    this.save();
+  }
+
+  updateMember(
+    campaignId: string,
+    houseId: string,
+    memberId: string,
+    updates: Partial<HouseMember>,
+  ): void {
+    const house = this.getCampaignData(campaignId).houses[houseId];
+    if (!house) return;
+    const idx = house.members.findIndex((m) => m.id === memberId);
+    if (idx === -1) return;
+    house.members[idx] = { ...house.members[idx], ...updates };
+    this.save();
+  }
+
+  deleteMember(campaignId: string, houseId: string, memberId: string): void {
+    const house = this.getCampaignData(campaignId).houses[houseId];
+    if (!house) return;
+    house.members = house.members.filter((m) => m.id !== memberId);
+    this.save();
   }
 
   // ── Timeline helpers ──────────────────────────────────────────
@@ -352,6 +519,17 @@ class Store {
 
   setActiveTab(tab: TabId): void {
     this._state.ui.activeTab = tab;
+    this.save();
+  }
+
+  // ── Theme helpers ─────────────────────────────────────────────
+
+  get theme(): ThemeSettings {
+    return this._state.theme;
+  }
+
+  updateTheme(patch: Partial<ThemeSettings>): void {
+    this._state.theme = { ...this._state.theme, ...patch };
     this.save();
   }
 
@@ -426,6 +604,29 @@ class Store {
 
   addPC(campaignId: string, pc: PCCard): void {
     this.getParty(campaignId).pcs.push(pc);
+    // Auto-initialise the favor tracker entry keyed by the PC's GUID
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.players[pc.id]) {
+      cd.players[pc.id] = { player: pc.name, scores: {} };
+      cd.schema.npcs.forEach((n) => {
+        cd.players[pc.id].scores[n.id] = 50;
+      });
+    }
+    this.save();
+  }
+
+  removeFavorPlayer(campaignId: string, pcId: string): void {
+    const cd = this.getCampaignData(campaignId);
+    delete cd.players[pcId];
+    this.save();
+  }
+
+  syncConvoPCsFromParty(campaignId: string): void {
+    const pcs = this.getParty(campaignId).pcs.slice(0, 6);
+    pcs.forEach((pc, i) => {
+      this._state.ui.convo.pcs[i].name = pc.name;
+    });
+    this._state.ui.convo.pcCount = Math.max(1, pcs.length);
     this.save();
   }
 
@@ -439,6 +640,138 @@ class Store {
   deletePC(campaignId: string, pcId: string): void {
     const party = this.getParty(campaignId);
     party.pcs = party.pcs.filter((p) => p.id !== pcId);
+    this.save();
+  }
+
+  // ── Factions helpers ─────────────────────────────────────────────
+
+  getFactions(campaignId: string): FactionsData {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.factions) cd.factions = { factions: [] };
+    return cd.factions;
+  }
+
+  addFactionConfig(campaignId: string, factionNpcId: string): void {
+    const fd = this.getFactions(campaignId);
+    if (fd.factions.find((fc) => fc.factionNpcId === factionNpcId)) return;
+    const id = `fc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    fd.factions.push({
+      id,
+      factionNpcId,
+      ranks: [],
+      members: [],
+      npcRanks: {},
+    });
+    this.save();
+  }
+
+  removeFactionConfig(campaignId: string, factionId: string): void {
+    const fd = this.getFactions(campaignId);
+    fd.factions = fd.factions.filter((fc) => fc.id !== factionId);
+    this.save();
+  }
+
+  moveFactionConfig(
+    campaignId: string,
+    factionId: string,
+    direction: "up" | "down",
+  ): void {
+    const fd = this.getFactions(campaignId);
+    const idx = fd.factions.findIndex((fc) => fc.id === factionId);
+    if (idx === -1) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= fd.factions.length) return;
+    [fd.factions[idx], fd.factions[swapIdx]] = [
+      fd.factions[swapIdx],
+      fd.factions[idx],
+    ];
+    this.save();
+  }
+
+  setFactionRanks(
+    campaignId: string,
+    factionId: string,
+    ranks: FactionRank[],
+  ): void {
+    const fc = this.getFactions(campaignId).factions.find(
+      (f) => f.id === factionId,
+    );
+    if (!fc) return;
+    const validIds = new Set(ranks.map((r) => r.id));
+    // Reset any PC member whose rankId no longer exists
+    fc.members.forEach((m) => {
+      if (m.rankId && !validIds.has(m.rankId)) m.rankId = "";
+    });
+    // Remove any NPC rank entries whose rankId no longer exists
+    if (fc.npcRanks) {
+      for (const npcId of Object.keys(fc.npcRanks)) {
+        if (!validIds.has(fc.npcRanks[npcId])) delete fc.npcRanks[npcId];
+      }
+    }
+    fc.ranks = ranks;
+    this.save();
+  }
+
+  addFactionMember(
+    campaignId: string,
+    factionId: string,
+    pcId: string,
+    rankId: string,
+  ): void {
+    const fc = this.getFactions(campaignId).factions.find(
+      (f) => f.id === factionId,
+    );
+    if (!fc) return;
+    if (fc.members.find((m) => m.pcId === pcId)) return;
+    fc.members.push({ pcId, rankId });
+    this.save();
+  }
+
+  setMemberRank(
+    campaignId: string,
+    factionId: string,
+    pcId: string,
+    rankId: string,
+  ): void {
+    const fc = this.getFactions(campaignId).factions.find(
+      (f) => f.id === factionId,
+    );
+    if (!fc) return;
+    const member = fc.members.find((m) => m.pcId === pcId);
+    if (!member) return;
+    member.rankId = rankId;
+    this.save();
+  }
+
+  removeFactionMember(
+    campaignId: string,
+    factionId: string,
+    pcId: string,
+  ): void {
+    const fc = this.getFactions(campaignId).factions.find(
+      (f) => f.id === factionId,
+    );
+    if (!fc) return;
+    fc.members = fc.members.filter((m) => m.pcId !== pcId);
+    this.save();
+  }
+
+  setNPCRank(
+    campaignId: string,
+    factionId: string,
+    npcId: string,
+    rankId: string,
+  ): void {
+    const fc = this.getFactions(campaignId).factions.find(
+      (f) => f.id === factionId,
+    );
+    if (!fc) return;
+    if (!fc.npcRanks) fc.npcRanks = {};
+    if (rankId) {
+      fc.npcRanks[npcId] = rankId;
+    } else {
+      delete fc.npcRanks[npcId];
+    }
     this.save();
   }
 

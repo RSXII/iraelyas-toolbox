@@ -19,7 +19,7 @@
 }
 
 .tree-house-label {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 10px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -27,11 +27,25 @@
 }
 
 .tree-title {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--gold-pale);
   letter-spacing: 0.06em;
+}
+
+.tree-house-colors {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.tree-color-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
 }
 
 .tree-toolbar-right {
@@ -50,7 +64,9 @@
   user-select: none;
   background: var(--bg);
 }
-.tree-wrap.dragging { cursor: grabbing; }
+.tree-wrap.dragging {
+  cursor: grabbing;
+}
 
 #tree-svg-container {
   position: absolute;
@@ -77,10 +93,12 @@
   line-height: 1.65;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.7);
 }
-.tree-tip.show { opacity: 1; }
+.tree-tip.show {
+  opacity: 1;
+}
 
 .tip-name {
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 10px;
   color: var(--gold);
   letter-spacing: 0.06em;
@@ -111,7 +129,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-family: 'Cinzel', serif;
+  font-family: "Cinzel", serif;
   font-size: 9px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
