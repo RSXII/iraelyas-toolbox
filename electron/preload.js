@@ -36,6 +36,8 @@ contextBridge.exposeInMainWorld("toolbox", {
 
   openExternal: (url) => ipcRenderer.invoke("open-external", url),
 
+  checkForUpdate: () => ipcRenderer.invoke("check-for-update"),
+
   // ── Timeline editor window ─────────────────────────────────────
   /** Open (or focus) the always-on-top timeline editor window */
   openTimelineEditor: () => ipcRenderer.invoke("open-timeline-editor"),

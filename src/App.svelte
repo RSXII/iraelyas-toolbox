@@ -6,6 +6,7 @@
   import type { TabId, Campaign, AppState, Schema, HouseData, TimelineData } from '@/types/index';
   import Toast from '@/components/ui/Toast.svelte';
   import ThemeModal from '@/components/ui/ThemeModal.svelte';
+  import Banner from '@/components/ui/Banner.svelte';
   import ConvoTab from '@/components/tabs/ConvoTab.svelte';
   import PartyTab from '@/components/tabs/PartyTab.svelte';
   import TrackerTab from '@/components/tabs/TrackerTab.svelte';
@@ -17,6 +18,12 @@
   // ─── App state ────────────────────────────────────────────────
   let showMigrationOverlay = $state(true);
   let activeTab = $state<TabId>('favor');  let showTheme = $state(false);
+
+  // ─── Banners ──────────────────────────────────────────────────
+  let backupIsStale = $state(false);
+  let backupWarnDismissed = $state(false);
+  let updateAvailableVersion = $state<string | null>(null);
+  let updateDismissed = $state(false);
 
   // ─── Theme ──────────────────────────────────────────────
   $effect(() => { applyTheme(store.theme); });
@@ -115,7 +122,11 @@
   // ─── Backup ───────────────────────────────────────────────────
   async function exportBackup(): Promise<void> {
     const result = await window.toolbox.exportFile('toolbox_backup.json', store.toJSON());
-    if (result.ok) showToast('Backup exported');
+    if (result.ok) {
+      localStorage.setItem('lastBackupDate', Date.now().toString());
+      backupIsStale = false;
+      showToast('Backup exported');
+    }
   }
 
   async function importBackup(): Promise<void> {
@@ -290,6 +301,19 @@
     if (hasData && store.campaigns.length > 0) {
       boot();
     }
+
+    // Backup staleness check
+    const lastBackup = localStorage.getItem('lastBackupDate');
+    const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+    backupIsStale = !lastBackup || (Date.now() - parseInt(lastBackup, 10)) > WEEK_MS;
+
+    // Update check
+    try {
+      const update = await window.toolbox.checkForUpdate();
+      if (update.available && update.latestVersion) {
+        updateAvailableVersion = update.latestVersion;
+      }
+    } catch { /* no network or API error — fail silently */ }
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -490,6 +514,26 @@
     <button class="btn btn-sm btn-danger-subtle" onclick={openDangerOverlay}>⚠ Danger Zone</button>
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     BANNERS
+═══════════════════════════════════════════════════════════════ -->
+{#if !showMigrationOverlay && backupIsStale && !backupWarnDismissed}
+<Banner
+  type="warning"
+  message="It's been over a week since your last backup — your data is at risk."
+  action={{ text: 'Export Now', onclick: exportBackup }}
+  ondismiss={() => { backupWarnDismissed = true; }}
+/>
+{/if}
+{#if !showMigrationOverlay && updateAvailableVersion && !updateDismissed}
+<Banner
+  type="info"
+  message="Version {updateAvailableVersion} is available."
+  action={{ text: 'Download', onclick: () => window.toolbox.openExternal('https://github.com/RSXII/iraelyas-toolbox/releases') }}
+  ondismiss={() => { updateDismissed = true; }}
+/>
+{/if}
 
 <!-- ═══════════════════════════════════════════════════════════════
      TAB NAV
