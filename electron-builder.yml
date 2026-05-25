@@ -25,7 +25,7 @@ mac:
   darkModeSupport: true
 
 dmg:
-  title: "Iraelya's 5e Toolbox"
+  title: "Iraelyas 5e Toolbox"
   background: null
   window:
     width: 540
