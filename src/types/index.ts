@@ -22,6 +22,7 @@ export interface ToolboxBridge {
   getVersion: () => Promise<string>;
   getDataPath: () => Promise<string>;
   openExternal: (url: string) => Promise<void>;
+  checkForUpdate: () => Promise<{ available: boolean; latestVersion?: string }>;
   platform: "darwin" | "win32" | "linux";
   isBeta: boolean;
 

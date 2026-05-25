@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const https = require("https");
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const IS_DEV = process.env.NODE_ENV === "development" || !app.isPackaged;
@@ -373,3 +374,50 @@ ipcMain.handle("open-external", (_event, url) => {
 
 // ─── IPC: userData path (for displaying to user in settings later) ────────────
 ipcMain.handle("get-data-path", () => app.getPath("userData"));
+
+// ─── IPC: Update check ───────────────────────────────────────────────────────
+function isNewerVersion(current, latest) {
+  const parse = (v) => v.replace(/^v/, "").split(".").map(Number);
+  const c = parse(current);
+  const l = parse(latest);
+  for (let i = 0; i < 3; i++) {
+    if ((l[i] ?? 0) > (c[i] ?? 0)) return true;
+    if ((l[i] ?? 0) < (c[i] ?? 0)) return false;
+  }
+  return false;
+}
+
+ipcMain.handle("check-for-update", () => {
+  return new Promise((resolve) => {
+    const options = {
+      hostname: "api.github.com",
+      path: "/repos/RSXII/iraelyas-toolbox/releases/latest",
+      headers: { "User-Agent": "iraelyas-toolbox" },
+    };
+    const req = https.get(options, (res) => {
+      let data = "";
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
+      res.on("end", () => {
+        try {
+          const json = JSON.parse(data);
+          const latestVersion = json.tag_name ?? null;
+          if (!latestVersion) {
+            resolve({ available: false });
+            return;
+          }
+          const available = isNewerVersion(app.getVersion(), latestVersion);
+          resolve({ available, latestVersion });
+        } catch {
+          resolve({ available: false });
+        }
+      });
+    });
+    req.on("error", () => resolve({ available: false }));
+    req.setTimeout(5000, () => {
+      req.destroy();
+      resolve({ available: false });
+    });
+  });
+});

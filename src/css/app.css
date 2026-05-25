@@ -203,6 +203,73 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   BANNERS
+═══════════════════════════════════════════════════════════════ */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 20px;
+  height: 36px;
+  flex-shrink: 0;
+  font-size: 13px;
+  border-bottom: 1px solid transparent;
+}
+
+.banner-warning {
+  background: rgba(192, 136, 64, 0.12);
+  border-color: rgba(192, 136, 64, 0.25);
+  color: #e0b060;
+}
+
+.banner-info {
+  background: rgba(201, 168, 76, 0.07);
+  border-color: var(--border);
+  color: var(--gold-pale);
+}
+
+.banner-message {
+  flex: 1;
+  font-style: italic;
+}
+
+.banner-action {
+  background: none;
+  border: 1px solid currentColor;
+  color: inherit;
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.banner-action:hover {
+  opacity: 1;
+}
+
+.banner-dismiss {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0.4;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: opacity 0.15s;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.banner-dismiss:hover {
+  opacity: 0.9;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    BUTTONS
 ═══════════════════════════════════════════════════════════════ */
 .btn {
