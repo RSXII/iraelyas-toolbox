@@ -15,6 +15,7 @@
   import TreeTab from '@/components/tabs/TreeTab.svelte';
   import FactionsTab from '@/components/tabs/FactionsTab.svelte';
   import InitiativeTab from '@/components/tabs/InitiativeTab.svelte';
+  import DiceTab from '@/components/tabs/DiceTab.svelte';
 
   // ─── App state ────────────────────────────────────────────────
   let showMigrationOverlay = $state(true);
@@ -602,6 +603,14 @@
   >
     <span class="tab-icon">⚔</span> Party
   </button>
+  <button
+    class="tab-btn"
+    class:active={activeTab === 'dice'}
+    id="tab-dice"
+    onclick={() => switchTab('dice')}
+  >
+    <span class="tab-icon">🎲</span> Dice Roller
+  </button>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -632,6 +641,9 @@
 
   <!-- ── INITIATIVE TRACKER ── -->
   <InitiativeTab active={activeTab === 'initiative'} />
+
+  <!-- ── DICE ROLLER ── -->
+  <DiceTab active={activeTab === 'dice'} />
 
 </div>
 <!-- /content-area -->

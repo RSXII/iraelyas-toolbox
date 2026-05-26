@@ -365,7 +365,8 @@ export type TabId =
   | "tracker"
   | "party"
   | "factions"
-  | "initiative";
+  | "initiative"
+  | "dice";
 
 export interface UIState {
   activeCampaign: string;
