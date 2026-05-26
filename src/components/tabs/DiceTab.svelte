@@ -29,17 +29,59 @@
 
   const DICE_TYPES: DiceType[] = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100'];
 
+  type SaveType = 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha';
+  const SAVE_TYPES: { key: SaveType; label: string }[] = [
+    { key: 'str', label: 'STR' }, { key: 'dex', label: 'DEX' },
+    { key: 'con', label: 'CON' }, { key: 'int', label: 'INT' },
+    { key: 'wis', label: 'WIS' }, { key: 'cha', label: 'CHA' },
+  ];
+
   let selectedDice     = $state<DiceType>('d20');
   let quantity         = $state(1);
   let modifier         = $state(0);
   let mode             = $state<AdvMode>('none');
   let selectedTargetId = $state('');
   let history          = $state<RollResult[]>([]);
+  let spellSaveMode    = $state(false);
+  let spellDC          = $state(13);
+  let selectedSaveType = $state<SaveType>('dex');
 
-  const partyPCs        = $derived(store.activeCampaignId ? store.getParty(store.activeCampaignId).pcs : []);
-  const showAdvDis      = $derived(selectedDice === 'd20');
+  const partyPCs         = $derived(store.activeCampaignId ? store.getParty(store.activeCampaignId).pcs : []);
+  const showAdvDis       = $derived(selectedDice === 'd20');
   const showTargetSelect = $derived(selectedDice === 'd20' && partyPCs.length > 0);
-  const displayQty      = $derived(mode !== 'none' ? 1 : quantity);
+  const displayQty       = $derived(mode !== 'none' ? 1 : quantity);
+
+  const percentToHit = $derived.by((): string => {
+    if (!selectedTargetId) return '';
+    const target = partyPCs.find(p => p.id === selectedTargetId);
+    if (!target) return '';
+    const acVal = parseInt(target.ac);
+    if (!target.ac || isNaN(acVal)) return '';
+    const neededRoll = acVal - modifier;
+    const hitFaces   = Math.max(0, Math.min(20, 21 - neededRoll));
+    let pct: number;
+    if (mode === 'advantage') {
+      const missFaces = Math.max(0, Math.min(20, neededRoll - 1));
+      pct = (1 - (missFaces / 20) ** 2) * 100;
+    } else if (mode === 'disadvantage') {
+      pct = ((hitFaces / 20) ** 2) * 100;
+    } else {
+      pct = (hitFaces / 20) * 100;
+    }
+    // D&D 5e: nat 1 always misses, nat 20 always hits
+    return Math.round(Math.max(5, Math.min(95, pct))) + '%';
+  });
+
+  const saveResults = $derived.by(() =>
+    partyPCs.map(pc => {
+      const rawSave = pc.saves[selectedSaveType];
+      const saveBonus = parseInt(rawSave);
+      const hasBonus = rawSave !== undefined && rawSave !== '' && !isNaN(saveBonus);
+      if (!hasBonus) return { id: pc.id, name: pc.name, bonus: null as number | null, pct: null as number | null };
+      const successFaces = Math.max(0, Math.min(20, 21 - spellDC + saveBonus));
+      return { id: pc.id, name: pc.name, bonus: saveBonus, pct: Math.round((successFaces / 20) * 100) };
+    })
+  );
 
   const formulaDisplay = $derived(
     mode !== 'none'
@@ -48,6 +90,7 @@
   );
 
   function selectDice(d: DiceType): void {
+    spellSaveMode = false;
     selectedDice = d;
     if (d !== 'd20') {
       mode = 'none';
@@ -135,13 +178,19 @@
       {#each DICE_TYPES as d}
         <button
           class="die-btn"
-          class:active={selectedDice === d}
+          class:active={!spellSaveMode && selectedDice === d}
           onclick={() => selectDice(d)}
         >{d}</button>
       {/each}
+      <button
+        class="die-btn spell-save-btn"
+        class:active={spellSaveMode}
+        onclick={() => { spellSaveMode = true; }}
+      >Spell Save</button>
     </div>
 
-    <!-- ── Roll Configuration ──────────────────── -->
+    {#if !spellSaveMode}
+    <!-- ── Roll Configuration ──────────────────────── -->
     <div class="dice-config-row">
 
       <div class="dice-field">
@@ -210,6 +259,9 @@
             <option value={pc.id}>{pc.name}</option>
           {/each}
         </select>
+        {#if percentToHit}
+          <div class="pct-to-hit">% to Hit: <span class="pct-value">{percentToHit}</span></div>
+        {/if}
       </div>
       {/if}
 
@@ -272,6 +324,49 @@
           <span class="hist-time">{new Date(r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
       {/each}
+    </div>
+    {/if}
+
+    {:else}
+    <!-- ── Spell Save Panel ─────────────────────────── -->
+    <div class="spell-save-section">
+      <div class="dice-section-label">Save Type</div>
+      <div class="save-type-row">
+        {#each SAVE_TYPES as st}
+          <button class="save-type-btn" class:active={selectedSaveType === st.key}
+            onclick={() => { selectedSaveType = st.key; }}>{st.label}</button>
+        {/each}
+      </div>
+      <div class="dice-config-row">
+        <div class="dice-field">
+          <label class="field-label" for="spell-dc">Spell DC</label>
+          <div class="mod-row">
+            <input id="spell-dc" class="mod-input" type="number" bind:value={spellDC} min="1" max="30" />
+            <button class="mod-inc-btn" onclick={() => { spellDC = Math.min(30, spellDC + 1); }}>+1</button>
+            <button class="mod-inc-btn" onclick={() => { spellDC = Math.min(30, spellDC + 5); }}>+5</button>
+            <button class="mod-inc-btn mod-clear-btn" onclick={() => { spellDC = 13; }}>Reset</button>
+          </div>
+        </div>
+      </div>
+      {#if partyPCs.length === 0}
+        <div class="empty-state">No party members — add them in the Party tab.</div>
+      {:else}
+        <div class="dice-section-label">Success Chance by Member</div>
+        <div class="save-results">
+          {#each saveResults as r}
+          <div class="save-result-row">
+            <span class="save-name">{r.name}</span>
+            {#if r.bonus === null}
+              <span class="save-bonus save-bonus--empty">not set</span>
+              <span class="save-pct save-pct--empty">—</span>
+            {:else}
+              <span class="save-bonus">{r.bonus >= 0 ? '+' : ''}{r.bonus}</span>
+              <span class="save-pct save-pct--{(r.pct ?? 0) >= 60 ? 'high' : (r.pct ?? 0) > 35 ? 'mid' : 'low'}">{r.pct}%</span>
+            {/if}
+          </div>
+          {/each}
+        </div>
+      {/if}
     </div>
     {/if}
 

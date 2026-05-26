@@ -60,6 +60,15 @@
   color: var(--gold-pale);
   background: var(--gold-glow);
 }
+.spell-save-btn {
+  min-width: 96px;
+  width: auto;
+}
+.spell-save-btn.active {
+  border-color: #7a60b8;
+  color: #c4aff0;
+  background: rgba(122, 96, 184, 0.12);
+}
 
 /* ── Config row ─────────────────────────────────────────────── */
 .dice-config-row {
@@ -382,6 +391,19 @@
   outline: none;
 }
 
+.pct-to-hit {
+  margin-top: 5px;
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.pct-value {
+  color: var(--gold-pale);
+  font-weight: 600;
+}
+
 /* ── AC outcome badge ───────────────────────────────────────── */
 .ac-warning {
   margin-top: 0.625rem;
@@ -448,4 +470,97 @@
 .hist-ac--warn {
   color: var(--wary);
   font-size: 13px;
+}
+
+/* ── Spell Save panel ───────────────────────────────────────── */
+.spell-save-section {
+  padding-top: 0.25rem;
+}
+
+.save-type-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1.5rem;
+}
+.save-type-btn {
+  flex: 1;
+  padding: 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+.save-type-btn:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+  background: var(--card-hover);
+}
+.save-type-btn.active {
+  border-color: #7a60b8;
+  color: #c4aff0;
+  background: rgba(122, 96, 184, 0.15);
+}
+
+/* Save results table */
+.save-results {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.save-result-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.save-result-row:last-child {
+  border-bottom: none;
+}
+.save-name {
+  font-family: "Crimson Pro", serif;
+  font-size: 14px;
+  color: var(--text);
+}
+.save-bonus {
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  color: var(--text-dim);
+  min-width: 28px;
+  text-align: right;
+}
+.save-bonus--empty {
+  color: var(--text-faint);
+  font-size: 11px;
+}
+.save-pct {
+  font-family: "Cinzel", serif;
+  font-size: 14px;
+  font-weight: 700;
+  min-width: 40px;
+  text-align: right;
+}
+.save-pct--high {
+  color: var(--friendly);
+}
+.save-pct--mid {
+  color: var(--wary);
+}
+.save-pct--low {
+  color: var(--hostile);
+}
+.save-pct--empty {
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 400;
 }
