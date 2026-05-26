@@ -346,6 +346,17 @@ export interface CampaignData {
 // UI STATE
 // ═══════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════
+// INITIATIVE TRACKER
+// ═══════════════════════════════════════════════════════════════
+
+export interface InitiativeEntry {
+  id: string;
+  name: string;
+  roll: number;
+  type: "pc" | "friendly" | "enemy";
+}
+
 export type TabId =
   | "favor"
   | "convo"
@@ -353,7 +364,8 @@ export type TabId =
   | "chronicle"
   | "tracker"
   | "party"
-  | "factions";
+  | "factions"
+  | "initiative";
 
 export interface UIState {
   activeCampaign: string;

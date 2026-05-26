@@ -14,6 +14,7 @@
   import ChronicleTab from '@/components/tabs/ChronicleTab.svelte';
   import TreeTab from '@/components/tabs/TreeTab.svelte';
   import FactionsTab from '@/components/tabs/FactionsTab.svelte';
+  import InitiativeTab from '@/components/tabs/InitiativeTab.svelte';
 
   // ─── App state ────────────────────────────────────────────────
   let showMigrationOverlay = $state(true);
@@ -556,8 +557,14 @@
     <span class="tab-icon">🛄</span> Factions
   </button>
   <button
-    class="tab-btn"
-    class:active={activeTab === 'convo'}
+    class="tab-btn"    class:active={activeTab === 'initiative'}
+    id="tab-initiative"
+    onclick={() => switchTab('initiative')}
+  >
+    <span class="tab-icon">⚡</span> Initiative
+  </button>
+  <button
+    class="tab-btn"    class:active={activeTab === 'convo'}
     id="tab-convo"
     onclick={() => switchTab('convo')}
   >
@@ -622,6 +629,9 @@
 
   <!-- ── FACTION MEMBERSHIPS ── -->
   <FactionsTab active={activeTab === 'factions'} />
+
+  <!-- ── INITIATIVE TRACKER ── -->
+  <InitiativeTab active={activeTab === 'initiative'} />
 
 </div>
 <!-- /content-area -->
