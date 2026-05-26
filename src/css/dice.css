@@ -1,0 +1,451 @@
+/* ═══════════════════════════════════════════════════════════════
+   DICE ROLLER
+═══════════════════════════════════════════════════════════════ */
+
+#panel-dice {
+  padding: 1.5rem 2rem 3rem;
+}
+
+.dice-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Section label ──────────────────────────────────────────── */
+.dice-section-label {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 0.75rem;
+}
+
+/* ── Die type buttons ───────────────────────────────────────── */
+.dice-type-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+.die-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  font-family: "Cinzel", serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+.die-btn:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+  background: var(--card-hover);
+}
+.die-btn.active {
+  border-color: var(--gold);
+  color: var(--gold-pale);
+  background: var(--gold-glow);
+}
+
+/* ── Config row ─────────────────────────────────────────────── */
+.dice-config-row {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+.dice-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Quantity stepper */
+.qty-control {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.qty-btn {
+  width: 34px;
+  height: 36px;
+  background: var(--surface);
+  border: none;
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+  line-height: 1;
+}
+.qty-btn:hover:not(:disabled) {
+  background: var(--card-hover);
+}
+.qty-btn:disabled {
+  color: var(--text-faint);
+  cursor: default;
+}
+.qty-value {
+  min-width: 36px;
+  text-align: center;
+  font-family: "Cinzel", serif;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--card);
+  line-height: 36px;
+  padding: 0 4px;
+}
+
+/* Modifier input */
+.mod-input {
+  width: 84px;
+  height: 36px;
+  text-align: center;
+  font-family: "Cinzel", serif;
+  font-size: 15px;
+}
+.mod-input::-webkit-inner-spin-button,
+.mod-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.mod-input {
+  -moz-appearance: textfield;
+}
+
+.mod-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mod-inc-btn {
+  height: 36px;
+  padding: 0 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+  white-space: nowrap;
+}
+.mod-inc-btn:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+  background: var(--card-hover);
+}
+.mod-clear-btn {
+  color: var(--text-faint);
+}
+.mod-clear-btn:hover {
+  color: var(--hostile);
+  border-color: var(--hostile);
+  background: rgba(184, 64, 64, 0.1);
+}
+
+/* Advantage / Disadvantage segmented toggle */
+.adv-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.adv-btn {
+  padding: 6px 14px;
+  background: var(--surface);
+  border: none;
+  border-right: 1px solid var(--border);
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition:
+    background 0.1s,
+    color 0.1s;
+  line-height: 24px;
+}
+.adv-btn:last-child {
+  border-right: none;
+}
+.adv-btn.active {
+  background: var(--card);
+  color: var(--text);
+}
+.adv-btn--adv.active {
+  color: var(--friendly);
+  background: rgba(74, 140, 96, 0.15);
+}
+.adv-btn--dis.active {
+  color: var(--hostile);
+  background: rgba(184, 64, 64, 0.15);
+}
+
+/* ── Roll area ──────────────────────────────────────────────── */
+.dice-roll-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.75rem;
+}
+
+.formula-preview {
+  font-family: "Cinzel", serif;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  color: var(--gold-dim);
+}
+
+.dice-roll-btn {
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  padding: 10px 48px;
+}
+
+/* ── Last result card ───────────────────────────────────────── */
+.dice-result-card {
+  border: 1px solid var(--gold-dim);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 1.5rem 1.25rem 1.25rem;
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.dice-total {
+  font-family: "Cinzel", serif;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--gold-pale);
+  margin-bottom: 0.875rem;
+}
+
+.dice-faces {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.625rem;
+}
+
+.die-face {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  font-family: "Cinzel", serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  transition:
+    border-color 0.1s,
+    color 0.1s;
+}
+.die-face--kept {
+  border-color: var(--gold);
+  color: var(--gold-pale);
+  background: var(--gold-glow);
+}
+.die-face--dropped {
+  opacity: 0.35;
+}
+
+.die-modifier {
+  font-family: "Cinzel", serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gold-dim);
+  padding: 0 2px;
+}
+
+.dice-result-label {
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+}
+
+/* ── History ────────────────────────────────────────────────── */
+.dice-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.dice-history {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.dice-history-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.dice-history-row:last-child {
+  border-bottom: none;
+}
+.dice-history-row:first-child {
+  background: rgba(201, 168, 76, 0.05);
+}
+
+.hist-formula {
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+.hist-rolls {
+  font-family: "Crimson Pro", serif;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.hist-total {
+  font-family: "Cinzel", serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-pale);
+  min-width: 28px;
+  text-align: right;
+}
+.hist-time {
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  min-width: 48px;
+  text-align: right;
+}
+
+/* ── Target select ──────────────────────────────────────────── */
+.target-select {
+  height: 36px;
+  min-width: 160px;
+  padding: 0 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.target-select:hover,
+.target-select:focus {
+  border-color: var(--border-h);
+  outline: none;
+}
+
+/* ── AC outcome badge ───────────────────────────────────────── */
+.ac-warning {
+  margin-top: 0.625rem;
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--wary);
+}
+
+.ac-outcome {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: 0.75rem;
+  padding: 8px 24px;
+  border-radius: var(--radius);
+  font-family: "Cinzel", serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+.ac-outcome--hit {
+  color: var(--friendly);
+  background: rgba(74, 140, 96, 0.12);
+  border: 1px solid rgba(74, 140, 96, 0.3);
+}
+.ac-outcome--miss {
+  color: var(--hostile);
+  background: rgba(184, 64, 64, 0.12);
+  border: 1px solid rgba(184, 64, 64, 0.3);
+}
+.ac-outcome--meet {
+  color: var(--gold-pale);
+  background: var(--gold-glow);
+  border: 1px solid var(--gold-dim);
+}
+
+.ac-outcome-sub {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  opacity: 0.75;
+}
+
+/* ── History AC column ──────────────────────────────────────── */
+.hist-ac {
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  min-width: 36px;
+  text-align: center;
+}
+.hist-ac--hit {
+  color: var(--friendly);
+}
+.hist-ac--miss {
+  color: var(--hostile);
+}
+.hist-ac--meet {
+  color: var(--gold-pale);
+}
+.hist-ac--warn {
+  color: var(--wary);
+  font-size: 13px;
+}
