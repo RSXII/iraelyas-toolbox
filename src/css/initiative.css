@@ -1,0 +1,336 @@
+/* ═══════════════════════════════════════════════════════════════
+   INITIATIVE TRACKER
+═══════════════════════════════════════════════════════════════ */
+#panel-initiative {
+  padding: 1.5rem 2rem 3rem;
+}
+
+.init-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Current turn banner ── */
+.init-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  background: var(--card);
+  border: 1px solid var(--border-h);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+}
+
+.init-current-display {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.init-current-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.init-current-name {
+  font-family: "Cinzel", serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--gold-pale);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.init-current-empty {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ── Arrow buttons ── */
+.init-arrow-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--gold);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+  padding: 0;
+  user-select: none;
+}
+.init-arrow-btn:hover:not(:disabled) {
+  border-color: var(--gold);
+  background: var(--gold-glow);
+}
+.init-arrow-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ── Toolbar ── */
+.init-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  align-items: center;
+}
+
+/* ── Green button (Add PC) ── */
+.btn-green {
+  color: #5fc47a;
+  border-color: rgba(64, 160, 90, 0.5);
+  background: rgba(64, 160, 90, 0.06);
+}
+.btn-green:hover {
+  border-color: #40a05a;
+  background: rgba(64, 160, 90, 0.14);
+  color: #7ade94;
+}
+
+/* ── Blue button (Add Friendly NPC) ── */
+.btn-blue {
+  color: #7aaae0;
+  border-color: rgba(90, 140, 200, 0.5);
+  background: rgba(90, 140, 200, 0.06);
+}
+.btn-blue:hover {
+  border-color: #5a8cc8;
+  background: rgba(90, 140, 200, 0.14);
+  color: #9bbfec;
+}
+
+/* ── Enemy count picker ── */
+.init-count-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.init-count-btn {
+  flex: 1;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 10px 0;
+}
+
+/* ── Enemy name+roll rows ── */
+.init-enemy-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.init-enemy-name {
+  width: 100%;
+}
+
+.init-enemy-roll {
+  width: 100%;
+}
+
+/* ── Empty state with prefill button ── */
+.init-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 1.5rem 0;
+}
+
+/* ── Hide number input spinners ── */
+#panel-initiative input[type="number"]::-webkit-inner-spin-button,
+#panel-initiative input[type="number"]::-webkit-outer-spin-button,
+.init-modal input[type="number"]::-webkit-inner-spin-button,
+.init-modal input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+#panel-initiative input[type="number"],
+.init-modal input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* ── Combatant list ── */
+.init-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ── Combatant card ── */
+.init-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.15s;
+}
+.init-card:hover {
+  border-color: var(--border-h);
+}
+.init-card.active-turn {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 1px var(--gold);
+}
+.init-card.init-type-pc {
+  border-left: 3px solid rgba(64, 160, 90, 0.6);
+}
+.init-card.init-type-friendly {
+  border-left: 3px solid rgba(90, 140, 200, 0.6);
+}
+.init-card.init-type-enemy {
+  border-left: 3px solid rgba(184, 64, 64, 0.6);
+}
+.init-card.init-type-pc.active-turn {
+  border-left-color: #40a05a;
+}
+.init-card.init-type-friendly.active-turn {
+  border-left-color: #5a8cc8;
+}
+.init-card.init-type-enemy.active-turn {
+  border-left-color: var(--hostile);
+}
+
+/* ── Roll column ── */
+.init-roll-col {
+  flex-shrink: 0;
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.init-roll {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--gold-pale);
+  font-family: monospace;
+  font-size: 16px;
+  font-weight: 600;
+  width: 44px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    background 0.12s;
+  padding: 0;
+}
+.init-roll:hover {
+  border-color: var(--gold);
+  background: var(--gold-glow);
+}
+
+.init-roll-input {
+  width: 44px;
+  height: 32px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  color: var(--gold-pale);
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 0 4px;
+}
+.init-roll-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--gold);
+}
+
+/* ── Name + badge ── */
+.init-name-col {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.init-name {
+  font-size: 14px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.init-type-badge {
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.init-card.init-type-pc .init-type-badge {
+  border-color: rgba(64, 160, 90, 0.5);
+  color: #5fc47a;
+}
+.init-card.init-type-friendly .init-type-badge {
+  border-color: rgba(90, 140, 200, 0.5);
+  color: #7aaae0;
+}
+.init-card.init-type-enemy .init-type-badge {
+  border-color: rgba(184, 64, 64, 0.5);
+  color: #d46060;
+}
+
+/* ── Remove button ── */
+.init-remove-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    color 0.12s,
+    background 0.12s;
+}
+.init-remove-btn:hover {
+  color: var(--hostile);
+  background: rgba(184, 64, 64, 0.12);
+}
