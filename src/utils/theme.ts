@@ -7,7 +7,7 @@ import type { ThemeSettings } from "@/types/index";
 /** Matches the current :root values in app.css exactly */
 export const DEFAULT_THEME: ThemeSettings = {
   uiScale: 1.0,
-  bgColor: "#09090b",
+  bgColor: "#111115",
   textColor: "#e2d8c8",
   accentColor: "#c9a84c",
 };
@@ -117,14 +117,24 @@ export function applyTheme(theme: ThemeSettings): void {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (root.style as any).zoom = String(theme.uiScale);
 
-  // Background stack — derive surface/card/card-hover from base bg
+  // Background stack — derive surface/card/card-hover from base bg.
+  // Saturation is capped at 25% on derived layers so that vivid color picks
+  // don't tint every surface intensely; the bg itself keeps its chosen color.
+  const [bgR, bgG, bgB] = hexToRgb(theme.bgColor);
+  const [bgH, bgS, bgL] = rgbToHsl(bgR, bgG, bgB);
+  const cappedS = Math.min(bgS, 25);
+  const mkLayer = (addL: number): string =>
+    rgbToHex(...hslToRgb(bgH, cappedS, Math.min(100, bgL + addL)));
   root.style.setProperty("--bg", theme.bgColor);
-  root.style.setProperty("--surface", lighten(theme.bgColor, 3));
-  root.style.setProperty("--card", lighten(theme.bgColor, 7));
-  root.style.setProperty("--card-hover", lighten(theme.bgColor, 10));
+  root.style.setProperty("--surface", mkLayer(3));
+  root.style.setProperty("--card", mkLayer(7));
+  root.style.setProperty("--card-hover", mkLayer(10));
 
-  // Text
+  // Text — also derive dim/faint variants so they track the chosen text color
+  // rather than staying at the hardcoded brownish CSS defaults.
   root.style.setProperty("--text", theme.textColor);
+  root.style.setProperty("--text-dim", darken(theme.textColor, 32));
+  root.style.setProperty("--text-faint", darken(theme.textColor, 64));
 
   // Accent (gold) scale — derive pale/dim/glow variants + border alphas from base accent
   const [r, g, b] = hexToRgb(theme.accentColor);
