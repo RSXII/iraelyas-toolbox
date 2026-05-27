@@ -141,7 +141,7 @@ class Store {
         s.campaignData[c.id].favor = defaultFavorSettings();
       }
       // Lazy-init initiative for saves that predate this field
-      if (!('initiative' in s.campaignData[c.id])) {
+      if (!("initiative" in s.campaignData[c.id])) {
         s.campaignData[c.id].initiative = null;
       }
     });
