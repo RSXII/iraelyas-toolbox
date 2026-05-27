@@ -20,7 +20,7 @@ function createWindow() {
     minWidth: 900,
     minHeight: 600,
     title: "Iraelya's 5e Toolbox",
-    backgroundColor: "#09090b",
+    backgroundColor: "#111115",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,

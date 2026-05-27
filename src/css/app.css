@@ -8,10 +8,10 @@
 ═══════════════════════════════════════════════════════════════ */
 :root {
   /* Core palette */
-  --bg: #09090b;
-  --surface: #111113;
-  --card: #18181c;
-  --card-hover: #1e1e24;
+  --bg: #111115;
+  --surface: #181819;
+  --card: #1e1e23;
+  --card-hover: #242428;
   --border: rgba(180, 150, 90, 0.13);
   --border-h: rgba(180, 150, 90, 0.32);
 
@@ -127,7 +127,9 @@ body {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .topbar-brand-name {
@@ -159,6 +161,7 @@ body {
   align-items: center;
   gap: 10px;
   flex: 1;
+  min-width: 0;
 }
 
 .topbar-label {
@@ -200,6 +203,7 @@ body {
   align-items: center;
   gap: 8px;
   margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -336,6 +340,11 @@ body {
   gap: 2px;
   flex-shrink: 0;
   height: var(--tabnav-h);
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+}
+.tab-nav::-webkit-scrollbar {
+  display: none; /* Chromium / Electron */
 }
 
 .tab-btn {
@@ -772,4 +781,24 @@ input[type="number"]::placeholder {
 .danger-close:hover {
   border-color: var(--border-h);
   color: var(--text);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — NARROW WINDOW (≤1150px)
+   Hides non-essential topbar text and tightens spacing so all
+   four action buttons stay visible down to the 900px min-width.
+═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1150px) {
+  .topbar-brand-sub {
+    display: none;
+  }
+  .topbar-select {
+    min-width: 120px;
+  }
+  .topbar {
+    gap: 10px;
+  }
+  .topbar-actions {
+    gap: 4px;
+  }
 }
