@@ -276,6 +276,7 @@
     <!-- ── Last Result ─────────────────────────── -->
     {#if history.length > 0}
     {@const last = history[0]}
+    {@const naturalRoll = last.diceType === 'd20' && last.keptIndices.length === 1 ? last.rolls[last.keptIndices[0]] : null}
     <div class="dice-result-card">
       <div class="dice-total">{last.total}</div>
       <div class="dice-faces">
@@ -291,7 +292,11 @@
         {/if}
       </div>
       <div class="dice-result-label">{last.formulaLabel}</div>
-      {#if last.acWarning}
+      {#if naturalRoll === 1}
+        <div class="ac-outcome ac-outcome--crit-fail">Critical Failure!</div>
+      {:else if naturalRoll === 20}
+        <div class="ac-outcome ac-outcome--crit-success">Critical Success!</div>
+      {:else if last.acWarning}
         <div class="ac-warning">⚠ {last.acWarning}</div>
       {:else if last.acCheck}
         <div class="ac-outcome ac-outcome--{last.acCheck.outcome}">
@@ -310,11 +315,16 @@
     </div>
     <div class="dice-history">
       {#each history as r (r.id)}
+        {@const histNatural = r.diceType === 'd20' && r.keptIndices.length === 1 ? r.rolls[r.keptIndices[0]] : null}
         <div class="dice-history-row">
           <span class="hist-formula">{r.formulaLabel}</span>
           <span class="hist-rolls">[{r.keptIndices.map(i => r.rolls[i]).join(', ')}]{r.modifier !== 0 ? (r.modifier > 0 ? '+' : '') + r.modifier : ''}</span>
           <span class="hist-total">{r.total}</span>
-          {#if r.acWarning}
+          {#if histNatural === 1}
+            <span class="hist-ac hist-ac--crit-fail">NAT 1</span>
+          {:else if histNatural === 20}
+            <span class="hist-ac hist-ac--crit-success">NAT 20</span>
+          {:else if r.acWarning}
             <span class="hist-ac hist-ac--warn" title={r.acWarning}>⚠</span>
           {:else if r.acCheck}
             <span class="hist-ac hist-ac--{r.acCheck.outcome}">{r.acCheck.outcome.toUpperCase()}</span>
