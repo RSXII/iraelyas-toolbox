@@ -1,6 +1,6 @@
 # Iraelya's 5e Toolbox
 
-A Dungeon Master's dashboard for 5e campaigns. Built with Electron + Vite + TypeScript.
+A Dungeon Master's dashboard for 5e campaigns. Built with Svelte + Electron + Vite + TypeScript.
 
 ## How It Works
 
