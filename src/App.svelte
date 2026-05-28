@@ -565,6 +565,14 @@
     <span class="tab-icon">⚡</span> Initiative
   </button>
   <button
+    class="tab-btn"
+    class:active={activeTab === 'dice'}
+    id="tab-dice"
+    onclick={() => switchTab('dice')}
+  >
+    <span class="tab-icon">🎲</span> Dice Roller
+  </button>
+  <button
     class="tab-btn"    class:active={activeTab === 'convo'}
     id="tab-convo"
     onclick={() => switchTab('convo')}
@@ -603,14 +611,6 @@
   >
     <span class="tab-icon">⚔</span> Party
   </button>
-  <button
-    class="tab-btn"
-    class:active={activeTab === 'dice'}
-    id="tab-dice"
-    onclick={() => switchTab('dice')}
-  >
-    <span class="tab-icon">🎲</span> Dice Roller
-  </button>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -644,6 +644,8 @@
 
   <!-- ── DICE ROLLER ── -->
   <DiceTab active={activeTab === 'dice'} />
+
+  <!-- ── PARTY QUICK VIEW ── -->
 
 </div>
 <!-- /content-area -->

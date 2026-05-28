@@ -441,6 +441,46 @@
   background: var(--gold-glow);
   border: 1px solid var(--gold-dim);
 }
+@keyframes critf {
+  0% {
+    color: #ff4444;
+  }
+  25% {
+    color: #f9c2c2;
+  }
+  50% {
+    color: #f5b5b5;
+  }
+  100% {
+    color: #ff4444;
+  }
+}
+@keyframes crits {
+  0% {
+    color: #55b00e;
+  }
+  25% {
+    color: #fbfbf9;
+  }
+  50% {
+    color: #a7fd4c;
+  }
+  100% {
+    color: #37ff00;
+  }
+}
+.ac-outcome--crit-fail {
+  color: #ff4444;
+  background: rgba(220, 50, 50, 0.15);
+  border: 1px solid rgba(220, 50, 50, 0.45);
+  animation: critf 1s infinite;
+}
+.ac-outcome--crit-success {
+  color: #55b00e;
+  background: rgba(85, 176, 14, 0.12);
+  border: 1px solid rgba(85, 176, 14, 0.4);
+  animation: crits 1s infinite;
+}
 
 .ac-outcome-sub {
   font-size: 9px;
@@ -467,6 +507,14 @@
 .hist-ac--meet {
   color: var(--gold-pale);
 }
+
+.hist-ac--crit-fail {
+  color: #ff4444;
+}
+.hist-ac--crit-success {
+  color: #ffd700;
+}
+
 .hist-ac--warn {
   color: var(--wary);
   font-size: 13px;

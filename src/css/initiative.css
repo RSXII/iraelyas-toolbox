@@ -150,6 +150,48 @@
   width: 100%;
 }
 
+/* ── Roll + dice button row ── */
+.init-roll-with-dice {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.init-mod-btn {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 6px 9px;
+  color: var(--text-dim);
+  border-color: var(--border);
+  background: var(--surface);
+  white-space: nowrap;
+}
+.init-mod-btn:hover {
+  color: var(--text);
+  border-color: var(--border-h);
+  background: var(--card);
+}
+
+.init-dice-btn {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 6px 10px;
+  color: var(--gold);
+  border-color: rgba(201, 168, 76, 0.4);
+  background: rgba(201, 168, 76, 0.06);
+  white-space: nowrap;
+}
+.init-dice-btn:hover {
+  border-color: var(--gold);
+  background: var(--gold-glow);
+  color: var(--gold-pale);
+}
+
 /* ── Empty state with prefill button ── */
 .init-empty {
   display: flex;
@@ -333,4 +375,104 @@
 .init-remove-btn:hover {
   color: var(--hostile);
   background: rgba(184, 64, 64, 0.12);
+}
+
+/* ── Incapacitate toggle button ── */
+.init-incap-btn {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-faint);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    color 0.12s,
+    background 0.12s;
+}
+.init-incap-btn:hover {
+  color: #c9a84c;
+  background: rgba(201, 168, 76, 0.1);
+}
+.init-incap-btn.is-incapacitated {
+  color: #c9844c;
+}
+.init-incap-btn.is-incapacitated:hover {
+  color: #e09a5a;
+  background: rgba(201, 132, 76, 0.12);
+}
+
+/* ── Incapacitated card ── */
+.init-card.incapacitated {
+  opacity: 0.45;
+  filter: grayscale(0.55);
+}
+.init-card.incapacitated .init-name {
+  text-decoration: line-through;
+  text-decoration-color: var(--text-dim);
+}
+.init-card.incapacitated.active-turn {
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+/* ── Turn counter row ── */
+.init-turn-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.init-turn-label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.init-turn-num {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--gold-pale);
+  font-family: "Cinzel", serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    background 0.12s;
+}
+.init-turn-num:hover {
+  border-color: var(--gold);
+  background: var(--gold-glow);
+}
+
+.init-turn-input {
+  width: 56px;
+  height: 28px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  color: var(--gold-pale);
+  font-family: "Cinzel", serif;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0 4px;
+}
+.init-turn-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--gold);
 }

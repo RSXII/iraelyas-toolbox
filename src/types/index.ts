@@ -340,6 +340,7 @@ export interface CampaignData {
   party: PartyData;
   factions: FactionsData;
   favor?: FavorSettings;
+  initiative?: InitiativeState | null;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -355,6 +356,13 @@ export interface InitiativeEntry {
   name: string;
   roll: number;
   type: "pc" | "friendly" | "enemy";
+  incapacitated?: boolean;
+}
+
+export interface InitiativeState {
+  entries: InitiativeEntry[];
+  currentIndex: number;
+  turnNumber: number;
 }
 
 export type TabId =

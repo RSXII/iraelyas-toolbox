@@ -6,9 +6,32 @@
   interface Props { active?: boolean; }
   let { active = false }: Props = $props();
 
-  // ─── Session-local state (never persisted) ───────────────────
+  // ─── Persistent state ────────────────────────────────────────
   let entries      = $state<InitiativeEntry[]>([]);
   let currentIndex = $state(0);
+  let turnNumber   = $state(1);
+
+  // ─── Turn number inline editing ───────────────────────────────
+  let editingTurn    = $state(false);
+  let editingTurnVal = $state<number | ''>('');
+
+  function startEditTurn(): void {
+    editingTurnVal = turnNumber;
+    editingTurn = true;
+  }
+
+  function commitEditTurn(): void {
+    const n = Number(editingTurnVal);
+    if (editingTurnVal !== '' && !isNaN(n) && n >= 1) {
+      turnNumber = Math.round(n);
+    }
+    editingTurn = false;
+  }
+
+  function handleTurnKeydown(e: KeyboardEvent): void {
+    if (e.key === 'Enter') commitEditTurn();
+    if (e.key === 'Escape') editingTurn = false;
+  }
 
   // ─── Derived sorted list (descending roll, stable for ties) ──
   const sortedEntries = $derived(
@@ -16,7 +39,7 @@
   );
 
   const currentCombatant = $derived(
-    sortedEntries.length > 0 ? sortedEntries[currentIndex] : null
+    sortedEntries.length > 0 ? sortedEntries[currentIndex] ?? null : null
   );
 
   // ─── Helpers ─────────────────────────────────────────────────
@@ -24,31 +47,118 @@
     return `init_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   }
 
+  function rollD20(mod: number | ''): number {
+    return Math.floor(Math.random() * 20) + 1 + (Number(mod) || 0);
+  }
+
+  /** Returns indices of all active (non-incapacitated) entries in sortedEntries. */
+  function activeIndices(): number[] {
+    return sortedEntries.reduce<number[]>((acc, e, i) => {
+      if (!e.incapacitated) acc.push(i);
+      return acc;
+    }, []);
+  }
+
   function clampIndex(list: InitiativeEntry[]): void {
     if (list.length === 0) { currentIndex = 0; return; }
     if (currentIndex >= list.length) currentIndex = list.length - 1;
+    // If now pointing at an incapacitated entry, advance to next active
+    const sorted = [...list].sort((a, b) => b.roll - a.roll);
+    if (sorted[currentIndex]?.incapacitated) {
+      const actives = sorted.reduce<number[]>((acc, e, i) => {
+        if (!e.incapacitated) acc.push(i);
+        return acc;
+      }, []);
+      if (actives.length > 0) {
+        // Pick closest active index >= currentIndex, else first active
+        currentIndex = actives.find((i) => i >= currentIndex) ?? actives[0];
+      }
+    }
   }
 
   // ─── Turn navigation ─────────────────────────────────────────
-  function prevTurn(): void {
-    if (sortedEntries.length === 0) return;
-    currentIndex = (currentIndex - 1 + sortedEntries.length) % sortedEntries.length;
+  function nextTurn(): void {
+    const actives = activeIndices();
+    if (actives.length === 0) return;
+    const posInActives = actives.indexOf(currentIndex);
+    if (posInActives === actives.length - 1) {
+      // Wrap around — full round complete
+      turnNumber += 1;
+      currentIndex = actives[0];
+    } else {
+      currentIndex = actives[posInActives + 1] ?? actives[0];
+    }
+    saveToStore();
   }
 
-  function nextTurn(): void {
-    if (sortedEntries.length === 0) return;
-    currentIndex = (currentIndex + 1) % sortedEntries.length;
+  function prevTurn(): void {
+    const actives = activeIndices();
+    if (actives.length === 0) return;
+    const posInActives = actives.indexOf(currentIndex);
+    if (posInActives <= 0) {
+      // Wrap backward
+      turnNumber = Math.max(1, turnNumber - 1);
+      currentIndex = actives[actives.length - 1];
+    } else {
+      currentIndex = actives[posInActives - 1] ?? actives[actives.length - 1];
+    }
+    saveToStore();
   }
+
+  // ─── Incapacitated ───────────────────────────────────────────
+  function toggleIncapacitated(id: string): void {
+    const entry = entries.find((e) => e.id === id);
+    if (!entry) return;
+    entry.incapacitated = !entry.incapacitated;
+    // If the current combatant just became incapacitated, advance
+    if (entry.incapacitated && currentCombatant?.id === id) {
+      const actives = activeIndices();
+      if (actives.length > 0) {
+        currentIndex = actives.find((i) => i > currentIndex) ?? actives[0];
+      }
+    }
+    saveToStore();
+  }
+
+  // ─── Persistence ─────────────────────────────────────────────
+  function saveToStore(): void {
+    const cid = store.activeCampaignId;
+    if (!cid) return;
+    store.setInitiative(cid, {
+      entries: [...entries],
+      currentIndex,
+      turnNumber,
+    });
+  }
+
+  function loadFromStore(): void {
+    const cid = store.activeCampaignId;
+    if (!cid) return;
+    const saved = store.getInitiative(cid);
+    if (!saved) return;
+    entries = saved.entries ?? [];
+    currentIndex = saved.currentIndex ?? 0;
+    turnNumber = saved.turnNumber ?? 1;
+    clampIndex(entries);
+  }
+
+  $effect(() => {
+    if (active) loadFromStore();
+  });
 
   // ─── Remove / Clear ──────────────────────────────────────────
   function removeEntry(id: string): void {
     entries = entries.filter((e) => e.id !== id);
     clampIndex(entries);
+    saveToStore();
   }
 
   function clearAll(): void {
     entries = [];
     currentIndex = 0;
+    turnNumber = 1;
+    const cid = store.activeCampaignId;
+    if (cid) store.clearInitiative(cid);
   }
 
   // ─── Add PC / NPC modal ──────────────────────────────────────
@@ -56,6 +166,7 @@
   let addModalType  = $state<'pc' | 'friendly' | 'enemy'>('enemy');
   let addName       = $state('');
   let addRoll       = $state<number | ''>('');
+  let addRollMod    = $state<number>(0);
   let addNameInput  = $state<HTMLInputElement | null>(null);
 
   function openAddModal(type: 'pc' | 'friendly' | 'enemy'): void {
@@ -63,6 +174,7 @@
     addModalType = type;
     addName = '';
     addRoll = '';
+    addRollMod = 0;
     showAddModal = true;
     setTimeout(() => addNameInput?.focus(), 50);
   }
@@ -73,10 +185,11 @@
     if (addRoll === '' || isNaN(Number(addRoll))) { showToast('Roll required'); return; }
     entries = [...entries, { id: genId(), name, roll: Number(addRoll), type: addModalType }];
     showAddModal = false;
+    saveToStore();
   }
 
   // ─── Enemy modal (two-step) ───────────────────────────────────
-  interface EnemyRow { name: string; roll: number | ''; }
+  interface EnemyRow { name: string; roll: number | ''; mod: number; }
 
   let showEnemyModal = $state(false);
   let enemyCount     = $state<number | null>(null);
@@ -90,7 +203,7 @@
 
   function selectEnemyCount(n: number): void {
     enemyCount = n;
-    enemyRows = Array.from({ length: n }, () => ({ name: '', roll: '' }));
+    enemyRows = Array.from({ length: n }, () => ({ name: '', roll: '', mod: 0 }));
   }
 
   function confirmAddEnemies(): void {
@@ -101,6 +214,7 @@
       ...valid.map((r) => ({ id: genId(), name: r.name.trim(), roll: Number(r.roll), type: 'enemy' as const })),
     ];
     showEnemyModal = false;
+    saveToStore();
   }
 
   // ─── Prefill Party modal ──────────────────────────────────────
@@ -130,6 +244,7 @@
     if (newEntries.length === 0) { showToast('Enter at least one roll'); return; }
     entries = [...entries, ...newEntries];
     showPrefillModal = false;
+    saveToStore();
   }
 
   // ─── Inline roll editing ─────────────────────────────────────
@@ -150,6 +265,7 @@
       e.id === id ? { ...e, roll: Number(editingRollVal) } : e
     );
     editingRollId = null;
+    saveToStore();
   }
 
   function handleRollKeydown(e: KeyboardEvent, id: string): void {
@@ -164,12 +280,30 @@
 <div class="tab-panel" id="panel-initiative" class:active>
   <div class="init-inner">
 
+    <!-- ── Turn counter ── -->
+    <div class="init-turn-row">
+      <span class="init-turn-label">Turn</span>
+      {#if editingTurn}
+        <!-- svelte-ignore a11y_autofocus -->
+        <input
+          class="init-turn-input"
+          type="number"
+          bind:value={editingTurnVal}
+          onblur={commitEditTurn}
+          onkeydown={handleTurnKeydown}
+          autofocus
+        />
+      {:else}
+        <button class="init-turn-num" onclick={startEditTurn} title="Click to edit turn">{turnNumber}</button>
+      {/if}
+    </div>
+
     <!-- ── Current turn banner ── -->
     <div class="init-nav-row">
       <button
         class="init-arrow-btn"
         onclick={prevTurn}
-        disabled={sortedEntries.length === 0}
+        disabled={activeIndices().length === 0}
         aria-label="Previous turn"
       >‹</button>
 
@@ -185,7 +319,7 @@
       <button
         class="init-arrow-btn"
         onclick={nextTurn}
-        disabled={sortedEntries.length === 0}
+        disabled={activeIndices().length === 0}
         aria-label="Next turn"
       >›</button>
     </div>
@@ -213,6 +347,7 @@
             class:init-type-pc={entry.type === 'pc'}
             class:init-type-friendly={entry.type === 'friendly'}
             class:init-type-enemy={entry.type === 'enemy'}
+            class:incapacitated={entry.incapacitated}
           >
             <!-- Roll -->
             <div class="init-roll-col">
@@ -240,6 +375,15 @@
               <span class="init-name">{entry.name}</span>
               <span class="init-type-badge">{entry.type === 'pc' ? 'PC' : entry.type === 'friendly' ? 'Friendly' : 'Enemy'}</span>
             </div>
+
+            <!-- Incapacitate toggle -->
+            <button
+              class="init-incap-btn"
+              class:is-incapacitated={entry.incapacitated}
+              onclick={() => toggleIncapacitated(entry.id)}
+              aria-label={entry.incapacitated ? 'Remove incapacitated from ' + entry.name : 'Incapacitate ' + entry.name}
+              title={entry.incapacitated ? 'Remove Incapacitated' : 'Incapacitate'}
+            >⊘</button>
 
             <!-- Remove -->
             <button
@@ -281,13 +425,25 @@
     </div>
     <div class="field-group">
       <label class="field-label" for="init-add-roll">Initiative Roll</label>
-      <input
-        id="init-add-roll"
-        type="number"
-        placeholder="e.g. 18"
-        bind:value={addRoll}
-        onkeydown={(e) => { if (e.key === 'Enter') confirmAdd(); if (e.key === 'Escape') showAddModal = false; }}
-      />
+      <div class="init-roll-with-dice">
+        <input
+          id="init-add-roll"
+          type="number"
+          placeholder="e.g. 18"
+          bind:value={addRoll}
+          onkeydown={(e) => { if (e.key === 'Enter') confirmAdd(); if (e.key === 'Escape') showAddModal = false; }}
+        />
+        <button
+          class="btn init-dice-btn"
+          onclick={() => addRoll = rollD20(addRollMod)}
+          title="Roll d20 + modifier"
+        >{addRollMod > 0 ? `d20+${addRollMod}` : 'd20'}</button>
+        <button
+          class="btn init-mod-btn"
+          onclick={() => addRollMod++}
+          title="Increase modifier"
+        >+1</button>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-gold" onclick={() => confirmAdd()}>Add</button>
@@ -337,13 +493,25 @@
           </div>
           <div class="field-group" style="margin-bottom:0">
             <label class="field-label" for="enemy-roll-{i}">Initiative Roll</label>
-            <input
-              id="enemy-roll-{i}"
-              type="number"
-              placeholder="e.g. 12"
-              bind:value={row.roll}
-              onkeydown={(e) => { if (e.key === 'Escape') showEnemyModal = false; }}
-            />
+            <div class="init-roll-with-dice">
+              <input
+                id="enemy-roll-{i}"
+                type="number"
+                placeholder="e.g. 12"
+                bind:value={row.roll}
+                onkeydown={(e) => { if (e.key === 'Escape') showEnemyModal = false; }}
+              />
+              <button
+                class="btn init-dice-btn"
+                onclick={() => row.roll = rollD20(row.mod)}
+                title="Roll d20 + modifier"
+              >{row.mod > 0 ? `d20+${row.mod}` : 'd20'}</button>
+              <button
+                class="btn init-mod-btn"
+                onclick={() => row.mod++}
+                title="Increase modifier"
+              >+1</button>
+            </div>
           </div>
         </div>
       {/each}

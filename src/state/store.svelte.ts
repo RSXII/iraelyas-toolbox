@@ -21,6 +21,7 @@ import type {
   TrackerEntry,
   PartyData,
   PCCard,
+  InitiativeState,
 } from "@/types/index";
 import { DEFAULT_THEME } from "@/utils/theme";
 
@@ -77,6 +78,7 @@ function defaultCampaignData(): CampaignData {
     party: { pcs: [] },
     factions: { factions: [] },
     favor: defaultFavorSettings(),
+    initiative: null,
   };
 }
 
@@ -137,6 +139,10 @@ class Store {
       // Lazy-init favor settings for saves that predate this field
       if (!s.campaignData[c.id].favor) {
         s.campaignData[c.id].favor = defaultFavorSettings();
+      }
+      // Lazy-init initiative for saves that predate this field
+      if (!("initiative" in s.campaignData[c.id])) {
+        s.campaignData[c.id].initiative = null;
       }
     });
     // Ensure convo pcs array always has 6 entries
@@ -640,6 +646,22 @@ class Store {
   deletePC(campaignId: string, pcId: string): void {
     const party = this.getParty(campaignId);
     party.pcs = party.pcs.filter((p) => p.id !== pcId);
+    this.save();
+  }
+
+  // ── Initiative helpers ────────────────────────────────────────────
+
+  getInitiative(campaignId: string): InitiativeState | null {
+    return this.getCampaignData(campaignId).initiative ?? null;
+  }
+
+  setInitiative(campaignId: string, state: InitiativeState): void {
+    this.getCampaignData(campaignId).initiative = state;
+    this.save();
+  }
+
+  clearInitiative(campaignId: string): void {
+    this.getCampaignData(campaignId).initiative = null;
     this.save();
   }
 
