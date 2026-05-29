@@ -1,12 +1,14 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, shell, safeStorage } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const https = require("https");
+const crypto = require("crypto");
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const IS_DEV = process.env.NODE_ENV === "development" || !app.isPackaged;
 const DEV_URL = "http://localhost:5173";
 const DATA_FILE = path.join(app.getPath("userData"), "toolbox-data.json");
+const API_KEY_FILE = path.join(app.getPath("userData"), "api-key.enc");
 
 // ─── Windows ──────────────────────────────────────────────────────────────────
 let mainWindow = null;
@@ -374,7 +376,159 @@ ipcMain.handle("open-external", (_event, url) => {
 
 // ─── IPC: userData path (for displaying to user in settings later) ────────────
 ipcMain.handle("get-data-path", () => app.getPath("userData"));
+// ─── IPC: Secure API key management ───────────────────────────────────────
 
+ipcMain.handle("set-api-key", (_event, key) => {
+  try {
+    if (!safeStorage.isEncryptionAvailable()) {
+      return { ok: false, error: "Secure storage is not available on this system." };
+    }
+    const encrypted = safeStorage.encryptString(key);
+    fs.writeFileSync(API_KEY_FILE, encrypted.toString("base64"), "utf-8");
+    return { ok: true };
+  } catch (err) {
+    console.error("set-api-key error:", err);
+    return { ok: false, error: err.message };
+  }
+});
+
+ipcMain.handle("has-api-key", () => fs.existsSync(API_KEY_FILE));
+
+ipcMain.handle("clear-api-key", () => {
+  try {
+    if (fs.existsSync(API_KEY_FILE)) fs.unlinkSync(API_KEY_FILE);
+    return { ok: true };
+  } catch (err) {
+    console.error("clear-api-key error:", err);
+    return { ok: false, error: err.message };
+  }
+});
+
+// ─── IPC: Claude AI enemy generation ──────────────────────────────────────────
+
+ipcMain.handle("generate-enemy", async (_event, params, model) => {
+  console.log("[generate-enemy] invoked — params:", JSON.stringify(params), "model:", model);
+  try {
+    if (!fs.existsSync(API_KEY_FILE)) {
+      console.warn("[generate-enemy] no API key file at", API_KEY_FILE);
+      return { ok: false, error: "No API key configured. Open AI Settings to add your Claude API key." };
+    }
+    if (!safeStorage.isEncryptionAvailable()) {
+      console.warn("[generate-enemy] safeStorage not available");
+      return { ok: false, error: "Secure storage is not available on this system." };
+    }
+
+    // Decrypt — plaintext key lives only within this async call's scope
+    const encBuf = Buffer.from(fs.readFileSync(API_KEY_FILE, "utf-8"), "base64");
+    const apiKey = safeStorage.decryptString(encBuf);
+    console.log("[generate-enemy] key decrypted, length:", apiKey.length);
+
+    const systemPrompt = [
+      "You are a D&D 5e (2024 rules) monster stat block generator.",
+      "Return ONLY a single valid JSON object. No markdown fences, no explanation, no extra text.",
+      "",
+      "Required fields: name, size, type, alignment, cr, xp, ac, ac_source, hp, hp_formula,",
+      "  speed (object with walk integer), ability_scores (str/dex/con/int/wis/cha integers),",
+      "  senses (object with passive_perception integer), languages (string array),",
+      "  traits (array, may be empty []), actions (array with at least one entry).",
+      "",
+      "size values: Tiny | Small | Medium | Large | Huge | Gargantuan",
+      "type values: Aberration | Beast | Celestial | Construct | Dragon | Elemental | Fey | Fiend | Giant | Humanoid | Monstrosity | Ooze | Plant | Undead",
+      "action.type values (optional): weapon | spell | special | multiattack",
+      "spellcasting.ability values (if present): STR | DEX | CON | INT | WIS | CHA",
+      "hp_formula must match: NdN or NdN + N or NdN - N (e.g. '14d8 + 28')",
+      "cr must be a number: 0, 0.125, 0.25, 0.5, or 1-30",
+      "",
+      "Include reactions and spellcasting only when thematically appropriate.",
+    ].join("\n");
+
+    const userPrompt = [
+      `Generate a CR ${params.cr} ${params.focus}-focused ${params.type} enemy for D&D 5e 2024 rules.`,
+      params.hints ? `Additional details: ${params.hints}` : "",
+      "Return only the JSON stat block with no extra text.",
+    ].filter(Boolean).join(" ");
+
+    const requestBody = JSON.stringify({
+      model: model || "claude-haiku-4-5",
+      max_tokens: 4096,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
+    });
+
+    console.log("[generate-enemy] user prompt:", userPrompt);
+    console.log("[generate-enemy] sending request to Anthropic...");
+    const result = await new Promise((resolve, reject) => {
+      const options = {
+        hostname: "api.anthropic.com",
+        path: "/v1/messages",
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+          "content-type": "application/json",
+          "content-length": Buffer.byteLength(requestBody),
+        },
+      };
+
+      const req = https.request(options, (res) => {
+        let data = "";
+        res.on("data", (chunk) => { data += chunk; });
+        res.on("end", () => {
+          try {
+            resolve({ status: res.statusCode, body: JSON.parse(data) });
+          } catch {
+            reject(new Error("Failed to parse API response"));
+          }
+        });
+      });
+
+      req.on("error", reject);
+      req.setTimeout(30000, () => {
+        req.destroy();
+        reject(new Error("Request timed out after 30 seconds"));
+      });
+
+      req.write(requestBody);
+      req.end();
+    });
+
+    console.log("[generate-enemy] HTTP status:", result.status);
+    console.log("[generate-enemy] response body:", JSON.stringify(result.body));
+
+    if (result.status !== 200) {
+      const msg = result.body?.error?.message ?? `Claude API error (HTTP ${result.status})`;
+      console.error("[generate-enemy] API error:", msg);
+      return { ok: false, error: msg };
+    }
+
+    // Extract text from response and strip any accidental markdown fences
+    let text = result.body?.content?.[0]?.text ?? "";
+    console.log("[generate-enemy] raw text length:", text.length, "| stop_reason:", result.body?.stop_reason);
+    console.log("[generate-enemy] raw text (first 500):", text.slice(0, 500));
+
+    text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    console.log("[generate-enemy] stripped text (first 200):", text.slice(0, 200));
+
+    let enemy;
+    try {
+      enemy = JSON.parse(text);
+      console.log("[generate-enemy] JSON parsed OK — enemy name:", enemy?.name);
+    } catch (parseErr) {
+      console.error("[generate-enemy] JSON.parse failed:", parseErr.message);
+      console.error("[generate-enemy] full text that failed to parse:", text);
+      return { ok: false, error: "Model returned invalid JSON. Try regenerating." };
+    }
+
+    // Inject library key — not part of the Claude schema
+    enemy.id = crypto.randomUUID();
+    console.log("[generate-enemy] returning ok, id:", enemy.id);
+
+    return { ok: true, enemy };
+  } catch (err) {
+    console.error("[generate-enemy] caught unexpected error:", err);
+    return { ok: false, error: err.message ?? "Unknown error during generation" };
+  }
+});
 // ─── IPC: Update check ───────────────────────────────────────────────────────
 function isNewerVersion(current, latest) {
   const parse = (v) => v.replace(/^v/, "").split(".").map(Number);

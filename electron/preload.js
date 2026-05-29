@@ -86,6 +86,24 @@ contextBridge.exposeInMainWorld("toolbox", {
   offTreeUpdated: (callback) =>
     ipcRenderer.removeListener("tree-updated", callback),
 
+  // ── AI / Enemy generation ──────────────────────────────────────
+  /** Encrypt and persist the Claude API key via OS safeStorage */
+  setApiKey: (key) => ipcRenderer.invoke("set-api-key", key),
+
+  /** Returns true if an encrypted API key is stored */
+  hasApiKey: () => ipcRenderer.invoke("has-api-key"),
+
+  /** Remove the stored encrypted API key */
+  clearApiKey: () => ipcRenderer.invoke("clear-api-key"),
+
+  /**
+   * Generate a monster stat block via Claude.
+   * @param params  { cr, focus, type, hints? }
+   * @param model   Claude model id (e.g. 'claude-haiku-4-5')
+   */
+  generateEnemy: (params, model) =>
+    ipcRenderer.invoke("generate-enemy", params, model),
+
   // ── Platform ───────────────────────────────────────────────────
   /** 'darwin' | 'win32' | 'linux' */
   platform: process.platform,
