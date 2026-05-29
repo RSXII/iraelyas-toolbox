@@ -64,6 +64,9 @@
     if (result.ok && result.enemy) {
       preview = result.enemy;
       phase = 'preview';
+      if (result.usage) {
+        store.addTokenUsage(result.usage.input_tokens, result.usage.output_tokens);
+      }
     } else {
       errorMsg = result.error ?? 'Generation failed. Please try again.';
       phase = 'error';

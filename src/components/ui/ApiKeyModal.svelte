@@ -75,6 +75,39 @@
       </div>
     </div>
 
+    <!-- Token usage -->
+    {#if store.tokenUsage.generationCount > 0}
+      {@const tu = store.tokenUsage}
+      <div class="ai-settings-section">
+        <span class="ai-settings-label">Token Usage (this app)</span>
+        <div class="token-usage-grid">
+          <span class="token-usage-row">
+            <span class="token-usage-key">Lifetime input</span>
+            <span class="token-usage-val">{tu.lifetimeInput.toLocaleString()}</span>
+          </span>
+          <span class="token-usage-row">
+            <span class="token-usage-key">Lifetime output</span>
+            <span class="token-usage-val">{tu.lifetimeOutput.toLocaleString()}</span>
+          </span>
+          <span class="token-usage-row">
+            <span class="token-usage-key">Total tokens</span>
+            <span class="token-usage-val">{(tu.lifetimeInput + tu.lifetimeOutput).toLocaleString()}</span>
+          </span>
+          <span class="token-usage-row token-usage-divider">
+            <span class="token-usage-key">Generations</span>
+            <span class="token-usage-val">{tu.generationCount}</span>
+          </span>
+          <span class="token-usage-row">
+            <span class="token-usage-key">Last generation</span>
+            <span class="token-usage-val">{tu.lastInput.toLocaleString()} in / {tu.lastOutput.toLocaleString()} out</span>
+          </span>
+        </div>
+        <div class="model-description" style="margin-top:0.4rem">
+          Counts only generations made through this app.
+        </div>
+      </div>
+    {/if}
+
     <!-- API key -->
     <div class="ai-settings-section">
       <span class="ai-settings-label">Claude API Key</span>

@@ -60,7 +60,7 @@ export interface ToolboxBridge {
   generateEnemy: (
     params: GenerateEnemyParams,
     model: AiModel,
-  ) => Promise<{ ok: boolean; enemy?: MonsterStatBlock; error?: string }>;
+  ) => Promise<{ ok: boolean; enemy?: MonsterStatBlock; usage?: { input_tokens: number; output_tokens: number }; error?: string }>;
 }
 
 export interface FileFilter {
@@ -409,6 +409,14 @@ export interface ThemeSettings {
 // ROOT APP STATE
 // ═══════════════════════════════════════════════════════════════
 
+export interface TokenUsage {
+  lifetimeInput: number;
+  lifetimeOutput: number;
+  lastInput: number;
+  lastOutput: number;
+  generationCount: number;
+}
+
 export interface AppState {
   version: number; // for future migrations
   campaigns: Campaign[];
@@ -417,6 +425,7 @@ export interface AppState {
   theme: ThemeSettings;
   enemies: MonsterStatBlock[];
   aiModel: AiModel;
+  tokenUsage: TokenUsage;
 }
 
 // ═══════════════════════════════════════════════════════════════

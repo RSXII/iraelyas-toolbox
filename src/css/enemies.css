@@ -723,3 +723,33 @@
   gap: 0.6rem;
   justify-content: flex-end;
 }
+
+/* ── Token usage display ─────────────────────────────────────── */
+.token-usage-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+}
+
+.token-usage-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.18rem 0;
+}
+
+.token-usage-divider {
+  border-top: 1px solid var(--border);
+  padding-top: 0.35rem;
+  margin-top: 0.15rem;
+}
+
+.token-usage-key {
+  color: var(--text-dim);
+}
+
+.token-usage-val {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}

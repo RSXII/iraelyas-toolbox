@@ -566,9 +566,10 @@ ipcMain.handle("generate-enemy", async (_event, params, model) => {
 
     // Inject library key — not part of the Claude schema
     enemy.id = crypto.randomUUID();
-    console.log("[generate-enemy] returning ok, id:", enemy.id);
+    const usage = result.body?.usage ?? { input_tokens: 0, output_tokens: 0 };
+    console.log("[generate-enemy] returning ok, id:", enemy.id, "| usage:", usage);
 
-    return { ok: true, enemy };
+    return { ok: true, enemy, usage };
   } catch (err) {
     console.error("[generate-enemy] caught unexpected error:", err);
     return {

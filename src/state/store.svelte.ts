@@ -8,6 +8,7 @@ import type {
   FactionRank,
   FavorSettings,
   FavorTier,
+  TokenUsage,
   FactionsData,
   HouseData,
   HouseMember,
@@ -96,6 +97,7 @@ function defaultState(): AppState {
     theme: { ...DEFAULT_THEME },
     enemies: [],
     aiModel: "claude-haiku-4-5",
+    tokenUsage: { lifetimeInput: 0, lifetimeOutput: 0, lastInput: 0, lastOutput: 0, generationCount: 0 },
   };
 }
 
@@ -158,6 +160,8 @@ class Store {
     if (!s.enemies) s.enemies = [];
     // Lazy-init aiModel preference for saves that predate this field
     if (!s.aiModel) s.aiModel = "claude-haiku-4-5";
+    // Lazy-init token usage counter for saves that predate this field
+    if (!s.tokenUsage) s.tokenUsage = { lifetimeInput: 0, lifetimeOutput: 0, lastInput: 0, lastOutput: 0, generationCount: 0 };
     return s;
   }
 
@@ -835,6 +839,22 @@ class Store {
 
   setAiModel(model: AiModel): void {
     this._state.aiModel = model;
+    this.save();
+  }
+
+  // ── Token usage helpers ───────────────────────────────────────
+
+  get tokenUsage(): TokenUsage {
+    return this._state.tokenUsage;
+  }
+
+  addTokenUsage(inputTokens: number, outputTokens: number): void {
+    const t = this._state.tokenUsage;
+    t.lifetimeInput += inputTokens;
+    t.lifetimeOutput += outputTokens;
+    t.lastInput = inputTokens;
+    t.lastOutput = outputTokens;
+    t.generationCount += 1;
     this.save();
   }
 
