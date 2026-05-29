@@ -75,6 +75,26 @@
       </div>
     </div>
 
+    <!-- Hide AI features toggle -->
+    <div class="ai-settings-section">
+      <label class="ai-toggle-row">
+        <span class="ai-settings-label" style="margin-bottom:0">Hide AI Features</span>
+        <button
+          class="ai-toggle-btn"
+          class:active={store.hideAiFeatures}
+          onclick={() => store.setHideAiFeatures(!store.hideAiFeatures)}
+          title={store.hideAiFeatures ? 'AI features are hidden' : 'AI features are visible'}
+        >
+          {store.hideAiFeatures ? 'Hidden' : 'Visible'}
+        </button>
+      </label>
+      <div class="model-description">
+        {store.hideAiFeatures
+          ? 'Generate button is hidden. Settings button shows icon only.'
+          : 'Generate and Settings buttons are shown in the Enemies tab.'}
+      </div>
+    </div>
+
     <!-- Token usage -->
     {#if store.tokenUsage.generationCount > 0}
       {@const tu = store.tokenUsage}

@@ -97,7 +97,14 @@ function defaultState(): AppState {
     theme: { ...DEFAULT_THEME },
     enemies: [],
     aiModel: "claude-haiku-4-5",
-    tokenUsage: { lifetimeInput: 0, lifetimeOutput: 0, lastInput: 0, lastOutput: 0, generationCount: 0 },
+    hideAiFeatures: false,
+    tokenUsage: {
+      lifetimeInput: 0,
+      lifetimeOutput: 0,
+      lastInput: 0,
+      lastOutput: 0,
+      generationCount: 0,
+    },
   };
 }
 
@@ -160,8 +167,17 @@ class Store {
     if (!s.enemies) s.enemies = [];
     // Lazy-init aiModel preference for saves that predate this field
     if (!s.aiModel) s.aiModel = "claude-haiku-4-5";
+    // Lazy-init hideAiFeatures flag for saves that predate this field
+    if (s.hideAiFeatures === undefined) s.hideAiFeatures = false;
     // Lazy-init token usage counter for saves that predate this field
-    if (!s.tokenUsage) s.tokenUsage = { lifetimeInput: 0, lifetimeOutput: 0, lastInput: 0, lastOutput: 0, generationCount: 0 };
+    if (!s.tokenUsage)
+      s.tokenUsage = {
+        lifetimeInput: 0,
+        lifetimeOutput: 0,
+        lastInput: 0,
+        lastOutput: 0,
+        generationCount: 0,
+      };
     return s;
   }
 
@@ -839,6 +855,17 @@ class Store {
 
   setAiModel(model: AiModel): void {
     this._state.aiModel = model;
+    this.save();
+  }
+
+  // ── Hide AI features toggle ─────────────────────────────────
+
+  get hideAiFeatures(): boolean {
+    return this._state.hideAiFeatures;
+  }
+
+  setHideAiFeatures(value: boolean): void {
+    this._state.hideAiFeatures = value;
     this.save();
   }
 

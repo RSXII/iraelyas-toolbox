@@ -60,7 +60,12 @@ export interface ToolboxBridge {
   generateEnemy: (
     params: GenerateEnemyParams,
     model: AiModel,
-  ) => Promise<{ ok: boolean; enemy?: MonsterStatBlock; usage?: { input_tokens: number; output_tokens: number }; error?: string }>;
+  ) => Promise<{
+    ok: boolean;
+    enemy?: MonsterStatBlock;
+    usage?: { input_tokens: number; output_tokens: number };
+    error?: string;
+  }>;
 }
 
 export interface FileFilter {
@@ -426,6 +431,7 @@ export interface AppState {
   enemies: MonsterStatBlock[];
   aiModel: AiModel;
   tokenUsage: TokenUsage;
+  hideAiFeatures: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════

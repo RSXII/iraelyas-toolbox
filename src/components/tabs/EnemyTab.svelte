@@ -85,8 +85,12 @@
       </select>
       <div class="enemies-toolbar-spacer"></div>
       <button class="btn" onclick={openNew}>+ New Enemy</button>
-      <button class="btn btn-gold" onclick={() => { showGenerate = true; }}>✦ Generate with AI</button>
-      <button class="btn" title="AI Settings" onclick={() => { showApiKey = true; }}>⚙ AI Settings</button>
+      {#if !store.hideAiFeatures}
+        <button class="btn btn-gold" onclick={() => { showGenerate = true; }}>✦ Generate with AI</button>
+      {/if}
+      <button class="btn" title="AI Settings" onclick={() => { showApiKey = true; }}>
+        ⚙{#if !store.hideAiFeatures}&nbsp;AI Settings{/if}
+      </button>
     </div>
 
     <!-- Card grid -->
