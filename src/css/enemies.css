@@ -103,7 +103,7 @@
   cursor: pointer;
   user-select: none;
   overflow: hidden;
-  position: relative;  /* anchor for absolute peek strip */
+  position: relative; /* anchor for absolute peek strip */
 }
 
 .enemy-card-header:hover {
@@ -202,7 +202,9 @@
   border-radius: 3px;
   font-size: 0.75rem;
   line-height: 1;
-  transition: color 0.15s, background 0.15s;
+  transition:
+    color 0.15s,
+    background 0.15s;
 }
 
 .enemy-card-btn:hover {
@@ -398,7 +400,9 @@
   font-size: 0.8rem;
   color: var(--text-dim);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   white-space: nowrap;
 }
 
@@ -590,7 +594,9 @@
   cursor: pointer;
   width: 100%;
   text-align: left;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 }
 
 .optional-section-toggle:hover {
@@ -625,7 +631,9 @@
   font-size: 0.85rem;
   color: var(--text-dim);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .generate-focus-btn:hover {
@@ -691,7 +699,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .generate-preview {
