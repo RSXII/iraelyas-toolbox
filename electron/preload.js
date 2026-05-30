@@ -26,8 +26,8 @@ contextBridge.exposeInMainWorld("toolbox", {
    * @param filename  Suggested filename (e.g. 'toolbox_backup.json')
    * @param content   String content to write
    */
-  exportFile: (filename, content) =>
-    ipcRenderer.invoke("export-file", filename, content),
+  exportFile: (filename, content, filters) =>
+    ipcRenderer.invoke("export-file", filename, content, filters),
 
   // ── App info ───────────────────────────────────────────────────
   getVersion: () => ipcRenderer.invoke("get-version"),

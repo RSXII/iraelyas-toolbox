@@ -355,10 +355,10 @@ ipcMain.handle("import-file", async (_event, filters) => {
 });
 
 // Save a file via native save dialog
-ipcMain.handle("export-file", async (_event, filename, content) => {
+ipcMain.handle("export-file", async (_event, filename, content, filters) => {
   const result = await dialog.showSaveDialog(mainWindow, {
     defaultPath: filename,
-    filters: [
+    filters: filters ?? [
       { name: "JSON", extensions: ["json"] },
       { name: "JavaScript", extensions: ["js"] },
       { name: "All Files", extensions: ["*"] },

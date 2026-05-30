@@ -6,6 +6,7 @@
   import type { TabId, Campaign, AppState, Schema, HouseData, TimelineData } from '@/types/index';
   import Toast from '@/components/ui/Toast.svelte';
   import ThemeModal from '@/components/ui/ThemeModal.svelte';
+  import ExportModal from '@/components/ui/ExportModal.svelte';
   import Banner from '@/components/ui/Banner.svelte';
   import ConvoTab from '@/components/tabs/ConvoTab.svelte';
   import PartyTab from '@/components/tabs/PartyTab.svelte';
@@ -21,6 +22,7 @@
   // ─── App state ────────────────────────────────────────────────
   let showMigrationOverlay = $state(true);
   let activeTab = $state<TabId>('favor');  let showTheme = $state(false);
+  let showExport = $state(false);
 
   // ─── Banners ──────────────────────────────────────────────────
   let backupIsStale = $state(false);
@@ -511,7 +513,7 @@
     <button class="btn btn-sm" onclick={() => (showAddCampaign = true)}>+ Campaign</button>
   </div>
   <div class="topbar-actions">
-    <button class="btn btn-sm" onclick={exportBackup}>Export Backup</button>
+    <button class="btn btn-sm" onclick={() => (showExport = true)}>Export</button>
     <button class="btn btn-sm btn-gold" onclick={importBackup}>Import Backup</button>
     <button class="btn btn-sm" onclick={() => (showTheme = true)}>⚙ Theme</button>
     <button class="btn btn-sm btn-danger-subtle" onclick={openDangerOverlay}>⚠ Danger Zone</button>
@@ -798,5 +800,6 @@
      THEME MODAL
 ═══════════════════════════════════════════════════════════════ -->
 <ThemeModal open={showTheme} onclose={() => (showTheme = false)} />
+<ExportModal open={showExport} onclose={() => (showExport = false)} onexportbackup={exportBackup} />
 
 <Toast />
