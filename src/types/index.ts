@@ -52,6 +52,20 @@ export interface ToolboxBridge {
   pickImage: () => Promise<string | null>;
   onTreeUpdated: (cb: (campaignId: string) => void) => void;
   offTreeUpdated: (cb: (campaignId: string) => void) => void;
+
+  // Enemy library / AI generation
+  setApiKey: (key: string) => Promise<{ ok: boolean; error?: string }>;
+  hasApiKey: () => Promise<boolean>;
+  clearApiKey: () => Promise<{ ok: boolean }>;
+  generateEnemy: (
+    params: GenerateEnemyParams,
+    model: AiModel,
+  ) => Promise<{
+    ok: boolean;
+    enemy?: MonsterStatBlock;
+    usage?: { input_tokens: number; output_tokens: number };
+    error?: string;
+  }>;
 }
 
 export interface FileFilter {
@@ -374,7 +388,8 @@ export type TabId =
   | "party"
   | "factions"
   | "initiative"
-  | "dice";
+  | "dice"
+  | "enemies";
 
 export interface UIState {
   activeCampaign: string;
@@ -399,12 +414,24 @@ export interface ThemeSettings {
 // ROOT APP STATE
 // ═══════════════════════════════════════════════════════════════
 
+export interface TokenUsage {
+  lifetimeInput: number;
+  lifetimeOutput: number;
+  lastInput: number;
+  lastOutput: number;
+  generationCount: number;
+}
+
 export interface AppState {
   version: number; // for future migrations
   campaigns: Campaign[];
   campaignData: Record<string, CampaignData>;
   ui: UIState;
   theme: ThemeSettings;
+  enemies: MonsterStatBlock[];
+  aiModel: AiModel;
+  tokenUsage: TokenUsage;
+  hideAiFeatures: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -417,4 +444,142 @@ export function isTimelineSpan(item: TimelineItem): item is TimelineSpan {
 
 export function isTimelinePoint(item: TimelineItem): item is TimelinePoint {
   return item.type === "point";
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ENEMY LIBRARY
+// ═══════════════════════════════════════════════════════════════
+
+export type AiModel =
+  | "claude-haiku-4-5"
+  | "claude-sonnet-4-5"
+  | "claude-opus-4-5";
+
+export type MonsterSize =
+  | "Tiny"
+  | "Small"
+  | "Medium"
+  | "Large"
+  | "Huge"
+  | "Gargantuan";
+
+export type MonsterType =
+  | "Aberration"
+  | "Beast"
+  | "Celestial"
+  | "Construct"
+  | "Dragon"
+  | "Elemental"
+  | "Fey"
+  | "Fiend"
+  | "Giant"
+  | "Humanoid"
+  | "Monstrosity"
+  | "Ooze"
+  | "Plant"
+  | "Undead";
+
+export type SpellcastingAbility = "STR" | "DEX" | "CON" | "INT" | "WIS" | "CHA";
+
+export interface SpeedBlock {
+  walk: number;
+  fly?: number;
+  swim?: number;
+  climb?: number;
+  burrow?: number;
+}
+
+export interface AbilityScores {
+  str: number;
+  dex: number;
+  con: number;
+  int: number;
+  wis: number;
+  cha: number;
+}
+
+export interface SensesBlock {
+  passive_perception: number;
+  darkvision?: number;
+  blindsight?: number;
+  truesight?: number;
+  tremorsense?: number;
+}
+
+export interface MonsterTrait {
+  name: string;
+  description: string;
+}
+
+export interface ActionRange {
+  normal: number;
+  long?: number;
+}
+
+export interface MonsterAction {
+  name: string;
+  description: string;
+  type?: "weapon" | "spell" | "special" | "multiattack";
+  attack_bonus?: number;
+  reach?: number;
+  range?: ActionRange;
+  targets?: number;
+  damage?: string;
+  damage_type?: string;
+  extra_damage?: string;
+  extra_damage_type?: string;
+}
+
+export interface MonsterReaction {
+  name: string;
+  trigger: string;
+  description: string;
+}
+
+export interface MonsterSpellcasting {
+  ability: SpellcastingAbility;
+  spell_save_dc: number;
+  spell_attack_bonus: number;
+  at_will?: string[];
+  per_day?: Record<string, string[]>;
+  notes?: string;
+}
+
+export interface MonsterStatBlock {
+  /** Library key — injected by the app, not part of the JSON schema */
+  id: string;
+  name: string;
+  size: MonsterSize;
+  type: MonsterType;
+  subtype?: string;
+  alignment: string;
+  cr: number;
+  xp: number;
+  ac: number;
+  ac_source: string;
+  hp: number;
+  hp_formula: string;
+  speed: SpeedBlock;
+  ability_scores: AbilityScores;
+  saving_throws?: Partial<AbilityScores>;
+  skills?: Record<string, number>;
+  damage_immunities?: string[];
+  damage_resistances?: string[];
+  damage_vulnerabilities?: string[];
+  condition_immunities?: string[];
+  senses: SensesBlock;
+  languages: string[];
+  traits: MonsterTrait[];
+  actions: MonsterAction[];
+  reactions?: MonsterReaction[];
+  spellcasting?: MonsterSpellcasting;
+}
+
+export type EnemyFocus = "physical" | "hybrid" | "spellcaster";
+
+export interface GenerateEnemyParams {
+  cr: number;
+  focus: EnemyFocus;
+  type: MonsterType;
+  hints?: string;
 }

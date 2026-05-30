@@ -16,6 +16,7 @@
   import FactionsTab from '@/components/tabs/FactionsTab.svelte';
   import InitiativeTab from '@/components/tabs/InitiativeTab.svelte';
   import DiceTab from '@/components/tabs/DiceTab.svelte';
+  import EnemyTab from '@/components/tabs/EnemyTab.svelte';
 
   // ─── App state ────────────────────────────────────────────────
   let showMigrationOverlay = $state(true);
@@ -573,6 +574,14 @@
     <span class="tab-icon">🎲</span> Dice Roller
   </button>
   <button
+    class="tab-btn"
+    class:active={activeTab === 'enemies'}
+    id="tab-enemies"
+    onclick={() => switchTab('enemies')}
+  >
+    <span class="tab-icon">💀</span> Enemies
+  </button>
+  <button
     class="tab-btn"    class:active={activeTab === 'convo'}
     id="tab-convo"
     onclick={() => switchTab('convo')}
@@ -645,7 +654,8 @@
   <!-- ── DICE ROLLER ── -->
   <DiceTab active={activeTab === 'dice'} />
 
-  <!-- ── PARTY QUICK VIEW ── -->
+  <!-- ── ENEMY LIBRARY ── -->
+  <EnemyTab active={activeTab === 'enemies'} />
 
 </div>
 <!-- /content-area -->

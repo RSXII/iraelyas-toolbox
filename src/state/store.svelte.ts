@@ -1,5 +1,6 @@
 import type {
   AppState,
+  AiModel,
   Campaign,
   CampaignData,
   ConvoPC,
@@ -7,9 +8,11 @@ import type {
   FactionRank,
   FavorSettings,
   FavorTier,
+  TokenUsage,
   FactionsData,
   HouseData,
   HouseMember,
+  MonsterStatBlock,
   NPC,
   PlayerData,
   Schema,
@@ -92,6 +95,16 @@ function defaultState(): AppState {
       convo: { ...DEFAULT_CONVO, pcs: [...DEFAULT_CONVO_PCS] },
     },
     theme: { ...DEFAULT_THEME },
+    enemies: [],
+    aiModel: "claude-haiku-4-5",
+    hideAiFeatures: false,
+    tokenUsage: {
+      lifetimeInput: 0,
+      lifetimeOutput: 0,
+      lastInput: 0,
+      lastOutput: 0,
+      generationCount: 0,
+    },
   };
 }
 
@@ -150,6 +163,21 @@ class Store {
       const i = s.ui.convo.pcs.length;
       s.ui.convo.pcs.push({ name: `PC ${i + 1}`, score: 5 });
     }
+    // Lazy-init global enemy library for saves that predate this field
+    if (!s.enemies) s.enemies = [];
+    // Lazy-init aiModel preference for saves that predate this field
+    if (!s.aiModel) s.aiModel = "claude-haiku-4-5";
+    // Lazy-init hideAiFeatures flag for saves that predate this field
+    if (s.hideAiFeatures === undefined) s.hideAiFeatures = false;
+    // Lazy-init token usage counter for saves that predate this field
+    if (!s.tokenUsage)
+      s.tokenUsage = {
+        lifetimeInput: 0,
+        lifetimeOutput: 0,
+        lastInput: 0,
+        lastOutput: 0,
+        generationCount: 0,
+      };
     return s;
   }
 
@@ -794,6 +822,66 @@ class Store {
     } else {
       delete fc.npcRanks[npcId];
     }
+    this.save();
+  }
+
+  // ── Enemy library helpers ─────────────────────────────────────
+
+  get enemies(): MonsterStatBlock[] {
+    return this._state.enemies;
+  }
+
+  addEnemy(enemy: MonsterStatBlock): void {
+    this._state.enemies.push(enemy);
+    this.save();
+  }
+
+  updateEnemy(enemy: MonsterStatBlock): void {
+    const idx = this._state.enemies.findIndex((e) => e.id === enemy.id);
+    if (idx >= 0) this._state.enemies[idx] = enemy;
+    this.save();
+  }
+
+  deleteEnemy(id: string): void {
+    this._state.enemies = this._state.enemies.filter((e) => e.id !== id);
+    this.save();
+  }
+
+  // ── AI model helpers ──────────────────────────────────────────
+
+  get aiModel(): AiModel {
+    return this._state.aiModel;
+  }
+
+  setAiModel(model: AiModel): void {
+    this._state.aiModel = model;
+    this.save();
+  }
+
+  // ── Hide AI features toggle ─────────────────────────────────
+
+  get hideAiFeatures(): boolean {
+    return this._state.hideAiFeatures;
+  }
+
+  setHideAiFeatures(value: boolean): void {
+    this._state.hideAiFeatures = value;
+    this.save();
+  }
+
+  // ── Token usage helpers ───────────────────────────────────────
+
+  get tokenUsage(): TokenUsage {
+    return this._state.tokenUsage;
+  }
+
+  addTokenUsage(inputTokens: number, outputTokens: number): void {
+    const t = this._state.tokenUsage;
+    t.lifetimeInput += inputTokens;
+    t.lifetimeOutput += outputTokens;
+    t.lastInput = inputTokens;
+    t.lastOutput = outputTokens;
+    t.generationCount += 1;
     this.save();
   }
 
