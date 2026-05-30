@@ -783,3 +783,18 @@
   border-color: var(--gold-dim);
   color: var(--gold);
 }
+
+/* ── External link in AI settings ───────────────────────────── */
+.ai-external-link {
+  display: inline-block;
+  margin-top: 0.3rem;
+  color: var(--gold-dim);
+  text-decoration: none;
+  font-size: 0.78rem;
+  transition: color 0.15s;
+}
+
+.ai-external-link:hover {
+  color: var(--gold);
+  text-decoration: underline;
+}

@@ -102,14 +102,6 @@
         <span class="ai-settings-label">Token Usage (this app)</span>
         <div class="token-usage-grid">
           <span class="token-usage-row">
-            <span class="token-usage-key">Lifetime input</span>
-            <span class="token-usage-val">{tu.lifetimeInput.toLocaleString()}</span>
-          </span>
-          <span class="token-usage-row">
-            <span class="token-usage-key">Lifetime output</span>
-            <span class="token-usage-val">{tu.lifetimeOutput.toLocaleString()}</span>
-          </span>
-          <span class="token-usage-row">
             <span class="token-usage-key">Total tokens</span>
             <span class="token-usage-val">{(tu.lifetimeInput + tu.lifetimeOutput).toLocaleString()}</span>
           </span>
@@ -123,7 +115,12 @@
           </span>
         </div>
         <div class="model-description" style="margin-top:0.4rem">
-          Counts only generations made through this app.
+          Counts only generations made through this app. Monitor your Anthropic API usage and costs directly on Anthropic's platform.
+We have no visibility into your account or billing.
+          <!-- svelte-ignore a11y_invalid_attribute -->
+          <a href="#" class="ai-external-link" onclick={(e) => { e.preventDefault(); window.toolbox.openExternal('https://platform.claude.com/cost'); }}>
+            Open Anthropic Cost Dashboard ↗
+          </a>
         </div>
       </div>
     {/if}

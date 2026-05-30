@@ -91,7 +91,6 @@
   <div class="modal-backdrop-hit" onclick={onclose}></div>
   <div class="modal" style="max-width:560px">
     <h3>Generate Enemy with AI</h3>
-
     {#if phase === 'form' || phase === 'error'}
       <div class="generate-form">
 
@@ -131,6 +130,7 @@
         <div class="generate-model-row">
           <span>Model: <strong>{store.aiModel}</strong></span>
           <button class="generate-model-link" onclick={onopenaisettings}>change</button>
+          
         </div>
 
         {#if phase === 'error'}
