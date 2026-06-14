@@ -148,7 +148,10 @@ class Store {
       // Lazy-init npcRanks on any FactionConfig that predates the field
       s.campaignData[c.id].factions.factions.forEach((fc) => {
         if (!fc.npcRanks) fc.npcRanks = {};
+        if (!fc.renown)   fc.renown   = {};
       });
+      // Migrate faction-header NPCs → FactionConfig.name + FactionConfig.renown
+      this._migrateFactionHeaders(s.campaignData[c.id]);
       // Lazy-init favor settings for saves that predate this field
       if (!s.campaignData[c.id].favor) {
         s.campaignData[c.id].favor = defaultFavorSettings();
@@ -179,6 +182,63 @@ class Store {
         generationCount: 0,
       };
     return s;
+  }
+
+  /**
+   * One-time migration: converts faction-header NPCs into first-class
+   * FactionConfig entries (name + renown), then removes the header NPCs.
+   * Safe to call on already-migrated data — skips FactionConfigs that
+   * already have a name set.
+   */
+  private _migrateFactionHeaders(cd: import('@/types/index').CampaignData): void {
+    const npcs     = cd.schema.npcs;
+    const players  = cd.players;
+    const factions = cd.factions.factions;
+
+    for (const fc of factions) {
+      // Already migrated — has a name
+      if (fc.name) continue;
+      // Legacy entry with no factionNpcId either — give it a placeholder name
+      if (!fc.factionNpcId) { fc.name = 'Unknown Faction'; continue; }
+
+      const headerNpc = npcs.find((n) => n.id === fc.factionNpcId);
+      if (!headerNpc) { fc.name = fc.factionNpcId; fc.factionNpcId = undefined; continue; }
+
+      // Populate name from the header NPC
+      fc.name = headerNpc.name;
+
+      // Lift renown scores from player score maps
+      if (!fc.renown) fc.renown = {};
+      Object.entries(players).forEach(([playerId, pd]) => {
+        if (fc.factionNpcId && fc.factionNpcId in pd.scores) {
+          fc.renown[playerId] = pd.scores[fc.factionNpcId];
+          delete pd.scores[fc.factionNpcId];
+        }
+      });
+
+      // Assign factionId to every NPC in this faction
+      const headerFactionLabel = headerNpc.faction;
+      npcs.forEach((n) => {
+        if (!n.isFactionHeader && n.faction === headerFactionLabel && !n.factionId) {
+          n.factionId = fc.id;
+        }
+      });
+
+      // Drop the header NPC itself
+      const headerIdx = npcs.findIndex((n) => n.id === fc.factionNpcId);
+      if (headerIdx !== -1) npcs.splice(headerIdx, 1);
+
+      // Clear the deprecated reference
+      fc.factionNpcId = undefined;
+    }
+
+    // Also wire up any NPCs that reference a faction name matching a FactionConfig
+    // but weren't covered above (e.g. created before FactionConfig existed)
+    npcs.forEach((n) => {
+      if (n.isFactionHeader || n.factionId) return;
+      const match = factions.find((fc) => fc.name === n.faction);
+      if (match) n.factionId = match.id;
+    });
   }
 
   /** Debounced auto-save — coalesces rapid changes into one write */
@@ -361,28 +421,13 @@ class Store {
   addNPC(campaignId: string, npc: NPC): void {
     const cd = this.getCampaignData(campaignId);
     if (cd.schema.npcs.find((n) => n.id === npc.id)) return;
-    // Auto-create a faction header if this faction doesn't have one yet
-    if (
-      !npc.isFactionHeader &&
-      !cd.schema.npcs.some(
-        (n) => n.isFactionHeader && n.faction === npc.faction,
-      )
-    ) {
-      const headerId = `faction_header_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
-      const headerNpc: NPC = {
-        id: headerId,
-        name: npc.faction,
-        role: "Faction",
-        faction: npc.faction,
-        isFactionHeader: true,
-      };
-      cd.schema.npcs.push(headerNpc);
-      Object.values(cd.players).forEach((pd) => {
-        if (!(headerId in pd.scores)) pd.scores[headerId] = 50;
-      });
+    // If factionId is provided, sync the faction display name from FactionConfig
+    if (npc.factionId) {
+      const fc = cd.factions?.factions.find((f) => f.id === npc.factionId);
+      if (fc) npc.faction = fc.name;
     }
     cd.schema.npcs.push(npc);
-    // Patch all existing players
+    // Patch all existing players with a default favor score
     Object.values(cd.players).forEach((pd) => {
       if (!(npc.id in pd.scores)) pd.scores[npc.id] = 50;
     });
@@ -404,6 +449,15 @@ class Store {
     );
     if (!npc) return;
     npc.role = role;
+    this.save();
+  }
+
+  updateNPC(campaignId: string, npcId: string, patch: Partial<Omit<NPC, 'id'>>): void {
+    const npc = this.getCampaignData(campaignId).schema.npcs.find(
+      (n) => n.id === npcId,
+    );
+    if (!npc) return;
+    Object.assign(npc, patch);
     this.save();
   }
 
@@ -707,11 +761,47 @@ class Store {
     const id = `fc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     fd.factions.push({
       id,
+      name: factionNpcId, // fallback; caller should migrate this
       factionNpcId,
+      renown: {},
       ranks: [],
       members: [],
       npcRanks: {},
     });
+    this.save();
+  }
+
+  /** Create a faction directly by name — no NPC required. */
+  addFaction(campaignId: string, name: string): void {
+    const fd = this.getFactions(campaignId);
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    if (fd.factions.find((fc) => fc.name.toLowerCase() === trimmed.toLowerCase())) return;
+    const id = `fc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    fd.factions.push({
+      id,
+      name: trimmed,
+      renown: {},
+      ranks: [],
+      members: [],
+      npcRanks: {},
+    });
+    this.save();
+  }
+
+  /** Adjust the faction renown score for a specific player. */
+  adjustFactionRenown(
+    campaignId: string,
+    factionId: string,
+    playerId: string,
+    delta: number,
+  ): void {
+    const fd = this.getFactions(campaignId);
+    const fc = fd.factions.find((f) => f.id === factionId);
+    if (!fc) return;
+    if (!fc.renown) fc.renown = {};
+    const current = fc.renown[playerId] ?? 50;
+    fc.renown[playerId] = Math.max(0, Math.min(100, current + delta));
     this.save();
   }
 

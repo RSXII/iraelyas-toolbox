@@ -17,6 +17,7 @@
   import InitiativeTab from '@/components/tabs/InitiativeTab.svelte';
   import DiceTab from '@/components/tabs/DiceTab.svelte';
   import EnemyTab from '@/components/tabs/EnemyTab.svelte';
+  import NPCTab from '@/components/tabs/NPCTab.svelte';
 
   // ─── App state ────────────────────────────────────────────────
   let showMigrationOverlay = $state(true);
@@ -552,6 +553,14 @@
   </button>
   <button
     class="tab-btn"
+    class:active={activeTab === 'npcs'}
+    id="tab-npcs"
+    onclick={() => switchTab('npcs')}
+  >
+    <span class="tab-icon">🧑‍🤝‍🧑</span> NPC Creator
+  </button>
+  <button
+    class="tab-btn"
     class:active={activeTab === 'factions'}
     id="tab-factions"
     onclick={() => switchTab('factions')}
@@ -628,7 +637,10 @@
 <div class="content-area">
 
   <!-- ── FAVOR TRACKER ── -->
-  <FavorTab active={activeTab === 'favor'} />
+  <FavorTab active={activeTab === 'favor'} onswitchToNPCs={() => switchTab('npcs')} />
+
+  <!-- ── NPC CREATOR ── -->
+  <NPCTab active={activeTab === 'npcs'} />
 
   <!-- ── CONVERSATION TRACKER ── -->
   <ConvoTab active={activeTab === 'convo'} />

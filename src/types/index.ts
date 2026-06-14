@@ -116,12 +116,29 @@ export interface FavorSettings {
   increment: 1 | 5 | 10 | 25;
 }
 
+export type NPCType = "scene" | "recurring" | "major";
+
 export interface NPC {
   id: string;
   name: string;
   role: string;
-  faction: string;
-  isFactionHeader?: boolean;
+  faction: string;                   // display label — kept for backward compat
+  factionId?: string;                // references FactionConfig.id
+  isFactionHeader?: boolean;         // deprecated — cleaned up by migration
+  // NPC Creator fields
+  npcType?: NPCType;
+  // Scene NPC fields
+  npcFunction?: string;
+  distinctDetail?: string;
+  npcNeed?: string;
+  // Recurring NPC fields (cumulative)
+  wound?: string;
+  gap?: string;
+  protecting?: string;
+  whatWouldBreakThem?: string;
+  // Major NPC fields (cumulative)
+  selfBelief?: string;
+  relationshipContradictions?: string;
 }
 
 export interface Schema {
@@ -331,10 +348,12 @@ export interface FactionMember {
 
 export interface FactionConfig {
   id: string;
-  factionNpcId: string; // references NPC.id where isFactionHeader === true
+  name: string;                      // faction display name
+  factionNpcId?: string;             // deprecated — used only during migration
+  renown: Record<string, number>;    // playerId → score (0–100)
   ranks: FactionRank[];
   members: FactionMember[];
-  npcRanks: Record<string, string>; // npcId → rankId
+  npcRanks: Record<string, string>;  // npcId → rankId
 }
 
 export interface FactionsData {
@@ -381,6 +400,7 @@ export interface InitiativeState {
 
 export type TabId =
   | "favor"
+  | "npcs"
   | "convo"
   | "tree"
   | "chronicle"

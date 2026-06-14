@@ -2,10 +2,10 @@
   import { slide } from 'svelte/transition';
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
-  import type { NPC, FactionConfig, FavorTier } from '@/types/index';
+  import type { NPC, FavorTier } from '@/types/index';
 
-  interface Props { active?: boolean; }
-  let { active = false }: Props = $props();
+  interface Props { active?: boolean; onswitchToNPCs?: () => void; }
+  let { active = false, onswitchToNPCs }: Props = $props();
 
   // ─── Helpers ─────────────────────────────────────────────────
   function favorMeta(score: number, tiers: FavorTier[]): { word: string; color: string } {
@@ -27,11 +27,20 @@
   // ─── Reactive campaign data ───────────────────────────────────
   const cid      = $derived(store.activeCampaignId);
   const cd       = $derived(store.activeCampaignData);
-  // Player list is now driven entirely by the party roster
   const players  = $derived(cid ? store.getParty(cid).pcs : []);
   const pid      = $derived(store.activePlayerId);
   const pd       = $derived(pid && cd ? cd.players[pid] : null);
-  const factions = $derived(cd ? [...new Set(cd.schema.npcs.map((n) => n.faction))] : []);
+
+  // FactionConfig entries drive all grouping now
+  const factionConfigs = $derived(cid ? store.getFactions(cid).factions : []);
+  const factionIds     = $derived(new Set(factionConfigs.map((fc) => fc.id)));
+
+  // NPCs with no factionId (or unknown factionId)
+  const unaffiliatedNpcs = $derived(
+    cd ? cd.schema.npcs.filter(
+      (n) => !n.isFactionHeader && (!n.factionId || !factionIds.has(n.factionId))
+    ) : []
+  );
 
   // Favor settings (tiers + increment) for the active campaign
   const favorSettings = $derived(cid ? store.getFavorSettings(cid) : null);
@@ -40,18 +49,6 @@
 
   // Tiers sorted ascending for display (legend, tier editor)
   const tiersAsc = $derived([...tiers].sort((a, b) => a.threshold - b.threshold));
-
-  // Map from faction label → FactionConfig (for rank dropdown in edit mode)
-  const factionConfigMap = $derived(() => {
-    const map = new Map<string, FactionConfig>();
-    if (!cid) return map;
-    const fd = store.getFactions(cid);
-    for (const fc of fd.factions) {
-      const headerNpc = cd?.schema.npcs.find((n) => n.id === fc.factionNpcId);
-      if (headerNpc) map.set(headerNpc.faction, fc);
-    }
-    return map;
-  });
 
   // Auto-select first player if none is valid for this campaign
   $effect(() => {
@@ -74,28 +71,20 @@
   });
 
   // ─── Faction ordering ─────────────────────────────────────────
-  // Factions ordered by FactionConfig store order first, then any unconfigured ones
-  const factionsSorted = $derived.by(() => {
-    const all = cd ? [...new Set(cd.schema.npcs.map((n) => n.faction))] : [];
-    if (!cid || !cd) return all;
-    const fd = store.getFactions(cid);
-    const ordered: string[] = [];
-    for (const fc of fd.factions) {
-      const headerNpc = cd.schema.npcs.find((n) => n.id === fc.factionNpcId);
-      if (headerNpc && !ordered.includes(headerNpc.faction)) {
-        ordered.push(headerNpc.faction);
-      }
-    }
-    const orderedSet = new Set(ordered);
-    return [...ordered, ...all.filter((f) => !orderedSet.has(f))];
-  });
+  // factionConfigs already ordered by FactionConfig array order
 
   // ─── Filter & display state ───────────────────────────────────
+  // activeFilter: 'all' | FactionConfig.id | '__unaffiliated__'
   let activeFilter = $state('all');
   let editEnabled  = $state(false);
 
-  const visibleFactions = $derived(
-    activeFilter === 'all' ? factionsSorted : factionsSorted.filter((f) => f === activeFilter)
+  const visibleConfigs = $derived(
+    activeFilter === 'all' || activeFilter === '__unaffiliated__'
+      ? factionConfigs
+      : factionConfigs.filter((fc) => fc.id === activeFilter)
+  );
+  const showUnaffiliated = $derived(
+    unaffiliatedNpcs.length > 0 && (activeFilter === 'all' || activeFilter === '__unaffiliated__')
   );
 
   // ─── Player actions ───────────────────────────────────────────
@@ -112,44 +101,6 @@
     showToast(`${pd?.player ?? pid} saved`);
   }
 
-  // ─── Add NPC form ─────────────────────────────────────────────
-  let npcName          = $state('');
-  let npcRole          = $state('');
-  let npcFactionSelect = $state('');
-  let npcFactionNew    = $state('');
-  let npcHeader        = $state(false);
-
-  function addNPC(): void {
-    const name = npcName.trim();
-    const role = npcRole.trim();
-
-    let faction: string;
-    if (npcFactionSelect === '__new__') {
-      const raw = npcFactionNew.trim();
-      // Re-use an existing faction if it matches case-insensitively
-      const match = factions.find((f) => f.toLowerCase() === raw.toLowerCase());
-      faction = match ?? (raw || 'Unaffiliated');
-    } else {
-      faction = npcFactionSelect || 'Unaffiliated';
-    }
-
-    if (!name) { showToast('Name required'); return; }
-    if (!cid)  { showToast('Select a campaign first'); return; }
-    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-    if (store.getCampaignData(cid).schema.npcs.find((n) => n.id === id)) {
-      showToast('NPC already exists');
-      return;
-    }
-    store.addNPC(cid, {
-      id, name,
-      role: role || '—',
-      faction,
-      isFactionHeader: npcHeader || undefined,
-    });
-    npcName = ''; npcRole = ''; npcFactionSelect = ''; npcFactionNew = ''; npcHeader = false;
-    showToast(`${name} added`);
-  }
-
   // ─── NPC actions ─────────────────────────────────────────────
   function deleteNPC(npc: NPC): void {
     if (!cid) return;
@@ -162,25 +113,14 @@
     store.adjustFavorScore(cid, pid, npcId, delta);
   }
 
-  function moveFaction(factionLabel: string, direction: 'up' | 'down'): void {
+  function adjustRenown(factionId: string, delta: number): void {
+    if (!cid || !pid) { showToast('Select a player first'); return; }
+    store.adjustFactionRenown(cid, factionId, pid, delta);
+  }
+
+  function moveFaction(factionId: string, direction: 'up' | 'down'): void {
     if (!cid) return;
-    const fc = factionConfigMap().get(factionLabel);
-    if (!fc) return;
-    store.moveFactionConfig(cid, fc.id, direction);
-  }
-
-  function factionConfigIdx(factionLabel: string): number {
-    if (!cid) return -1;
-    const fd = store.getFactions(cid);
-    return fd.factions.findIndex((fc) => {
-      const headerNpc = cd?.schema.npcs.find((n) => n.id === fc.factionNpcId);
-      return headerNpc?.faction === factionLabel;
-    });
-  }
-
-  function configuredFactionCount(): number {
-    if (!cid) return 0;
-    return store.getFactions(cid).factions.length;
+    store.moveFactionConfig(cid, factionId, direction);
   }
 
   // ─── Tier editor helpers ──────────────────────────────────────
@@ -280,164 +220,182 @@
     <div class="filter-row">
       <span class="filter-label">Filter:</span>
       <button class="filter-chip" class:active={activeFilter === 'all'} onclick={() => (activeFilter = 'all')}>All</button>
-      {#each factionsSorted as f}
-        <button class="filter-chip" class:active={activeFilter === f} onclick={() => (activeFilter = f)}>{f}</button>
+      {#each factionConfigs as fc (fc.id)}
+        <button class="filter-chip" class:active={activeFilter === fc.id} onclick={() => (activeFilter = fc.id)}>{fc.name}</button>
       {/each}
+      {#if unaffiliatedNpcs.length}
+        <button class="filter-chip" class:active={activeFilter === '__unaffiliated__'} onclick={() => (activeFilter = '__unaffiliated__')}>Unaffiliated</button>
+      {/if}
     </div>
 
-    <!-- NPC list grouped by faction -->
+    <!-- NPC list grouped by FactionConfig -->
     <div id="npc-list">
       {#if !cd || !cid}
         <div class="empty-state">Select or create a campaign to begin.</div>
-      {:else if !cd.schema.npcs.length}
-        <div class="empty-state">No NPCs in schema yet — add one below.</div>
       {:else if !players.length}
         <div class="empty-state">Add players in the Party tab to track favor.</div>
-      {:else if !visibleFactions.length}
-        <div class="empty-state">No NPCs in this faction.</div>
+      {:else if !factionConfigs.length && !unaffiliatedNpcs.length}
+        <div class="empty-state">No factions or NPCs yet — create factions in the Factions tab, then add NPCs in NPC Creator.</div>
       {:else}
-        {#each visibleFactions as f}
-          {@const group = cd.schema.npcs.filter((n) => n.faction === f)}
-          {#if group.length}
-            <div class="section-head">
-              <span class="section-name">{f}</span>
-              {#if editEnabled}
-                {@const cfgIdx = factionConfigIdx(f)}
-                {#if cfgIdx >= 0}
-                  <div class="faction-reorder-btns">
-                    <button
-                      class="reorder-arrow"
-                      title="Move faction up"
-                      disabled={cfgIdx === 0}
-                      onclick={() => moveFaction(f, 'up')}
-                    >▲</button>
-                    <button
-                      class="reorder-arrow"
-                      title="Move faction down"
-                      disabled={cfgIdx >= configuredFactionCount() - 1}
-                      onclick={() => moveFaction(f, 'down')}
-                    >▼</button>
-                  </div>
-                {/if}
-              {/if}
-              <div class="section-line"></div>
+        {#each visibleConfigs as fc, fcIdx (fc.id)}
+          {@const factionNpcs = cd.schema.npcs.filter((n) => n.factionId === fc.id)}
+          {@const renownScore = fc.renown?.[pid ?? ''] ?? 50}
+          {@const renownMeta  = favorMeta(renownScore, tiers)}
+
+          <div class="section-head">
+            <span class="section-name">{fc.name}</span>
+            {#if editEnabled}
+              <div class="faction-reorder-btns">
+                <button class="reorder-arrow" title="Move faction up"
+                  disabled={fcIdx === 0}
+                  onclick={() => moveFaction(fc.id, 'up')}>▲</button>
+                <button class="reorder-arrow" title="Move faction down"
+                  disabled={fcIdx >= visibleConfigs.length - 1}
+                  onclick={() => moveFaction(fc.id, 'down')}>▼</button>
+              </div>
+            {/if}
+            <div class="section-line"></div>
+          </div>
+
+          <!-- Renown row -->
+          <div class="npc-row faction-header">
+            <div class="npc-left">
+              <div style="width:28px"></div>
+              <div class="reorder-btns" style="visibility:hidden">
+                <button class="reorder-arrow" disabled>▲</button>
+                <button class="reorder-arrow" disabled>▼</button>
+              </div>
+              <div class="npc-initials" style="font-size:10px">{fc.name.slice(0,2).toUpperCase()}</div>
+              <div class="npc-info">
+                <div class="npc-name">{fc.name} <span class="faction-header-badge">Renown</span></div>
+                <div class="npc-role">Faction</div>
+              </div>
             </div>
-            {#each group as npc, i (npc.id)}
-              {@const score      = pd?.scores[npc.id] ?? 50}
-              {@const { word, color } = favorMeta(score, tiers)}
-              <div class="npc-row" class:faction-header={npc.isFactionHeader === true}>
+            <div class="npc-right">
+              <div class="meter-wrap">
+                <div class="meter-top">
+                  <span class="favor-word" style="color: {renownMeta.color}">{renownMeta.word}</span>
+                  <span class="score-num">{renownScore}</span>
+                </div>
+                <div class="meter-track">
+                  <div class="meter-fill" style="width: {renownScore}%; background: {renownMeta.color}"></div>
+                </div>
+              </div>
+              <div class="step-btns">
+                <button class="step-btn" onclick={() => adjustRenown(fc.id, -increment)}>−</button>
+                <button class="step-btn" onclick={() => adjustRenown(fc.id, increment)}>+</button>
+              </div>
+            </div>
+          </div>
 
-                <!-- Left: delete btn + reorder + badge + info -->
-                <div class="npc-left">
-                  <button
-                    class="btn-icon danger"
-                    title="Remove NPC"
-                    style="display: {editEnabled ? 'flex' : 'none'}"
-                    onclick={() => deleteNPC(npc)}
-                  >✕</button>
-                  <div class="reorder-btns">
-                    <button class="reorder-arrow" title="Move up" disabled={i === 0}
-                      onclick={() => store.reorderNPC(cid!, npc.id, -1)}>▲</button>
-                    <button class="reorder-arrow" title="Move down" disabled={i === group.length - 1}
-                      onclick={() => store.reorderNPC(cid!, npc.id, 1)}>▼</button>
+          <!-- Member NPCs -->
+          {#each factionNpcs as npc, i (npc.id)}
+            {@const score = pd?.scores[npc.id] ?? 50}
+            {@const { word, color } = favorMeta(score, tiers)}
+            {@const rankName = fc.ranks.find((r) => r.id === fc.npcRanks?.[npc.id])?.name}
+            <div class="npc-row">
+              <div class="npc-left">
+                <button class="btn-icon danger" title="Remove NPC"
+                  style="display: {editEnabled ? 'flex' : 'none'}"
+                  onclick={() => deleteNPC(npc)}>✕</button>
+                <div class="reorder-btns">
+                  <button class="reorder-arrow" title="Move up" disabled={i === 0}
+                    onclick={() => store.reorderNPC(cid!, npc.id, -1)}>▲</button>
+                  <button class="reorder-arrow" title="Move down" disabled={i === factionNpcs.length - 1}
+                    onclick={() => store.reorderNPC(cid!, npc.id, 1)}>▼</button>
+                </div>
+                <div class="npc-initials">{initials(npc.name)}</div>
+                <div class="npc-info">
+                  <div class="npc-name">{npc.name}</div>
+                  {#if editEnabled}
+                    <input class="npc-role-input" type="text" value={npc.role} placeholder="Role or title"
+                      onchange={(e) => store.updateNPCRole(cid!, npc.id, (e.target as HTMLInputElement).value)} />
+                  {:else}
+                    <div class="npc-role">{npc.role}</div>
+                  {/if}
+                  {#if rankName}<div class="npc-rank-label">{rankName}</div>{/if}
+                  <span class="npc-type-badge {npc.npcType ?? 'scene'}">{npc.npcType === 'recurring' ? 'Recurring' : npc.npcType === 'major' ? 'Major' : 'Scene'}</span>
+                </div>
+              </div>
+              <div class="npc-right">
+                <div class="meter-wrap">
+                  <div class="meter-top">
+                    <span class="favor-word" style="color: {color}">{word}</span>
+                    <span class="score-num">{score}</span>
                   </div>
-                  <div class="npc-initials">{initials(npc.name)}</div>
-                  <div class="npc-info">
-                    <div class="npc-name">
-                      {npc.name}
-                      {#if npc.isFactionHeader}<span class="faction-header-badge">Renown</span>{/if}
-                    </div>
-                    {#if editEnabled}
-                      <input
-                        class="npc-role-input"
-                        type="text"
-                        value={npc.role}
-                        placeholder="Role or title"
-                        onchange={(e) => store.updateNPCRole(cid!, npc.id, (e.target as HTMLInputElement).value)}
-                      />
-                    {:else}
-                      <div class="npc-role">{npc.role}</div>
-                    {/if}
-                    {#if !npc.isFactionHeader}
-                      {@const fc = factionConfigMap().get(npc.faction)}
-                      {@const rankName = fc?.ranks.find((r) => r.id === fc.npcRanks?.[npc.id])?.name}
-                      {#if rankName}
-                        <div class="npc-rank-label">{rankName}</div>
-                      {/if}
-                    {/if}
+                  <div class="meter-track">
+                    <div class="meter-fill" style="width: {score}%; background: {color}"></div>
                   </div>
                 </div>
-
-                <!-- Right: meter + step buttons -->
-                <div class="npc-right">
-                  <div class="meter-wrap">
-                    <div class="meter-top">
-                      <span class="favor-word" style="color: {color}">{word}</span>
-                      <span class="score-num">{score}</span>
-                    </div>
-                    <div class="meter-track">
-                      <div class="meter-fill" style="width: {score}%; background: {color}"></div>
-                    </div>
-                  </div>
-                  <div class="step-btns">
-                    <button class="step-btn" onclick={() => adjust(npc.id, -increment)}>−</button>
-                    <button class="step-btn" onclick={() => adjust(npc.id, increment)}>+</button>
-                  </div>
+                <div class="step-btns">
+                  <button class="step-btn" onclick={() => adjust(npc.id, -increment)}>−</button>
+                  <button class="step-btn" onclick={() => adjust(npc.id, increment)}>+</button>
                 </div>
-
-              </div><!-- /npc-row -->
-            {/each}
-          {/if}
+              </div>
+            </div>
+          {/each}
         {/each}
+
+        <!-- Unaffiliated group -->
+        {#if showUnaffiliated}
+          <div class="section-head">
+            <span class="section-name">Unaffiliated</span>
+            <div class="section-line"></div>
+          </div>
+          {#each unaffiliatedNpcs as npc, i (npc.id)}
+            {@const score = pd?.scores[npc.id] ?? 50}
+            {@const { word, color } = favorMeta(score, tiers)}
+            <div class="npc-row">
+              <div class="npc-left">
+                <button class="btn-icon danger" title="Remove NPC"
+                  style="display: {editEnabled ? 'flex' : 'none'}"
+                  onclick={() => deleteNPC(npc)}>✕</button>
+                <div class="reorder-btns">
+                  <button class="reorder-arrow" disabled>▲</button>
+                  <button class="reorder-arrow" disabled>▼</button>
+                </div>
+                <div class="npc-initials">{initials(npc.name)}</div>
+                <div class="npc-info">
+                  <div class="npc-name">{npc.name}</div>
+                  {#if editEnabled}
+                    <input class="npc-role-input" type="text" value={npc.role} placeholder="Role or title"
+                      onchange={(e) => store.updateNPCRole(cid!, npc.id, (e.target as HTMLInputElement).value)} />
+                  {:else}
+                    <div class="npc-role">{npc.role}</div>
+                  {/if}
+                  <span class="npc-type-badge {npc.npcType ?? 'scene'}">{npc.npcType === 'recurring' ? 'Recurring' : npc.npcType === 'major' ? 'Major' : 'Scene'}</span>
+                </div>
+              </div>
+              <div class="npc-right">
+                <div class="meter-wrap">
+                  <div class="meter-top">
+                    <span class="favor-word" style="color: {color}">{word}</span>
+                    <span class="score-num">{score}</span>
+                  </div>
+                  <div class="meter-track">
+                    <div class="meter-fill" style="width: {score}%; background: {color}"></div>
+                  </div>
+                </div>
+                <div class="step-btns">
+                  <button class="step-btn" onclick={() => adjust(npc.id, -increment)}>−</button>
+                  <button class="step-btn" onclick={() => adjust(npc.id, increment)}>+</button>
+                </div>
+              </div>
+            </div>
+          {/each}
+        {/if}
       {/if}
     </div><!-- /npc-list -->
 
-    <!-- Add NPC panel -->
+    <!-- Create NPC shortcut -->
     <div class="add-npc-panel">
-      <h3>Add NPC to Schema</h3>
-      <div class="add-npc-grid">
-        <div class="field-group">
-          <label class="field-label" for="new-npc-name-svelte">Name</label>
-          <input id="new-npc-name-svelte" type="text" bind:value={npcName} placeholder="Full name" />
-        </div>
-        <div class="field-group">
-          <label class="field-label" for="new-npc-role-svelte">Role</label>
-          <input id="new-npc-role-svelte" type="text" bind:value={npcRole} placeholder="Role or title" />
-        </div>
-        <div class="field-group">
-          <label class="field-label" for="new-npc-faction-svelte">Faction</label>
-          <select id="new-npc-faction-svelte" class="topbar-select" style="width:100%;min-width:0" bind:value={npcFactionSelect}>
-            <option value="">— none —</option>
-            <option value="__new__">+ New Faction</option>
-            {#each factions as f}
-              <option value={f}>{f}</option>
-            {/each}
-          </select>
-          {#if npcFactionSelect === '__new__'}
-            <input
-              class="faction-new-input"
-              type="text"
-              bind:value={npcFactionNew}
-              placeholder="New faction name…"
-              style="margin-top:6px"
-            />
-          {/if}
-        </div>
-        <button class="btn btn-gold" style="align-self: end" onclick={addNPC}>Add</button>
-      </div>
-      <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px">
-        <input
-          type="checkbox"
-          id="new-npc-is-header-svelte"
-          bind:checked={npcHeader}
-          style="accent-color: var(--gold); width: 14px; height: 14px; cursor: pointer"
-        />
-        <label
-          for="new-npc-is-header-svelte"
-          style='font-family:"Cinzel",serif;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);cursor:pointer'
-        >
-          Faction header — tracks renown for the faction as a whole
-        </label>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <span style='font-family:"Cinzel",serif;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-dim)'>
+          NPCs are managed in the NPC Creator tab
+        </span>
+        <button class="btn btn-gold btn-sm" onclick={() => onswitchToNPCs?.()}>
+          ➕ Create NPC →
+        </button>
       </div>
     </div>
 

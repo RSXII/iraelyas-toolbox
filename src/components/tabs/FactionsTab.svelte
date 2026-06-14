@@ -24,26 +24,13 @@
   const cd         = $derived(campaignId ? store.getCampaignData(campaignId) : null);
   const factions   = $derived(campaignId ? store.getFactions(campaignId).factions : []);
 
-  const schemaFactionHeaders = $derived(
-    cd?.schema.npcs.filter((n) => n.isFactionHeader) ?? []
-  );
-
-  const availableFactionHeaders = $derived(
-    schemaFactionHeaders.filter(
-      (n) => !factions.find((fc) => fc.factionNpcId === n.id)
-    )
-  );
-
-  function getFactionNPC(npcId: string) {
-    return cd?.schema.npcs.find((n) => n.id === npcId) ?? null;
-  }
-
   function getPC(pcId: string) {
     return cd?.party.pcs.find((p) => p.id === pcId) ?? null;
   }
 
-  function getFavorScore(pcId: string, npcId: string): number {
-    return cd?.players[pcId]?.scores[npcId] ?? 50;
+  function getFavorScore(pcId: string, factionId: string): number {
+    const fc = factions.find((f) => f.id === factionId);
+    return fc?.renown?.[pcId] ?? 50;
   }
 
   function availablePCs(fc: FactionConfig) {
@@ -51,14 +38,14 @@
     return cd?.party.pcs.filter((p) => !memberIds.has(p.id)) ?? [];
   }
 
-  function getFactionNPCs(factionLabel: string | null | undefined): NonNullable<typeof cd>['schema']['npcs'] {
-    if (!factionLabel || !cd) return [];
-    return cd.schema.npcs.filter((n) => n.faction === factionLabel && !n.isFactionHeader);
+  function getFactionNPCs(factionId: string): NonNullable<typeof cd>['schema']['npcs'] {
+    if (!factionId || !cd) return [];
+    return cd.schema.npcs.filter((n) => n.factionId === factionId);
   }
 
   // ─── UI state ────────────────────────────────────────────────
-  let showAddFaction  = $state(false);
-  let newFactionNpcId = $state('');
+  let showAddFaction = $state(false);
+  let newFactionName = $state('');
 
   // Rank editing
   let editingRanksFor = $state<string | null>(null);
@@ -72,9 +59,9 @@
 
   // ─── Actions ─────────────────────────────────────────────────
   function addFaction() {
-    if (!campaignId || !newFactionNpcId) return;
-    store.addFactionConfig(campaignId, newFactionNpcId);
-    newFactionNpcId = '';
+    if (!campaignId || !newFactionName.trim()) return;
+    store.addFaction(campaignId, newFactionName.trim());
+    newFactionName = '';
     showAddFaction = false;
     showToast('Faction added');
   }
@@ -157,26 +144,23 @@
     <!-- ─── Header bar ─── -->
     <div class="factions-top-bar">
       <h2 class="factions-title">Faction Memberships</h2>
-      <button class="btn-add-faction" onclick={() => { showAddFaction = !showAddFaction; newFactionNpcId = ''; }}>
+      <button class="btn-add-faction" onclick={() => { showAddFaction = !showAddFaction; newFactionName = ''; }}>
         + Add Faction
       </button>
     </div>
 
-    <!-- ─── Add Faction picker ─── -->
+    <!-- ─── Add Faction form ─── -->
     {#if showAddFaction}
       <div class="add-faction-bar">
-        {#if availableFactionHeaders.length === 0}
-          <span class="hint-text">All schema factions are already configured.</span>
-        {:else}
-          <select bind:value={newFactionNpcId} class="faction-select">
-            <option value="">— select a faction —</option>
-            {#each availableFactionHeaders as npc (npc.id)}
-              <option value={npc.id}>{npc.name}</option>
-            {/each}
-          </select>
-          <button class="btn-confirm" onclick={addFaction} disabled={!newFactionNpcId}>Add</button>
-        {/if}
-        <button class="btn-cancel" onclick={() => { showAddFaction = false; newFactionNpcId = ''; }}>Cancel</button>
+        <input
+          type="text"
+          class="faction-select"
+          bind:value={newFactionName}
+          placeholder="Faction name…"
+          onkeydown={(e) => { if (e.key === 'Enter') addFaction(); if (e.key === 'Escape') { showAddFaction = false; newFactionName = ''; } }}
+        />
+        <button class="btn-confirm" onclick={addFaction} disabled={!newFactionName.trim()}>Add</button>
+        <button class="btn-cancel" onclick={() => { showAddFaction = false; newFactionName = ''; }}>Cancel</button>
       </div>
     {/if}
 
@@ -186,16 +170,12 @@
     {:else}
       <div class="faction-cards">
         {#each factions as fc, fcIdx (fc.id)}
-          {@const factionNPC = getFactionNPC(fc.factionNpcId)}
           <div class="faction-card">
 
             <!-- Card header -->
             <div class="faction-card-header">
               <div class="faction-card-title">
-                <span class="faction-name">{factionNPC?.name ?? fc.factionNpcId}</span>
-                {#if factionNPC?.role}
-                  <span class="faction-role">{factionNPC.role}</span>
-                {/if}
+                <span class="faction-name">{fc.name}</span>
               </div>
               <div class="faction-card-actions">
                 <button
@@ -283,7 +263,7 @@
                   </div>
                   {#each fc.members as member (member.pcId)}
                     {@const pc    = getPC(member.pcId)}
-                    {@const score = getFavorScore(member.pcId, fc.factionNpcId)}
+                    {@const score = getFavorScore(member.pcId, fc.id)}
                     {@const meta  = favorMeta(score)}
                     <div class="member-row">
                       <span class="member-name">{pc?.name ?? member.pcId}</span>
@@ -347,11 +327,11 @@
               <div class="npc-members-header">
                 <span class="section-label">NPCs</span>
               </div>
-              {#if getFactionNPCs(factionNPC?.faction).length === 0}
+              {#if getFactionNPCs(fc.id).length === 0}
                 <p class="hint-text npc-members-empty">No NPCs in this faction yet.</p>
               {:else if fc.ranks.length === 0}
                 <div class="npc-members-list">
-                  {#each getFactionNPCs(factionNPC?.faction) as npc (npc.id)}
+                  {#each getFactionNPCs(fc.id) as npc (npc.id)}
                     <div class="npc-member-row">
                       <span class="npc-member-name">{npc.name}</span>
                       <span class="npc-member-role">{npc.role}</span>
@@ -361,7 +341,7 @@
                 </div>
               {:else}
                 <div class="npc-members-list">
-                  {#each getFactionNPCs(factionNPC?.faction) as npc (npc.id)}
+                  {#each getFactionNPCs(fc.id) as npc (npc.id)}
                     <div class="npc-member-row">
                       <span class="npc-member-name">{npc.name}</span>
                       <span class="npc-member-role">{npc.role}</span>
