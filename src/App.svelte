@@ -10,12 +10,12 @@
   import CustomGroupModal from '@/components/ui/CustomGroupModal.svelte';
   import ConvoTab from '@/components/tabs/ConvoTab.svelte';
   import PartyTab from '@/components/tabs/PartyTab.svelte';
-  import TrackerTab from '@/components/tabs/TrackerTab.svelte';
-  import FavorTab from '@/components/tabs/FavorTab.svelte';
+  import TrackerTab from '@/features/tracker/TrackerTab.svelte';
+  import FavorTab from '@/features/favor/FavorTab.svelte';
   import ChronicleTab from '@/components/tabs/ChronicleTab.svelte';
   import TreeTab from '@/components/tabs/TreeTab.svelte';
-  import FactionsTab from '@/components/tabs/FactionsTab.svelte';
-  import InitiativeTab from '@/components/tabs/InitiativeTab.svelte';
+  import FactionsTab from '@/features/factions/FactionsTab.svelte';
+  import InitiativeTab from '@/features/initiative/InitiativeTab.svelte';
   import DiceTab from '@/components/tabs/DiceTab.svelte';
   import EnemyTab from '@/components/tabs/EnemyTab.svelte';
   import NPCTab from '@/components/tabs/NPCTab.svelte';

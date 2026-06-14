@@ -1,8 +1,5 @@
-<script lang="ts">
-  import { onMount } from 'svelte';
-  import { store } from '@/state/store.svelte';
-  import { showToast } from '@/state/toast.svelte';
-  import type { TrackerEntry, TrackerWarning, TrackerDirection } from '@/types/index';
+// This file has been refactored into src/features/tracker/
+// It is safe to delete.
 
   interface Props { active?: boolean; }
   let { active = false }: Props = $props();
