@@ -1,0 +1,246 @@
+/* ═══════════════════════════════════════════════════════════════
+   SESSIONS
+═══════════════════════════════════════════════════════════════ */
+#panel-sessions {
+  padding: 1.5rem 2rem 3rem;
+}
+
+.sessions-inner {
+  max-width: 1040px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Header ── */
+.sessions-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+}
+
+.sessions-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.sessions-title {
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-pale);
+}
+
+.sessions-subtitle {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.session-start-btn {
+  min-width: 168px;
+  min-height: 36px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+}
+
+/* ── Editor cards ── */
+.sessions-editor-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.sessions-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.sessions-card:hover {
+  border-color: var(--border-h);
+}
+
+.sessions-label {
+  display: block;
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 0.55rem;
+}
+
+.sessions-input,
+.sessions-textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  padding: 7px 9px;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.sessions-input:focus,
+.sessions-textarea:focus {
+  outline: none;
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.18);
+}
+
+.sessions-input {
+  font-family: "Cinzel", serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gold-pale);
+}
+
+.sessions-textarea {
+  min-height: 116px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.sessions-hint {
+  margin-top: 0.55rem;
+  font-size: 11px;
+  color: var(--text-faint);
+  line-height: 1.35;
+}
+
+/* ── History ── */
+.sessions-history {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(255, 255, 255, 0));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+
+.sessions-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sessions-history-title {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+.sessions-history-count {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.sessions-empty {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: center;
+}
+
+.sessions-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 440px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.sessions-history-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 10px 12px;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.sessions-history-item:hover {
+  border-color: var(--border-h);
+  background: var(--card-hover);
+}
+
+.sessions-history-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 0.48rem;
+}
+
+.sessions-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  background: rgba(201, 168, 76, 0.08);
+  color: var(--gold-pale);
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+}
+
+.sessions-date {
+  font-size: 11px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.sessions-note {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .sessions-editor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .session-start-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  #panel-sessions {
+    padding: 1.2rem 1rem 2.2rem;
+  }
+
+  .sessions-header {
+    margin-bottom: 1rem;
+  }
+
+  .sessions-history {
+    padding: 10px;
+  }
+
+  .sessions-card {
+    padding: 10px;
+  }
+}

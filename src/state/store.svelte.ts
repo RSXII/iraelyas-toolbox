@@ -26,6 +26,8 @@ import type {
   PartyData,
   PCCard,
   InitiativeState,
+  SessionEntry,
+  SessionTrackerData,
 } from "@/types/index";
 import { DEFAULT_THEME } from "@/utils/theme";
 
@@ -83,6 +85,12 @@ function defaultCampaignData(): CampaignData {
     houses: {},
     timeline: null,
     tracker: { entries: [] },
+    sessions: {
+      currentNumber: 1,
+      currentNote: "",
+      currentData: {},
+      entries: [],
+    },
     party: { pcs: [] },
     factions: { factions: [] },
     favor: defaultFavorSettings(),
@@ -120,7 +128,7 @@ function defaultState(): AppState {
 const GROUP_TABS_MAP: Record<"session" | "world" | "toolbox", TabId[]> = {
   session: ["initiative", "dice", "convo", "party"],
   world: ["favor", "npcs", "factions", "chronicle", "tree"],
-  toolbox: ["enemies", "tracker"],
+  toolbox: ["enemies", "tracker", "sessions"],
 };
 
 function inferGroupFromTab(tab: TabId): GroupId {
@@ -179,6 +187,15 @@ class Store {
       // Lazy-init favor settings for saves that predate this field
       if (!s.campaignData[c.id].favor) {
         s.campaignData[c.id].favor = defaultFavorSettings();
+      }
+      // Lazy-init sessions for saves that predate this field
+      if (!s.campaignData[c.id].sessions) {
+        s.campaignData[c.id].sessions = {
+          currentNumber: 1,
+          currentNote: "",
+          currentData: {},
+          entries: [],
+        };
       }
       // Lazy-init initiative for saves that predate this field
       if (!("initiative" in s.campaignData[c.id])) {
@@ -828,6 +845,55 @@ class Store {
   clearInitiative(campaignId: string): void {
     this.getCampaignData(campaignId).initiative = null;
     this.save();
+  }
+
+  // ── Session helpers ─────────────────────────────────────────────
+
+  getSessions(campaignId: string): SessionTrackerData {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.sessions) {
+      cd.sessions = {
+        currentNumber: 1,
+        currentNote: "",
+        currentData: {},
+        entries: [],
+      };
+    }
+    return cd.sessions;
+  }
+
+  setCurrentSessionNumber(campaignId: string, number: number): void {
+    const sessions = this.getSessions(campaignId);
+    sessions.currentNumber = Math.max(1, Math.floor(number || 1));
+    this.save();
+  }
+
+  setCurrentSessionNote(campaignId: string, note: string): void {
+    this.getSessions(campaignId).currentNote = note;
+    this.save();
+  }
+
+  startSession(campaignId: string): void {
+    const sessions = this.getSessions(campaignId);
+    const snapshot: SessionEntry = {
+      id: `session_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      number: sessions.currentNumber,
+      note: sessions.currentNote,
+      timestamp: Date.now(),
+      data: { ...sessions.currentData },
+    };
+
+    this.runSessionCalculations(campaignId);
+    sessions.entries.push(snapshot);
+    sessions.currentNumber += 1;
+    sessions.currentNote = "";
+    sessions.currentData = {};
+    this.save();
+  }
+
+  runSessionCalculations(campaignId: string): void {
+    void campaignId;
+    // Intentionally empty for now. Session-based feature calculations will be added later.
   }
 
   // ── Factions helpers ─────────────────────────────────────────────

@@ -19,12 +19,13 @@
   import DiceTab from '@/components/tabs/DiceTab.svelte';
   import EnemyTab from '@/components/tabs/EnemyTab.svelte';
   import NPCTab from '@/features/npcs/NPCTab.svelte';
+  import SessionTab from '@/features/sessions/SessionTab.svelte';
 
   // ─── Static nav data ──────────────────────────────────────────
   const GROUP_TABS: Record<'session' | 'world' | 'toolbox', TabId[]> = {
     session:  ['initiative', 'dice', 'convo', 'party'],
     world:    ['favor', 'npcs', 'factions', 'chronicle', 'tree'],
-    toolbox:  ['enemies', 'tracker'],
+    toolbox:  ['enemies', 'tracker', 'sessions'],
   };
 
   const TAB_META: Record<TabId, { label: string; icon: string }> = {
@@ -39,6 +40,7 @@
     tree:       { label: 'Family Tree',     icon: '🌳' },
     enemies:    { label: 'Enemies',         icon: '💀' },
     tracker:    { label: 'Custom Trackers', icon: '🎯' },
+    sessions:   { label: 'Sessions',        icon: '🗓' },
   };
 
   // ─── App state ────────────────────────────────────────────────
@@ -657,6 +659,9 @@
 
   <!-- ── ENEMY LIBRARY ── -->
   <EnemyTab active={activeTab === 'enemies'} />
+
+  <!-- ── SESSION TRACKING ── -->
+  <SessionTab active={activeTab === 'sessions'} />
 
   <!-- ── CUSTOM GROUP EMPTY STATE (last = renders on top) ── -->
   {#if activeGroup === 'custom' && store.customGroupTabs.length === 0}

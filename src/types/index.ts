@@ -294,6 +294,21 @@ export interface TrackerData {
   entries: TrackerEntry[];
 }
 
+export interface SessionEntry {
+  id: string;
+  number: number;
+  note: string;
+  timestamp: number;
+  data: Record<string, unknown>;
+}
+
+export interface SessionTrackerData {
+  currentNumber: number;
+  currentNote: string;
+  currentData: Record<string, unknown>;
+  entries: SessionEntry[];
+}
+
 // ═══════════════════════════════════════════════════════════════
 // PARTY QUICK VIEW
 // ═══════════════════════════════════════════════════════════════
@@ -370,6 +385,7 @@ export interface CampaignData {
   houses: Record<string, HouseData>;
   timeline: TimelineData | null;
   tracker: TrackerData;
+  sessions?: SessionTrackerData;
   party: PartyData;
   factions: FactionsData;
   favor?: FavorSettings;
@@ -405,6 +421,7 @@ export type TabId =
   | "tree"
   | "chronicle"
   | "tracker"
+  | "sessions"
   | "party"
   | "factions"
   | "initiative"
