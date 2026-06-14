@@ -18,7 +18,7 @@
   import InitiativeTab from '@/features/initiative/InitiativeTab.svelte';
   import DiceTab from '@/components/tabs/DiceTab.svelte';
   import EnemyTab from '@/components/tabs/EnemyTab.svelte';
-  import NPCTab from '@/components/tabs/NPCTab.svelte';
+  import NPCTab from '@/features/npcs/NPCTab.svelte';
 
   // ─── Static nav data ──────────────────────────────────────────
   const GROUP_TABS: Record<'session' | 'world' | 'toolbox', TabId[]> = {

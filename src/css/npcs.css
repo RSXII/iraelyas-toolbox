@@ -117,6 +117,37 @@
   background: var(--card-hover);
 }
 
+.npc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.npc-list-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  transition:
+    border-color 0.14s ease,
+    box-shadow 0.14s ease,
+    background 0.14s ease;
+}
+
+.npc-list-row:hover {
+  border-color: var(--border-h);
+  box-shadow: 0 0 0 1px rgba(188, 161, 89, 0.24);
+  background: var(--card-hover);
+}
+
+.npc-list-row:focus-visible {
+  outline: none;
+  border-color: var(--gold-dim);
+  box-shadow:
+    0 0 0 1px var(--gold-dim),
+    0 0 0 3px rgba(188, 161, 89, 0.28);
+}
+
 .npc-card-initials {
   width: 34px;
   height: 34px;
@@ -355,6 +386,18 @@ textarea.npc-field-input {
   color: var(--gold);
 }
 
+.npc-type-description {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.npc-type-description-title {
+  color: var(--gold-pale);
+  font-weight: 600;
+}
+
 /* ── Progressive field sections ── */
 .npc-fields-section {
   display: flex;
@@ -452,4 +495,93 @@ textarea.npc-field-input {
   font-size: 12px;
   color: var(--text-faint);
   margin-top: 6px;
+}
+
+/* ── NPC detail modal (card-like editor) ── */
+.modal-npc-detail {
+  width: min(1120px, 94vw);
+  max-height: 92vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--border-h);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.46);
+  background: var(--card);
+}
+
+.npc-detail-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+}
+
+.npc-detail-modal-title {
+  margin: 0;
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-pale);
+}
+
+.modal-npc-detail .npc-card-body-top {
+  grid-template-columns: 1.1fr 1fr 1fr;
+  gap: 12px;
+  padding: 16px 18px 0;
+}
+
+.modal-npc-detail .npc-card-body-top .npc-field-group[style*="grid-column"] {
+  grid-column: 1 / -1 !important;
+}
+
+.modal-npc-detail .npc-fields-section {
+  margin: 12px 18px 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.modal-npc-detail .npc-fields-section-title {
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+}
+
+.modal-npc-detail .modal-foot {
+  margin-top: 14px;
+  padding: 14px 18px 18px;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0));
+}
+
+@media (max-width: 900px) {
+  .modal-npc-detail {
+    width: min(96vw, 780px);
+  }
+
+  .modal-npc-detail .npc-card-body-top {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-npc-detail .npc-card-body-top {
+    grid-template-columns: 1fr;
+    padding: 14px 14px 0;
+  }
+
+  .modal-npc-detail .npc-fields-section {
+    margin: 10px 14px 0;
+    padding: 10px;
+  }
+
+  .modal-npc-detail .modal-foot {
+    padding: 12px 14px 14px;
+  }
 }
