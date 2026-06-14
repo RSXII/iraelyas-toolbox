@@ -8,6 +8,7 @@ import type {
   FactionRank,
   FavorSettings,
   FavorTier,
+  GroupId,
   TokenUsage,
   FactionsData,
   HouseData,
@@ -48,6 +49,10 @@ const DEFAULT_UI: UIState = {
   activePlayer: "",
   activeHouse: "",
   activeTab: "favor",
+  activeGroup: "world",
+  lastTabPerGroup: {},
+  customGroupName: "My View",
+  customGroupTabs: [],
   convo: DEFAULT_CONVO,
 };
 
@@ -106,6 +111,25 @@ function defaultState(): AppState {
       generationCount: 0,
     },
   };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GROUP NAV HELPERS
+// ═══════════════════════════════════════════════════════════════
+
+const GROUP_TABS_MAP: Record<"session" | "world" | "toolbox", TabId[]> = {
+  session: ["initiative", "dice", "convo", "party"],
+  world: ["favor", "npcs", "factions", "chronicle", "tree"],
+  toolbox: ["enemies", "tracker"],
+};
+
+function inferGroupFromTab(tab: TabId): GroupId {
+  for (const [group, tabs] of Object.entries(GROUP_TABS_MAP) as Array<
+    ["session" | "world" | "toolbox", TabId[]]
+  >) {
+    if (tabs.includes(tab)) return group;
+  }
+  return "session";
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -181,6 +205,11 @@ class Store {
         lastOutput: 0,
         generationCount: 0,
       };
+    // Lazy-init two-level nav fields for saves that predate this feature
+    if (!s.ui.activeGroup) s.ui.activeGroup = inferGroupFromTab(s.ui.activeTab);
+    if (!s.ui.lastTabPerGroup) s.ui.lastTabPerGroup = {};
+    if (!s.ui.customGroupName) s.ui.customGroupName = "My View";
+    if (!s.ui.customGroupTabs) s.ui.customGroupTabs = [];
     return s;
   }
 
@@ -624,6 +653,43 @@ class Store {
 
   setActiveTab(tab: TabId): void {
     this._state.ui.activeTab = tab;
+    this.save();
+  }
+
+  get activeGroup(): GroupId {
+    return this._state.ui.activeGroup ?? "world";
+  }
+
+  setActiveGroup(group: GroupId): void {
+    this._state.ui.activeGroup = group;
+    this.save();
+  }
+
+  get lastTabPerGroup(): Partial<Record<GroupId, TabId>> {
+    return this._state.ui.lastTabPerGroup ?? {};
+  }
+
+  setLastTabForGroup(group: GroupId, tab: TabId): void {
+    if (!this._state.ui.lastTabPerGroup) this._state.ui.lastTabPerGroup = {};
+    this._state.ui.lastTabPerGroup[group] = tab;
+    this.save();
+  }
+
+  get customGroupName(): string {
+    return this._state.ui.customGroupName || "My View";
+  }
+
+  setCustomGroupName(name: string): void {
+    this._state.ui.customGroupName = name;
+    this.save();
+  }
+
+  get customGroupTabs(): TabId[] {
+    return this._state.ui.customGroupTabs ?? [];
+  }
+
+  setCustomGroupTabs(tabs: TabId[]): void {
+    this._state.ui.customGroupTabs = tabs;
     this.save();
   }
 

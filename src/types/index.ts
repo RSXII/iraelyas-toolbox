@@ -411,11 +411,17 @@ export type TabId =
   | "dice"
   | "enemies";
 
+export type GroupId = "session" | "world" | "toolbox" | "custom";
+
 export interface UIState {
   activeCampaign: string;
   activePlayer: string;
   activeHouse: string;
   activeTab: TabId;
+  activeGroup: GroupId;
+  lastTabPerGroup: Partial<Record<GroupId, TabId>>;
+  customGroupName: string;
+  customGroupTabs: TabId[];
   convo: ConvoState;
 }
 
