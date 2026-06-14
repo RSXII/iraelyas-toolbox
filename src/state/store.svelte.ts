@@ -148,7 +148,7 @@ class Store {
       // Lazy-init npcRanks on any FactionConfig that predates the field
       s.campaignData[c.id].factions.factions.forEach((fc) => {
         if (!fc.npcRanks) fc.npcRanks = {};
-        if (!fc.renown)   fc.renown   = {};
+        if (!fc.renown) fc.renown = {};
       });
       // Migrate faction-header NPCs → FactionConfig.name + FactionConfig.renown
       this._migrateFactionHeaders(s.campaignData[c.id]);
@@ -190,19 +190,28 @@ class Store {
    * Safe to call on already-migrated data — skips FactionConfigs that
    * already have a name set.
    */
-  private _migrateFactionHeaders(cd: import('@/types/index').CampaignData): void {
-    const npcs     = cd.schema.npcs;
-    const players  = cd.players;
+  private _migrateFactionHeaders(
+    cd: import("@/types/index").CampaignData,
+  ): void {
+    const npcs = cd.schema.npcs;
+    const players = cd.players;
     const factions = cd.factions.factions;
 
     for (const fc of factions) {
       // Already migrated — has a name
       if (fc.name) continue;
       // Legacy entry with no factionNpcId either — give it a placeholder name
-      if (!fc.factionNpcId) { fc.name = 'Unknown Faction'; continue; }
+      if (!fc.factionNpcId) {
+        fc.name = "Unknown Faction";
+        continue;
+      }
 
       const headerNpc = npcs.find((n) => n.id === fc.factionNpcId);
-      if (!headerNpc) { fc.name = fc.factionNpcId; fc.factionNpcId = undefined; continue; }
+      if (!headerNpc) {
+        fc.name = fc.factionNpcId;
+        fc.factionNpcId = undefined;
+        continue;
+      }
 
       // Populate name from the header NPC
       fc.name = headerNpc.name;
@@ -219,7 +228,11 @@ class Store {
       // Assign factionId to every NPC in this faction
       const headerFactionLabel = headerNpc.faction;
       npcs.forEach((n) => {
-        if (!n.isFactionHeader && n.faction === headerFactionLabel && !n.factionId) {
+        if (
+          !n.isFactionHeader &&
+          n.faction === headerFactionLabel &&
+          !n.factionId
+        ) {
           n.factionId = fc.id;
         }
       });
@@ -452,7 +465,11 @@ class Store {
     this.save();
   }
 
-  updateNPC(campaignId: string, npcId: string, patch: Partial<Omit<NPC, 'id'>>): void {
+  updateNPC(
+    campaignId: string,
+    npcId: string,
+    patch: Partial<Omit<NPC, "id">>,
+  ): void {
     const npc = this.getCampaignData(campaignId).schema.npcs.find(
       (n) => n.id === npcId,
     );
@@ -776,7 +793,10 @@ class Store {
     const fd = this.getFactions(campaignId);
     const trimmed = name.trim();
     if (!trimmed) return;
-    if (fd.factions.find((fc) => fc.name.toLowerCase() === trimmed.toLowerCase())) return;
+    if (
+      fd.factions.find((fc) => fc.name.toLowerCase() === trimmed.toLowerCase())
+    )
+      return;
     const id = `fc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     fd.factions.push({
       id,

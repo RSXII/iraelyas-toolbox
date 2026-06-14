@@ -122,9 +122,9 @@ export interface NPC {
   id: string;
   name: string;
   role: string;
-  faction: string;                   // display label — kept for backward compat
-  factionId?: string;                // references FactionConfig.id
-  isFactionHeader?: boolean;         // deprecated — cleaned up by migration
+  faction: string; // display label — kept for backward compat
+  factionId?: string; // references FactionConfig.id
+  isFactionHeader?: boolean; // deprecated — cleaned up by migration
   // NPC Creator fields
   npcType?: NPCType;
   // Scene NPC fields
@@ -348,12 +348,12 @@ export interface FactionMember {
 
 export interface FactionConfig {
   id: string;
-  name: string;                      // faction display name
-  factionNpcId?: string;             // deprecated — used only during migration
-  renown: Record<string, number>;    // playerId → score (0–100)
+  name: string; // faction display name
+  factionNpcId?: string; // deprecated — used only during migration
+  renown: Record<string, number>; // playerId → score (0–100)
   ranks: FactionRank[];
   members: FactionMember[];
-  npcRanks: Record<string, string>;  // npcId → rankId
+  npcRanks: Record<string, string>; // npcId → rankId
 }
 
 export interface FactionsData {

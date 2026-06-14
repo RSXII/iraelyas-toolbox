@@ -69,7 +69,10 @@
   color: var(--text-dim);
   font-size: 11px;
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
   white-space: nowrap;
 }
 .chip:hover {
@@ -207,7 +210,9 @@
   padding: 4px;
   flex-shrink: 0;
   line-height: 1;
-  transition: color 0.12s, transform 0.15s;
+  transition:
+    color 0.12s,
+    transform 0.15s;
 }
 .npc-card-collapse-btn.open {
   transform: rotate(180deg);
@@ -323,7 +328,10 @@ textarea.npc-field-input {
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
   text-align: center;
   white-space: nowrap;
 }
