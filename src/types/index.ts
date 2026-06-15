@@ -457,7 +457,7 @@ export type TabId =
   | "dice"
   | "enemies";
 
-export type GroupId = "session" | "world" | "toolbox" | "custom";
+export type GroupId = "session" | "game" | "world" | "toolbox" | "custom";
 
 export interface UIState {
   activeCampaign: string;

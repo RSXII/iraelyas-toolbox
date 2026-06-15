@@ -22,10 +22,11 @@
   import SessionTab from '@/features/sessions/SessionTab.svelte';
 
   // ─── Static nav data ──────────────────────────────────────────
-  const GROUP_TABS: Record<'session' | 'world' | 'toolbox', TabId[]> = {
-    session:  ['initiative', 'dice', 'convo', 'party'],
+  const GROUP_TABS: Record<'session' | 'game' | 'world' | 'toolbox', TabId[]> = {
+    session:  ['sessions'],
+    game:     ['initiative', 'dice', 'convo', 'party'],
     world:    ['favor', 'npcs', 'factions', 'chronicle', 'tree'],
-    toolbox:  ['enemies', 'tracker', 'sessions'],
+    toolbox:  ['enemies', 'tracker'],
   };
 
   const TAB_META: Record<TabId, { label: string; icon: string }> = {
@@ -586,7 +587,11 @@
 <div class="group-nav">
   <button class="group-btn" class:active={activeGroup === 'session'}
     onclick={() => switchGroup('session')}>
-    ⚔ Session
+    🗓 Sessions
+  </button>
+  <button class="group-btn" class:active={activeGroup === 'game'}
+    onclick={() => switchGroup('game')}>
+    ⚔ Game
   </button>
   <button class="group-btn" class:active={activeGroup === 'world'}
     onclick={() => switchGroup('world')}>
@@ -607,6 +612,7 @@
 <!-- ═══════════════════════════════════════════════════════════════
      TAB NAV (sub-level, context-sensitive)
 ═══════════════════════════════════════════════════════════════ -->
+{#if activeGroup !== 'session'}
 <div class="tab-nav">
   {#if activeGroup === 'custom' && store.customGroupTabs.length === 0}
     <span class="tab-nav-empty">Nothing here — click <span class="tab-icon">⚙</span> to add tabs</span>
@@ -621,6 +627,7 @@
     {/each}
   {/if}
 </div>
+{/if}
 
 <!-- ═══════════════════════════════════════════════════════════════
      CONTENT AREA

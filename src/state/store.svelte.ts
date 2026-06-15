@@ -143,15 +143,19 @@ function defaultState(): AppState {
 // GROUP NAV HELPERS
 // ═══════════════════════════════════════════════════════════════
 
-const GROUP_TABS_MAP: Record<"session" | "world" | "toolbox", TabId[]> = {
-  session: ["initiative", "dice", "convo", "party"],
+const GROUP_TABS_MAP: Record<
+  "session" | "game" | "world" | "toolbox",
+  TabId[]
+> = {
+  session: ["sessions"],
+  game: ["initiative", "dice", "convo", "party"],
   world: ["favor", "npcs", "factions", "chronicle", "tree"],
-  toolbox: ["enemies", "tracker", "sessions"],
+  toolbox: ["enemies", "tracker"],
 };
 
 function inferGroupFromTab(tab: TabId): GroupId {
   for (const [group, tabs] of Object.entries(GROUP_TABS_MAP) as Array<
-    ["session" | "world" | "toolbox", TabId[]]
+    ["session" | "game" | "world" | "toolbox", TabId[]]
   >) {
     if (tabs.includes(tab)) return group;
   }
