@@ -15,12 +15,20 @@
 
 <div
   class="npc-list-row npc-card-header"
+  class:has-portrait={!!npc.portrait}
+  style={npc.portrait ? `--npc-portrait-url: url('${npc.portrait}')` : undefined}
   role="button"
   tabindex="0"
   onclick={() => onselect(npc)}
   onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onselect(npc); } }}
 >
-  <div class="npc-card-initials">{initials(npc.name)}</div>
+  <div class="npc-card-initials" class:npc-list-portrait={!!npc.portrait}>
+    {#if npc.portrait}
+      <img src={npc.portrait} alt="" aria-hidden="true" />
+    {:else}
+      {initials(npc.name)}
+    {/if}
+  </div>
   <div class="npc-card-identity">
     <div class="npc-card-name">{npc.name}</div>
     <div class="npc-card-role">{npc.role}</div>

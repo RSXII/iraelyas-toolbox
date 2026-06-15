@@ -139,6 +139,8 @@ export interface NPC {
   // Major NPC fields (cumulative)
   selfBelief?: string;
   relationshipContradictions?: string;
+  // Portrait image (compressed JPEG base64 — see src/utils/npc-image.ts for size config)
+  portrait?: string;
 }
 
 export interface Schema {
