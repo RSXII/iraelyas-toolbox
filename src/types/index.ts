@@ -273,10 +273,21 @@ export interface ConvoState {
 // ═══════════════════════════════════════════════════════════════
 
 export type TrackerDirection = "countup" | "countdown";
+export type SessionDiffDirection = "countup" | "countdown";
+export type SessionTriggerMode = "once" | "repeat";
 
 export interface TrackerWarning {
   value: number;
   label: string;
+}
+
+export interface SessionLinkRule {
+  enabled: boolean;
+  anchorSession: number;
+  direction: SessionDiffDirection;
+  distance: number;
+  triggerMode: SessionTriggerMode;
+  reminderText: string;
 }
 
 export interface TrackerEntry {
@@ -288,10 +299,28 @@ export interface TrackerEntry {
   current: number;
   direction: TrackerDirection;
   warnings: TrackerWarning[];
+  sessionLink?: SessionLinkRule;
 }
 
 export interface TrackerData {
   entries: TrackerEntry[];
+}
+
+export interface SessionReminder {
+  id: string;
+  sourceType: string;
+  sourceId: string;
+  sourceName: string;
+  message: string;
+  anchorSession: number;
+  direction: SessionDiffDirection;
+  distance: number;
+  triggeredAtSession: number;
+}
+
+export interface SessionEntryData {
+  reminders?: SessionReminder[];
+  [key: string]: unknown;
 }
 
 export interface SessionEntry {
@@ -299,13 +328,13 @@ export interface SessionEntry {
   number: number;
   note: string;
   timestamp: number;
-  data: Record<string, unknown>;
+  data: SessionEntryData;
 }
 
 export interface SessionTrackerData {
   currentNumber: number;
   currentNote: string;
-  currentData: Record<string, unknown>;
+  currentData: SessionEntryData;
   entries: SessionEntry[];
 }
 

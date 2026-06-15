@@ -1,7 +1,7 @@
 <script lang="ts">
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
-  import type { SessionEntry } from '@/types/index';
+  import type { SessionEntry, SessionReminder } from '@/types/index';
 
   interface Props {
     active?: boolean;
@@ -15,6 +15,11 @@
     if (!sessions) return [] as SessionEntry[];
     return [...sessions.entries].sort((a, b) => b.timestamp - a.timestamp);
   });
+
+  function getReminders(entry: SessionEntry): SessionReminder[] {
+    const maybe = entry.data?.reminders;
+    return Array.isArray(maybe) ? (maybe as SessionReminder[]) : [];
+  }
 
   function startSession(): void {
     if (!campaignId || !sessions) return;
@@ -89,12 +94,26 @@
         {:else}
           <div class="sessions-history-list">
             {#each historyEntries as entry (entry.id)}
+              {@const reminders = getReminders(entry)}
               <div class="sessions-history-item">
                 <div class="sessions-history-item-top">
                   <span class="sessions-chip">Session {entry.number}</span>
                   <span class="sessions-date">{new Date(entry.timestamp).toLocaleDateString()}</span>
                 </div>
                 <div class="sessions-note">{entry.note || 'No note.'}</div>
+                {#if reminders.length}
+                  <div class="sessions-reminders">
+                    <div class="sessions-reminders-label">Triggered Reminders</div>
+                    <div class="sessions-reminders-list">
+                      {#each reminders as reminder (reminder.id)}
+                        <div class="sessions-reminder-item">
+                          <span class="sessions-reminder-source">{reminder.sourceName}</span>
+                          <span class="sessions-reminder-message">{reminder.message}</span>
+                        </div>
+                      {/each}
+                    </div>
+                  </div>
+                {/if}
               </div>
             {/each}
           </div>

@@ -12,6 +12,12 @@
   const campaignId = $derived(store.activeCampaignId);
   const entries    = $derived(campaignId ? store.getTracker(campaignId).entries : []);
   const categories = $derived([...new Set(entries.map((e) => e.category))]);
+  const sessionNumbers = $derived.by(() => {
+    if (!campaignId) return [] as number[];
+    const sessions = store.getSessions(campaignId);
+    const unique = new Set<number>([sessions.currentNumber, ...sessions.entries.map((s) => s.number)]);
+    return [...unique].sort((a, b) => b - a);
+  });
 
   // ─── Filter state ─────────────────────────────────────────────
   let activeFilter = $state('all');
@@ -107,6 +113,7 @@
 <TrackerEntryModal
   open={showModal}
   editing={editingEntry}
+  {sessionNumbers}
   onsave={handleSave}
   onclose={() => { showModal = false; editingEntry = null; }}
 />

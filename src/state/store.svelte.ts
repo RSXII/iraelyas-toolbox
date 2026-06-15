@@ -27,9 +27,27 @@ import type {
   PCCard,
   InitiativeState,
   SessionEntry,
+  SessionReminder,
   SessionTrackerData,
+  SessionEntryData,
 } from "@/types/index";
 import { DEFAULT_THEME } from "@/utils/theme";
+
+interface SessionReminderCandidate {
+  sourceType: string;
+  sourceId: string;
+  sourceName: string;
+  anchorSession: number;
+  direction: "countup" | "countdown";
+  distance: number;
+  triggerMode: "once" | "repeat";
+  message: string;
+}
+
+type SessionReminderProvider = (
+  campaignId: string,
+  currentSession: number,
+) => SessionReminderCandidate[];
 
 // ═══════════════════════════════════════════════════════════════
 // DEFAULTS
@@ -849,6 +867,53 @@ class Store {
 
   // ── Session helpers ─────────────────────────────────────────────
 
+  private getSessionReminderProviders(): SessionReminderProvider[] {
+    return [this.trackerSessionReminderProvider.bind(this)];
+  }
+
+  private collectSessionReminderCandidates(
+    campaignId: string,
+    currentSession: number,
+  ): SessionReminderCandidate[] {
+    const providers = this.getSessionReminderProviders();
+    return providers.flatMap((provider) =>
+      provider(campaignId, currentSession),
+    );
+  }
+
+  private trackerSessionReminderProvider(
+    campaignId: string,
+    _currentSession: number,
+  ): SessionReminderCandidate[] {
+    const candidates: SessionReminderCandidate[] = [];
+
+    for (const entry of this.getTracker(campaignId).entries) {
+      const link = entry.sessionLink;
+      if (!link?.enabled) continue;
+
+      const anchorSession = Math.max(1, Math.floor(link.anchorSession || 1));
+      const distance = Math.max(1, Math.floor(link.distance || 1));
+      const direction = link.direction;
+
+      const message =
+        link.reminderText?.trim() ||
+        `${entry.name}: ${distance} session${distance === 1 ? "" : "s"} ${direction === "countup" ? "after" : "before"} session ${anchorSession}.`;
+
+      candidates.push({
+        sourceType: "tracker",
+        sourceId: entry.id,
+        sourceName: entry.name,
+        anchorSession,
+        direction,
+        distance,
+        triggerMode: link.triggerMode,
+        message,
+      });
+    }
+
+    return candidates;
+  }
+
   getSessions(campaignId: string): SessionTrackerData {
     const cd = this.getCampaignData(campaignId);
     if (!cd.sessions) {
@@ -875,6 +940,11 @@ class Store {
 
   startSession(campaignId: string): void {
     const sessions = this.getSessions(campaignId);
+
+    // Rebuild per-session derived data (e.g. reminders) just before snapshot.
+    sessions.currentData = {};
+    this.runSessionCalculations(campaignId);
+
     const snapshot: SessionEntry = {
       id: `session_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       number: sessions.currentNumber,
@@ -883,7 +953,6 @@ class Store {
       data: { ...sessions.currentData },
     };
 
-    this.runSessionCalculations(campaignId);
     sessions.entries.push(snapshot);
     sessions.currentNumber += 1;
     sessions.currentNote = "";
@@ -892,8 +961,68 @@ class Store {
   }
 
   runSessionCalculations(campaignId: string): void {
-    void campaignId;
-    // Intentionally empty for now. Session-based feature calculations will be added later.
+    const sessions = this.getSessions(campaignId);
+    const currentSession = sessions.currentNumber;
+    const reminders: SessionReminder[] = [];
+
+    for (const candidate of this.collectSessionReminderCandidates(
+      campaignId,
+      currentSession,
+    )) {
+      const {
+        sourceType,
+        sourceId,
+        sourceName,
+        anchorSession,
+        direction,
+        distance,
+        triggerMode,
+        message,
+      } = candidate;
+
+      const delta =
+        direction === "countup"
+          ? currentSession - anchorSession
+          : anchorSession - currentSession;
+
+      if (delta < distance) continue;
+
+      const reminderId = `${sourceType}:${sourceId}:${anchorSession}:${direction}:${distance}`;
+
+      if (triggerMode === "once") {
+        const alreadyTriggered = sessions.entries.some((sessionEntry) => {
+          const existing = sessionEntry.data?.reminders;
+          if (!Array.isArray(existing)) return false;
+          return (existing as SessionReminder[]).some(
+            (r) => r.id === reminderId,
+          );
+        });
+        if (alreadyTriggered) continue;
+      }
+
+      reminders.push({
+        id:
+          triggerMode === "repeat"
+            ? `${reminderId}:s${currentSession}`
+            : reminderId,
+        sourceType,
+        sourceId,
+        sourceName,
+        message,
+        anchorSession,
+        direction,
+        distance,
+        triggeredAtSession: currentSession,
+      });
+    }
+
+    const nextData: SessionEntryData = { ...sessions.currentData };
+    if (reminders.length) {
+      nextData.reminders = reminders;
+    } else {
+      delete nextData.reminders;
+    }
+    sessions.currentData = nextData;
   }
 
   // ── Factions helpers ─────────────────────────────────────────────

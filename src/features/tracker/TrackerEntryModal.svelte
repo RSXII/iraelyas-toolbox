@@ -1,15 +1,22 @@
 <script lang="ts">
   import { showToast } from '@/state/toast.svelte';
   import { genId } from './utils';
-  import type { TrackerEntry, TrackerWarning, TrackerDirection } from '@/types/index';
+  import type {
+    TrackerEntry,
+    TrackerWarning,
+    TrackerDirection,
+    SessionDiffDirection,
+    SessionTriggerMode,
+  } from '@/types/index';
 
   interface Props {
     open: boolean;
     editing: TrackerEntry | null;
+    sessionNumbers: number[];
     onsave: (entry: TrackerEntry) => void;
     onclose: () => void;
   }
-  let { open, editing, onsave, onclose }: Props = $props();
+  let { open, editing, sessionNumbers, onsave, onclose }: Props = $props();
 
   // ─── Form state ───────────────────────────────────────────────
   let modalName     = $state('');
@@ -19,6 +26,12 @@
   let modalStart    = $state(0);
   let modalDir      = $state<TrackerDirection>('countup');
   let modalWarnings = $state<TrackerWarning[]>([]);
+  let modalUseSessionTie = $state(false);
+  let modalAnchorSession = $state(1);
+  let modalSessionDirection = $state<SessionDiffDirection>('countup');
+  let modalSessionDistance = $state(3);
+  let modalTriggerMode = $state<SessionTriggerMode>('once');
+  let modalReminderText = $state('');
   let nameInputEl   = $state<HTMLInputElement | null>(null);
 
   // ─── Populate / reset when modal opens ───────────────────────
@@ -32,6 +45,12 @@
       modalStart    = editing.current;
       modalDir      = editing.direction;
       modalWarnings = editing.warnings.map((w) => ({ ...w }));
+      modalUseSessionTie = editing.sessionLink?.enabled ?? false;
+      modalAnchorSession = editing.sessionLink?.anchorSession ?? (sessionNumbers[0] ?? 1);
+      modalSessionDirection = editing.sessionLink?.direction ?? 'countup';
+      modalSessionDistance = editing.sessionLink?.distance ?? 3;
+      modalTriggerMode = editing.sessionLink?.triggerMode ?? 'once';
+      modalReminderText = editing.sessionLink?.reminderText ?? '';
     } else {
       modalName     = '';
       modalCat      = '';
@@ -40,6 +59,12 @@
       modalStart    = 0;
       modalDir      = 'countup';
       modalWarnings = [];
+      modalUseSessionTie = false;
+      modalAnchorSession = sessionNumbers[0] ?? 1;
+      modalSessionDirection = 'countup';
+      modalSessionDistance = 3;
+      modalTriggerMode = 'once';
+      modalReminderText = '';
     }
     setTimeout(() => nameInputEl?.focus(), 50);
   });
@@ -87,6 +112,16 @@
       current:   modalStart,
       direction: modalDir,
       warnings:  validWarnings,
+      sessionLink: modalUseSessionTie
+        ? {
+            enabled: true,
+            anchorSession: Math.max(1, Math.floor(modalAnchorSession || 1)),
+            direction: modalSessionDirection,
+            distance: Math.max(1, Math.floor(modalSessionDistance || 1)),
+            triggerMode: modalTriggerMode,
+            reminderText: modalReminderText.trim(),
+          }
+        : undefined,
     });
   }
 </script>
@@ -147,6 +182,58 @@
     <button class="add-warning-btn" onclick={() => modalWarnings.push({ value: 0, label: '' })}>
       + Add Warning Threshold
     </button>
+
+    <div class="warnings-section-label">Session Trigger</div>
+    <div class="session-link-wrap">
+      <label class="session-link-toggle">
+        <input type="checkbox" bind:checked={modalUseSessionTie} />
+        <span>Tie this tracker to session progression</span>
+      </label>
+
+      {#if modalUseSessionTie}
+        <div class="session-link-grid">
+          <div class="field-group">
+            <label class="field-label" for="session-anchor-select">Anchor Session</label>
+            <select id="session-anchor-select" bind:value={modalAnchorSession}>
+              {#each sessionNumbers as n}
+                <option value={n}>Session {n}</option>
+              {/each}
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="session-diff-direction">Count Direction</label>
+            <select id="session-diff-direction" bind:value={modalSessionDirection}>
+              <option value="countup">Count Up (after anchor)</option>
+              <option value="countdown">Count Down (before anchor)</option>
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="session-distance">Session Distance</label>
+            <input id="session-distance" type="number" min="1" bind:value={modalSessionDistance} />
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="session-trigger-mode">Trigger Mode</label>
+            <select id="session-trigger-mode" bind:value={modalTriggerMode}>
+              <option value="once">Once</option>
+              <option value="repeat">Repeat</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-top: 8px">
+          <label class="field-label" for="session-reminder-text">Reminder Text (optional)</label>
+          <input
+            id="session-reminder-text"
+            type="text"
+            bind:value={modalReminderText}
+            placeholder="Defaults to an automatic reminder message"
+          />
+        </div>
+      {/if}
+    </div>
 
     <div class="modal-foot">
       <button class="btn" onclick={onclose}>Cancel</button>
