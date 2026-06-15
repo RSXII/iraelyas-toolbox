@@ -41,7 +41,8 @@
   /* Layout */
   --radius: 6px;
   --topbar-h: 52px;
-  --tabnav-h: 42px;
+  --groupnav-h: 46px;
+  --tabnav-h: 38px;
 
   /* macOS traffic light inset when titleBarStyle: hiddenInset */
   --mac-inset: env(titlebar-area-x, 0px);
@@ -329,6 +330,66 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   GROUP NAV (top-level)
+═══════════════════════════════════════════════════════════════ */
+.group-nav {
+  display: flex;
+  align-items: stretch;
+  background: var(--surface-2, var(--surface));
+  border-bottom: 2px solid var(--border);
+  padding: 0 20px;
+  gap: 2px;
+  flex-shrink: 0;
+  height: var(--groupnav-h);
+}
+
+.group-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 20px;
+  font-family: "Cinzel", serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  position: relative;
+  top: 1px;
+}
+.group-btn:hover {
+  color: var(--text);
+}
+.group-btn.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+.group-gear-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 14px;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.15s;
+  opacity: 0.6;
+}
+.group-gear-btn:hover {
+  color: var(--gold);
+  opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    TAB NAV
 ═══════════════════════════════════════════════════════════════ */
 .tab-nav {
@@ -376,10 +437,119 @@ body {
 
 .tab-icon {
   font-size: 13px;
+  font-family:
+    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
   opacity: 0.7;
 }
 .tab-btn.active .tab-icon {
   opacity: 1;
+}
+
+.tab-nav-empty {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-family: "Cinzel", serif;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  opacity: 0.6;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CUSTOM GROUP MODAL
+═══════════════════════════════════════════════════════════════ */
+.custom-group-modal {
+  max-width: 420px;
+}
+
+.custom-group-checklist {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.custom-group-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all 0.12s;
+  user-select: none;
+}
+.custom-group-item:hover {
+  border-color: var(--gold-dim, var(--gold));
+  background: var(--surface-2, var(--surface));
+}
+.custom-group-item.checked {
+  border-color: var(--gold);
+  background: rgba(var(--gold-rgb, 180, 140, 60), 0.08);
+}
+.custom-group-item input[type="checkbox"] {
+  display: none;
+}
+.custom-group-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.custom-group-label {
+  font-size: 11px;
+  color: var(--text);
+}
+.custom-group-item.checked .custom-group-label {
+  color: var(--gold);
+}
+
+.custom-group-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-bottom: 12px;
+}
+
+/* Custom group empty state (full content-area panel) */
+.custom-group-empty-panel {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  z-index: 1;
+}
+
+.custom-group-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 340px;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.custom-group-empty-icon {
+  font-size: 48px;
+  opacity: 0.2;
+  line-height: 1;
+}
+
+.custom-group-empty-title {
+  font-family: "Cinzel", serif;
+  font-size: 20px;
+  color: var(--text);
+  margin: 0;
+}
+
+.custom-group-empty-msg {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  margin: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════════

@@ -3,24 +3,53 @@
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
   import { applyTheme } from '@/utils/theme';
-  import type { TabId, Campaign, AppState, Schema, HouseData, TimelineData } from '@/types/index';
+  import type { TabId, GroupId, Campaign, AppState, Schema, HouseData, TimelineData } from '@/types/index';
   import Toast from '@/components/ui/Toast.svelte';
   import ThemeModal from '@/components/ui/ThemeModal.svelte';
   import Banner from '@/components/ui/Banner.svelte';
+  import CustomGroupModal from '@/components/ui/CustomGroupModal.svelte';
   import ConvoTab from '@/components/tabs/ConvoTab.svelte';
   import PartyTab from '@/components/tabs/PartyTab.svelte';
-  import TrackerTab from '@/components/tabs/TrackerTab.svelte';
-  import FavorTab from '@/components/tabs/FavorTab.svelte';
+  import TrackerTab from '@/features/tracker/TrackerTab.svelte';
+  import FavorTab from '@/features/favor/FavorTab.svelte';
   import ChronicleTab from '@/components/tabs/ChronicleTab.svelte';
   import TreeTab from '@/components/tabs/TreeTab.svelte';
-  import FactionsTab from '@/components/tabs/FactionsTab.svelte';
-  import InitiativeTab from '@/components/tabs/InitiativeTab.svelte';
+  import FactionsTab from '@/features/factions/FactionsTab.svelte';
+  import InitiativeTab from '@/features/initiative/InitiativeTab.svelte';
   import DiceTab from '@/components/tabs/DiceTab.svelte';
   import EnemyTab from '@/components/tabs/EnemyTab.svelte';
+  import NPCTab from '@/features/npcs/NPCTab.svelte';
+  import SessionTab from '@/features/sessions/SessionTab.svelte';
+
+  // ─── Static nav data ──────────────────────────────────────────
+  const GROUP_TABS: Record<'session' | 'game' | 'world' | 'toolbox', TabId[]> = {
+    session:  ['sessions'],
+    game:     ['initiative', 'dice', 'convo', 'party'],
+    world:    ['favor', 'npcs', 'factions', 'chronicle', 'tree'],
+    toolbox:  ['enemies', 'tracker'],
+  };
+
+  const TAB_META: Record<TabId, { label: string; icon: string }> = {
+    initiative: { label: 'Initiative',      icon: '⚡' },
+    dice:       { label: 'Dice Roller',     icon: '🎲' },
+    convo:      { label: 'Conversation',    icon: '💬' },
+    party:      { label: 'Party',           icon: '⚔' },
+    favor:      { label: 'Favor Tracker',   icon: '⚖' },
+    npcs:       { label: 'NPC Creator',     icon: '🧑‍🤝‍🧑' },
+    factions:   { label: 'Factions',        icon: '🛄' },
+    chronicle:  { label: 'Chronicle',       icon: '📜' },
+    tree:       { label: 'Family Tree',     icon: '🌳' },
+    enemies:    { label: 'Enemies',         icon: '💀' },
+    tracker:    { label: 'Custom Trackers', icon: '🎯' },
+    sessions:   { label: 'Sessions',        icon: '🗓' },
+  };
 
   // ─── App state ────────────────────────────────────────────────
   let showMigrationOverlay = $state(true);
-  let activeTab = $state<TabId>('favor');  let showTheme = $state(false);
+  let activeTab = $state<TabId>('favor');
+  let activeGroup = $state<GroupId>('world');
+  let showTheme = $state(false);
+  let showCustomModal = $state(false);
 
   // ─── Banners ──────────────────────────────────────────────────
   let backupIsStale = $state(false);
@@ -66,6 +95,19 @@
   function switchTab(id: TabId): void {
     activeTab = id;
     store.setActiveTab(id);
+    store.setLastTabForGroup(activeGroup, id);
+  }
+
+  function switchGroup(group: GroupId): void {
+    activeGroup = group;
+    store.setActiveGroup(group);
+    // Resolve which tab to activate within the group
+    const groupTabs = group === 'custom' ? store.customGroupTabs : GROUP_TABS[group];
+    if (!groupTabs || groupTabs.length === 0) return; // empty custom group
+    const last = store.lastTabPerGroup[group];
+    const resolved = (last && groupTabs.includes(last)) ? last : groupTabs[0];
+    activeTab = resolved;
+    store.setActiveTab(resolved);
   }
 
   // ─── Campaign switching ───────────────────────────────────────
@@ -78,6 +120,7 @@
   function boot(): void {
     showMigrationOverlay = false;
     activeTab = store.activeTab;
+    activeGroup = store.activeGroup;
   }
 
   // ─── Campaign CRUD ────────────────────────────────────────────
@@ -539,88 +582,52 @@
 {/if}
 
 <!-- ═══════════════════════════════════════════════════════════════
-     TAB NAV
+     GROUP NAV (top level)
 ═══════════════════════════════════════════════════════════════ -->
-<div class="tab-nav">
-  <button
-    class="tab-btn"
-    class:active={activeTab === 'favor'}
-    id="tab-favor"
-    onclick={() => switchTab('favor')}
-  >
-    <span class="tab-icon">⚖</span> Favor Tracker
+<div class="group-nav">
+  <button class="group-btn" class:active={activeGroup === 'session'}
+    onclick={() => switchGroup('session')}>
+    🗓 Sessions
   </button>
-  <button
-    class="tab-btn"
-    class:active={activeTab === 'factions'}
-    id="tab-factions"
-    onclick={() => switchTab('factions')}
-  >
-    <span class="tab-icon">🛄</span> Factions
+  <button class="group-btn" class:active={activeGroup === 'game'}
+    onclick={() => switchGroup('game')}>
+    ⚔ Game
   </button>
-  <button
-    class="tab-btn"    class:active={activeTab === 'initiative'}
-    id="tab-initiative"
-    onclick={() => switchTab('initiative')}
-  >
-    <span class="tab-icon">⚡</span> Initiative
+  <button class="group-btn" class:active={activeGroup === 'world'}
+    onclick={() => switchGroup('world')}>
+    🌍 World
   </button>
-  <button
-    class="tab-btn"
-    class:active={activeTab === 'dice'}
-    id="tab-dice"
-    onclick={() => switchTab('dice')}
-  >
-    <span class="tab-icon">🎲</span> Dice Roller
+  <button class="group-btn" class:active={activeGroup === 'toolbox'}
+    onclick={() => switchGroup('toolbox')}>
+    🛠 Toolbox
   </button>
-  <button
-    class="tab-btn"
-    class:active={activeTab === 'enemies'}
-    id="tab-enemies"
-    onclick={() => switchTab('enemies')}
-  >
-    <span class="tab-icon">💀</span> Enemies
+  <button class="group-btn" class:active={activeGroup === 'custom'}
+    onclick={() => switchGroup('custom')}>
+    ★ {store.customGroupName}
   </button>
-  <button
-    class="tab-btn"    class:active={activeTab === 'convo'}
-    id="tab-convo"
-    onclick={() => switchTab('convo')}
-  >
-    <span class="tab-icon">💬</span> Conversation
-  </button>
-  <button
-    class="tab-btn"
-    class:active={activeTab === 'tree'}
-    id="tab-tree"
-    onclick={() => switchTab('tree')}
-  >
-    <span class="tab-icon">🌳</span> Family Tree
-  </button>
-  <button
-    class="tab-btn"
-    class:active={activeTab === 'chronicle'}
-    id="tab-chronicle"
-    onclick={() => switchTab('chronicle')}
-  >
-    <span class="tab-icon">📜</span> Chronicle
-  </button>
-  <button
-    class="tab-btn"
-    class:active={activeTab === 'tracker'}
-    id="tab-tracker"
-    onclick={() => switchTab('tracker')}
-  >
-    <span class="tab-icon">🎯</span> Custom Trackers
-  </button>
-  <button
-    class="tab-btn"
-    class:active={activeTab === 'party'}
-    id="tab-party"
-    onclick={() => switchTab('party')}
-  >
-    <span class="tab-icon">⚔</span> Party
-  </button>
+  <button class="group-gear-btn" title="Configure {store.customGroupName}"
+    onclick={() => (showCustomModal = true)}>⚙</button>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TAB NAV (sub-level, context-sensitive)
+═══════════════════════════════════════════════════════════════ -->
+{#if activeGroup !== 'session'}
+<div class="tab-nav">
+  {#if activeGroup === 'custom' && store.customGroupTabs.length === 0}
+    <span class="tab-nav-empty">Nothing here — click <span class="tab-icon">⚙</span> to add tabs</span>
+  {:else}
+    {@const groupTabs = activeGroup === 'custom' ? store.customGroupTabs : GROUP_TABS[activeGroup]}
+    {#each groupTabs as tid (tid)}
+      {@const meta = TAB_META[tid]}
+      <button class="tab-btn" class:active={activeTab === tid}
+        id="tab-{tid}" onclick={() => switchTab(tid)}>
+        <span class="tab-icon">{meta.icon}</span> {meta.label}
+      </button>
+    {/each}
+  {/if}
+</div>
+{/if}
 
 <!-- ═══════════════════════════════════════════════════════════════
      CONTENT AREA
@@ -628,7 +635,10 @@
 <div class="content-area">
 
   <!-- ── FAVOR TRACKER ── -->
-  <FavorTab active={activeTab === 'favor'} />
+  <FavorTab active={activeTab === 'favor'} onswitchToNPCs={() => switchTab('npcs')} />
+
+  <!-- ── NPC CREATOR ── -->
+  <NPCTab active={activeTab === 'npcs'} />
 
   <!-- ── CONVERSATION TRACKER ── -->
   <ConvoTab active={activeTab === 'convo'} />
@@ -656,6 +666,21 @@
 
   <!-- ── ENEMY LIBRARY ── -->
   <EnemyTab active={activeTab === 'enemies'} />
+
+  <!-- ── SESSION TRACKING ── -->
+  <SessionTab active={activeTab === 'sessions'} />
+
+  <!-- ── CUSTOM GROUP EMPTY STATE (last = renders on top) ── -->
+  {#if activeGroup === 'custom' && store.customGroupTabs.length === 0}
+    <div class="tab-panel active custom-group-empty-panel">
+      <div class="custom-group-empty">
+        <div class="custom-group-empty-icon">★</div>
+        <h2 class="custom-group-empty-title">{store.customGroupName}</h2>
+        <p class="custom-group-empty-msg">No tabs added yet. Click the ⚙ button to choose which views belong in this group.</p>
+        <button class="btn btn-gold" onclick={() => (showCustomModal = true)}>⚙ Configure Group</button>
+      </div>
+    </div>
+  {/if}
 
 </div>
 <!-- /content-area -->
@@ -798,5 +823,22 @@
      THEME MODAL
 ═══════════════════════════════════════════════════════════════ -->
 <ThemeModal open={showTheme} onclose={() => (showTheme = false)} />
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CUSTOM GROUP MODAL
+═══════════════════════════════════════════════════════════════ -->
+<CustomGroupModal
+  show={showCustomModal}
+  tabMeta={TAB_META}
+  onclose={() => (showCustomModal = false)}
+  onsave={(name, tabs) => {
+    store.setCustomGroupName(name);
+    store.setCustomGroupTabs(tabs);
+    // If currently on custom group and active tab was removed, navigate to first remaining
+    if (activeGroup === 'custom' && tabs.length > 0 && !tabs.includes(activeTab)) {
+      switchTab(tabs[0]);
+    }
+  }}
+/>
 
 <Toast />

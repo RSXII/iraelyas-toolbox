@@ -1,0 +1,755 @@
+/* ═══════════════════════════════════════════════════════════════
+   NPC CREATOR
+═══════════════════════════════════════════════════════════════ */
+#panel-npcs {
+  padding: 1.5rem 2rem 3rem;
+}
+
+.npc-creator-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Header bar ── */
+.npc-creator-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.npc-creator-title {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+}
+
+/* ── Filter chips ── */
+.npc-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.npc-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.npc-filter-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.npc-filter-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 6px;
+}
+
+.chip {
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+  white-space: nowrap;
+}
+.chip:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+}
+.chip.active {
+  background: var(--gold-dim);
+  border-color: var(--gold-dim);
+  color: var(--bg);
+}
+
+/* ── NPC cards grid ── */
+.npc-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Individual NPC card ── */
+.npc-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.npc-card:hover {
+  border-color: var(--border-h);
+}
+
+.npc-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.npc-card-header:hover {
+  background: var(--card-hover);
+}
+
+.npc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.npc-list-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  transition:
+    border-color 0.14s ease,
+    box-shadow 0.14s ease,
+    background 0.14s ease;
+}
+
+.npc-list-row:hover {
+  border-color: var(--border-h);
+  box-shadow: 0 0 0 1px rgba(188, 161, 89, 0.24);
+  background: var(--card-hover);
+}
+
+.npc-list-row:focus-visible {
+  outline: none;
+  border-color: var(--gold-dim);
+  box-shadow:
+    0 0 0 1px var(--gold-dim),
+    0 0 0 3px rgba(188, 161, 89, 0.28);
+}
+
+/* ── Portrait background texture ───────────────────────────────
+   Fiddle with the ::before properties to dial in the effect.
+   The CSS variable --npc-portrait-url is set by the component.
+   ─────────────────────────────────────────────────────────── */
+.npc-list-row.has-portrait {
+  position: relative;
+  overflow: hidden;
+}
+
+.npc-list-row.has-portrait::before {
+  content: "";
+  position: absolute;
+  inset: -20px; /* oversized to hide blur bleed at the edges */
+  background-image: var(--npc-portrait-url);
+  background-size: cover;
+  background-position: center right;
+  opacity: 0.22;
+  pointer-events: none;
+  filter: blur(44px) saturate(1.4);
+  mix-blend-mode: color-dodge;
+}
+.npc-list-row.has-portrait:hover::before {
+  opacity: 0.62;
+  mix-blend-mode: lighten;
+}
+
+.npc-card-initials {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold-pale);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.npc-card-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+.npc-card-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.npc-card-role {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.npc-card-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.npc-type-badge {
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.npc-type-badge.scene {
+  background: rgba(120, 140, 160, 0.18);
+  color: #8faabb;
+  border: 1px solid rgba(120, 140, 160, 0.3);
+}
+.npc-type-badge.recurring {
+  background: rgba(80, 130, 200, 0.18);
+  color: #7aabdd;
+  border: 1px solid rgba(80, 130, 200, 0.3);
+}
+.npc-type-badge.major {
+  background: rgba(180, 140, 60, 0.18);
+  color: var(--gold);
+  border: 1px solid rgba(180, 140, 60, 0.3);
+}
+
+.npc-faction-badge {
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-size: 10px;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  white-space: nowrap;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.npc-card-collapse-btn {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+  line-height: 1;
+  transition:
+    color 0.12s,
+    transform 0.15s;
+}
+.npc-card-collapse-btn.open {
+  transform: rotate(180deg);
+}
+
+.npc-card-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: color 0.12s;
+  border-radius: 3px;
+}
+.npc-card-delete-btn:hover {
+  color: #c05050;
+  background: rgba(192, 80, 80, 0.12);
+}
+
+/* ── Card body (expanded) ── */
+.npc-card-body {
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.npc-card-body-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.npc-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.npc-field-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.npc-field-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  padding: 5px 9px;
+  transition: border-color 0.12s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.npc-field-input:focus {
+  outline: none;
+  border-color: var(--gold-dim);
+}
+
+select.npc-field-input {
+  cursor: pointer;
+}
+
+textarea.npc-field-input {
+  resize: vertical;
+  min-height: 64px;
+  font-family: inherit;
+  line-height: 1.45;
+}
+
+/* ── Faction header toggle ── */
+.npc-faction-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.npc-faction-header-row input[type="checkbox"] {
+  accent-color: var(--gold);
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.npc-faction-header-row label {
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ── NPC type selector ── */
+.npc-type-selector {
+  display: flex;
+  gap: 4px;
+}
+
+.npc-type-btn {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+  text-align: center;
+  white-space: nowrap;
+}
+.npc-type-btn:hover {
+  border-color: var(--border-h);
+  color: var(--text);
+}
+.npc-type-btn.active-scene {
+  background: rgba(120, 140, 160, 0.22);
+  border-color: #8faabb;
+  color: #8faabb;
+}
+.npc-type-btn.active-recurring {
+  background: rgba(80, 130, 200, 0.22);
+  border-color: #7aabdd;
+  color: #7aabdd;
+}
+.npc-type-btn.active-major {
+  background: rgba(180, 140, 60, 0.22);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.npc-type-description {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.npc-type-description-title {
+  color: var(--gold-pale);
+  font-weight: 600;
+}
+
+/* ── Progressive field sections ── */
+.npc-fields-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.npc-fields-section-title {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Add NPC form ── */
+.npc-add-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.npc-add-form-title {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 12px;
+}
+
+.npc-add-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.npc-add-form-type-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.npc-add-form-type-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.npc-add-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ── Edit mode bar ── */
+.npc-edit-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-top: 1rem;
+}
+
+.npc-edit-bar label {
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+}
+
+.npc-edit-bar input[type="checkbox"] {
+  accent-color: var(--gold);
+  cursor: pointer;
+}
+
+/* ── Empty state ── */
+.npc-empty {
+  text-align: center;
+  color: var(--text-faint);
+  padding: 3rem 0;
+  font-size: 14px;
+}
+
+.npc-empty-hint {
+  font-size: 12px;
+  color: var(--text-faint);
+  margin-top: 6px;
+}
+
+/* ── NPC detail modal (card-like editor) ── */
+.modal-npc-detail {
+  width: min(1120px, 94vw);
+  max-height: 92vh;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--border-h);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.46);
+  background: var(--card);
+}
+
+.npc-detail-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0)
+  );
+}
+
+.npc-detail-modal-title {
+  margin: 0;
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-pale);
+}
+
+/* Inline-editable name input — shares Cinzel styling from .npc-detail-modal-title */
+.npc-name-editable {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+  width: 100%;
+  min-width: 0;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.npc-name-editable:hover {
+  border-bottom-color: var(--border);
+}
+
+.npc-name-editable:focus {
+  border-bottom-color: var(--gold-dim);
+}
+
+.modal-npc-detail .npc-fields-section {
+  margin: 12px 18px 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.modal-npc-detail .npc-fields-section-title {
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+}
+
+.modal-npc-detail .modal-foot {
+  margin-top: 14px;
+  padding: 14px 18px 18px;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0));
+}
+
+@media (max-width: 900px) {
+  .modal-npc-detail {
+    width: min(96vw, 780px);
+  }
+}
+
+@media (max-width: 640px) {
+  .modal-npc-detail .npc-fields-section {
+    margin: 10px 14px 0;
+    padding: 10px;
+  }
+
+  .modal-npc-detail .modal-foot {
+    padding: 12px 14px 14px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   NPC PORTRAIT
+═══════════════════════════════════════════════════════════════ */
+
+/* Horizontal strip at top of modal: portrait | meta fields */
+.npc-top-strip {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border);
+}
+
+.npc-portrait-section {
+  width: 180px;
+  flex-shrink: 0;
+  padding: 14px 12px 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-right: 1px solid var(--border);
+}
+
+/* Portrait image fills the available height of the strip */
+.npc-portrait-preview {
+  flex: 1;
+  width: 100%;
+  min-height: 80px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.npc-portrait-placeholder {
+  flex: 1;
+  width: 100%;
+  min-height: 80px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.npc-portrait-placeholder:hover {
+  border-color: var(--gold-dim);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.npc-portrait-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-faint);
+  font-size: 11px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.npc-portrait-placeholder-icon {
+  font-size: 22px;
+  opacity: 0.45;
+}
+
+.npc-portrait-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Meta fields: Role/Title, Faction, Type — stacked vertically */
+.npc-meta-fields {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 18px;
+}
+
+.npc-meta-fields .npc-type-description {
+  margin-bottom: 0;
+}
+
+/* ── NPC list row: portrait replaces initials circle ── */
+.npc-card-initials.npc-list-portrait {
+  padding: 0;
+  overflow: hidden;
+}
+
+.npc-card-initials.npc-list-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+
+/* ── Responsive: stack portrait above meta fields on small screens ── */
+@media (max-width: 640px) {
+  .npc-top-strip {
+    flex-direction: column;
+  }
+
+  .npc-portrait-section {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 14px;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .npc-portrait-preview,
+  .npc-portrait-placeholder {
+    width: 80px;
+    flex: none;
+  }
+
+  .npc-portrait-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .npc-meta-fields {
+    padding: 12px 14px;
+  }
+}

@@ -8,6 +8,7 @@ import type {
   FactionRank,
   FavorSettings,
   FavorTier,
+  GroupId,
   TokenUsage,
   FactionsData,
   HouseData,
@@ -25,8 +26,28 @@ import type {
   PartyData,
   PCCard,
   InitiativeState,
+  SessionEntry,
+  SessionReminder,
+  SessionTrackerData,
+  SessionEntryData,
 } from "@/types/index";
 import { DEFAULT_THEME } from "@/utils/theme";
+
+interface SessionReminderCandidate {
+  sourceType: string;
+  sourceId: string;
+  sourceName: string;
+  anchorSession: number;
+  direction: "countup" | "countdown";
+  distance: number;
+  triggerMode: "once" | "repeat";
+  message: string;
+}
+
+type SessionReminderProvider = (
+  campaignId: string,
+  currentSession: number,
+) => SessionReminderCandidate[];
 
 // ═══════════════════════════════════════════════════════════════
 // DEFAULTS
@@ -48,6 +69,10 @@ const DEFAULT_UI: UIState = {
   activePlayer: "",
   activeHouse: "",
   activeTab: "favor",
+  activeGroup: "world",
+  lastTabPerGroup: {},
+  customGroupName: "My View",
+  customGroupTabs: [],
   convo: DEFAULT_CONVO,
 };
 
@@ -78,6 +103,12 @@ function defaultCampaignData(): CampaignData {
     houses: {},
     timeline: null,
     tracker: { entries: [] },
+    sessions: {
+      currentNumber: 1,
+      currentNote: "",
+      currentData: {},
+      entries: [],
+    },
     party: { pcs: [] },
     factions: { factions: [] },
     favor: defaultFavorSettings(),
@@ -106,6 +137,29 @@ function defaultState(): AppState {
       generationCount: 0,
     },
   };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GROUP NAV HELPERS
+// ═══════════════════════════════════════════════════════════════
+
+const GROUP_TABS_MAP: Record<
+  "session" | "game" | "world" | "toolbox",
+  TabId[]
+> = {
+  session: ["sessions"],
+  game: ["initiative", "dice", "convo", "party"],
+  world: ["favor", "npcs", "factions", "chronicle", "tree"],
+  toolbox: ["enemies", "tracker"],
+};
+
+function inferGroupFromTab(tab: TabId): GroupId {
+  for (const [group, tabs] of Object.entries(GROUP_TABS_MAP) as Array<
+    ["session" | "game" | "world" | "toolbox", TabId[]]
+  >) {
+    if (tabs.includes(tab)) return group;
+  }
+  return "session";
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -148,10 +202,22 @@ class Store {
       // Lazy-init npcRanks on any FactionConfig that predates the field
       s.campaignData[c.id].factions.factions.forEach((fc) => {
         if (!fc.npcRanks) fc.npcRanks = {};
+        if (!fc.renown) fc.renown = {};
       });
+      // Migrate faction-header NPCs → FactionConfig.name + FactionConfig.renown
+      this._migrateFactionHeaders(s.campaignData[c.id]);
       // Lazy-init favor settings for saves that predate this field
       if (!s.campaignData[c.id].favor) {
         s.campaignData[c.id].favor = defaultFavorSettings();
+      }
+      // Lazy-init sessions for saves that predate this field
+      if (!s.campaignData[c.id].sessions) {
+        s.campaignData[c.id].sessions = {
+          currentNumber: 1,
+          currentNote: "",
+          currentData: {},
+          entries: [],
+        };
       }
       // Lazy-init initiative for saves that predate this field
       if (!("initiative" in s.campaignData[c.id])) {
@@ -178,7 +244,82 @@ class Store {
         lastOutput: 0,
         generationCount: 0,
       };
+    // Lazy-init two-level nav fields for saves that predate this feature
+    if (!s.ui.activeGroup) s.ui.activeGroup = inferGroupFromTab(s.ui.activeTab);
+    if (!s.ui.lastTabPerGroup) s.ui.lastTabPerGroup = {};
+    if (!s.ui.customGroupName) s.ui.customGroupName = "My View";
+    if (!s.ui.customGroupTabs) s.ui.customGroupTabs = [];
     return s;
+  }
+
+  /**
+   * One-time migration: converts faction-header NPCs into first-class
+   * FactionConfig entries (name + renown), then removes the header NPCs.
+   * Safe to call on already-migrated data — skips FactionConfigs that
+   * already have a name set.
+   */
+  private _migrateFactionHeaders(
+    cd: import("@/types/index").CampaignData,
+  ): void {
+    const npcs = cd.schema.npcs;
+    const players = cd.players;
+    const factions = cd.factions.factions;
+
+    for (const fc of factions) {
+      // Already migrated — has a name
+      if (fc.name) continue;
+      // Legacy entry with no factionNpcId either — give it a placeholder name
+      if (!fc.factionNpcId) {
+        fc.name = "Unknown Faction";
+        continue;
+      }
+
+      const headerNpc = npcs.find((n) => n.id === fc.factionNpcId);
+      if (!headerNpc) {
+        fc.name = fc.factionNpcId;
+        fc.factionNpcId = undefined;
+        continue;
+      }
+
+      // Populate name from the header NPC
+      fc.name = headerNpc.name;
+
+      // Lift renown scores from player score maps
+      if (!fc.renown) fc.renown = {};
+      Object.entries(players).forEach(([playerId, pd]) => {
+        if (fc.factionNpcId && fc.factionNpcId in pd.scores) {
+          fc.renown[playerId] = pd.scores[fc.factionNpcId];
+          delete pd.scores[fc.factionNpcId];
+        }
+      });
+
+      // Assign factionId to every NPC in this faction
+      const headerFactionLabel = headerNpc.faction;
+      npcs.forEach((n) => {
+        if (
+          !n.isFactionHeader &&
+          n.faction === headerFactionLabel &&
+          !n.factionId
+        ) {
+          n.factionId = fc.id;
+        }
+      });
+
+      // Drop the header NPC itself
+      const headerIdx = npcs.findIndex((n) => n.id === fc.factionNpcId);
+      if (headerIdx !== -1) npcs.splice(headerIdx, 1);
+
+      // Clear the deprecated reference
+      fc.factionNpcId = undefined;
+    }
+
+    // Also wire up any NPCs that reference a faction name matching a FactionConfig
+    // but weren't covered above (e.g. created before FactionConfig existed)
+    npcs.forEach((n) => {
+      if (n.isFactionHeader || n.factionId) return;
+      const match = factions.find((fc) => fc.name === n.faction);
+      if (match) n.factionId = match.id;
+    });
   }
 
   /** Debounced auto-save — coalesces rapid changes into one write */
@@ -361,28 +502,13 @@ class Store {
   addNPC(campaignId: string, npc: NPC): void {
     const cd = this.getCampaignData(campaignId);
     if (cd.schema.npcs.find((n) => n.id === npc.id)) return;
-    // Auto-create a faction header if this faction doesn't have one yet
-    if (
-      !npc.isFactionHeader &&
-      !cd.schema.npcs.some(
-        (n) => n.isFactionHeader && n.faction === npc.faction,
-      )
-    ) {
-      const headerId = `faction_header_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
-      const headerNpc: NPC = {
-        id: headerId,
-        name: npc.faction,
-        role: "Faction",
-        faction: npc.faction,
-        isFactionHeader: true,
-      };
-      cd.schema.npcs.push(headerNpc);
-      Object.values(cd.players).forEach((pd) => {
-        if (!(headerId in pd.scores)) pd.scores[headerId] = 50;
-      });
+    // If factionId is provided, sync the faction display name from FactionConfig
+    if (npc.factionId) {
+      const fc = cd.factions?.factions.find((f) => f.id === npc.factionId);
+      if (fc) npc.faction = fc.name;
     }
     cd.schema.npcs.push(npc);
-    // Patch all existing players
+    // Patch all existing players with a default favor score
     Object.values(cd.players).forEach((pd) => {
       if (!(npc.id in pd.scores)) pd.scores[npc.id] = 50;
     });
@@ -404,6 +530,19 @@ class Store {
     );
     if (!npc) return;
     npc.role = role;
+    this.save();
+  }
+
+  updateNPC(
+    campaignId: string,
+    npcId: string,
+    patch: Partial<Omit<NPC, "id">>,
+  ): void {
+    const npc = this.getCampaignData(campaignId).schema.npcs.find(
+      (n) => n.id === npcId,
+    );
+    if (!npc) return;
+    Object.assign(npc, patch);
     this.save();
   }
 
@@ -556,6 +695,43 @@ class Store {
     this.save();
   }
 
+  get activeGroup(): GroupId {
+    return this._state.ui.activeGroup ?? "world";
+  }
+
+  setActiveGroup(group: GroupId): void {
+    this._state.ui.activeGroup = group;
+    this.save();
+  }
+
+  get lastTabPerGroup(): Partial<Record<GroupId, TabId>> {
+    return this._state.ui.lastTabPerGroup ?? {};
+  }
+
+  setLastTabForGroup(group: GroupId, tab: TabId): void {
+    if (!this._state.ui.lastTabPerGroup) this._state.ui.lastTabPerGroup = {};
+    this._state.ui.lastTabPerGroup[group] = tab;
+    this.save();
+  }
+
+  get customGroupName(): string {
+    return this._state.ui.customGroupName || "My View";
+  }
+
+  setCustomGroupName(name: string): void {
+    this._state.ui.customGroupName = name;
+    this.save();
+  }
+
+  get customGroupTabs(): TabId[] {
+    return this._state.ui.customGroupTabs ?? [];
+  }
+
+  setCustomGroupTabs(tabs: TabId[]): void {
+    this._state.ui.customGroupTabs = tabs;
+    this.save();
+  }
+
   // ── Theme helpers ─────────────────────────────────────────────
 
   get theme(): ThemeSettings {
@@ -693,6 +869,197 @@ class Store {
     this.save();
   }
 
+  // ── Session helpers ─────────────────────────────────────────────
+
+  private getSessionReminderProviders(): SessionReminderProvider[] {
+    return [this.trackerSessionReminderProvider.bind(this)];
+  }
+
+  private collectSessionReminderCandidates(
+    campaignId: string,
+    currentSession: number,
+  ): SessionReminderCandidate[] {
+    const providers = this.getSessionReminderProviders();
+    return providers.flatMap((provider) =>
+      provider(campaignId, currentSession),
+    );
+  }
+
+  private trackerSessionReminderProvider(
+    campaignId: string,
+    _currentSession: number,
+  ): SessionReminderCandidate[] {
+    const candidates: SessionReminderCandidate[] = [];
+
+    for (const entry of this.getTracker(campaignId).entries) {
+      const link = entry.sessionLink;
+      if (!link?.enabled) continue;
+
+      const anchorSession = Math.max(1, Math.floor(link.anchorSession || 1));
+      const distance = Math.max(1, Math.floor(link.distance || 1));
+      const direction = link.direction;
+
+      const message =
+        link.reminderText?.trim() ||
+        `${entry.name}: ${distance} session${distance === 1 ? "" : "s"} ${direction === "countup" ? "after" : "before"} session ${anchorSession}.`;
+
+      candidates.push({
+        sourceType: "tracker",
+        sourceId: entry.id,
+        sourceName: entry.name,
+        anchorSession,
+        direction,
+        distance,
+        triggerMode: link.triggerMode,
+        message,
+      });
+    }
+
+    return candidates;
+  }
+
+  getSessions(campaignId: string): SessionTrackerData {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.sessions) {
+      cd.sessions = {
+        currentNumber: 1,
+        currentNote: "",
+        currentData: {},
+        entries: [],
+      };
+    }
+    return cd.sessions;
+  }
+
+  setCurrentSessionNumber(campaignId: string, number: number): void {
+    const sessions = this.getSessions(campaignId);
+    sessions.currentNumber = Math.max(1, Math.floor(number || 1));
+    this.save();
+  }
+
+  setCurrentSessionNote(campaignId: string, note: string): void {
+    this.getSessions(campaignId).currentNote = note;
+    this.save();
+  }
+
+  updateSessionEntryNote(
+    campaignId: string,
+    entryId: string,
+    note: string,
+  ): void {
+    const sessions = this.getSessions(campaignId);
+    const entry = sessions.entries.find((e) => e.id === entryId);
+    if (entry) {
+      entry.note = note;
+      this.save();
+    }
+  }
+
+  deleteSessionEntry(campaignId: string, entryId: string): void {
+    const sessions = this.getSessions(campaignId);
+    sessions.entries = sessions.entries.filter((e) => e.id !== entryId);
+    this.save();
+  }
+
+  /** Resets currentData and runs reminder calculations without committing. Call at session start. */
+  prepareSessionReminders(campaignId: string): void {
+    const sessions = this.getSessions(campaignId);
+    sessions.currentData = {};
+    this.runSessionCalculations(campaignId);
+  }
+
+  startSession(campaignId: string, activeNotes?: string[]): void {
+    const sessions = this.getSessions(campaignId);
+
+    // Rebuild per-session derived data (e.g. reminders) just before snapshot.
+    sessions.currentData = {};
+    this.runSessionCalculations(campaignId);
+
+    const extraData: Record<string, unknown> = {};
+    if (activeNotes && activeNotes.length > 0) {
+      extraData.activeNotes = activeNotes;
+    }
+
+    const snapshot: SessionEntry = {
+      id: `session_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      number: sessions.currentNumber,
+      note: sessions.currentNote,
+      timestamp: Date.now(),
+      data: { ...sessions.currentData, ...extraData },
+    };
+
+    sessions.entries.push(snapshot);
+    sessions.currentNumber += 1;
+    sessions.currentNote = "";
+    sessions.currentData = {};
+    this.save();
+  }
+
+  runSessionCalculations(campaignId: string): void {
+    const sessions = this.getSessions(campaignId);
+    const currentSession = sessions.currentNumber;
+    const reminders: SessionReminder[] = [];
+
+    for (const candidate of this.collectSessionReminderCandidates(
+      campaignId,
+      currentSession,
+    )) {
+      const {
+        sourceType,
+        sourceId,
+        sourceName,
+        anchorSession,
+        direction,
+        distance,
+        triggerMode,
+        message,
+      } = candidate;
+
+      const delta =
+        direction === "countup"
+          ? currentSession - anchorSession
+          : anchorSession - currentSession;
+
+      if (delta < distance) continue;
+
+      const reminderId = `${sourceType}:${sourceId}:${anchorSession}:${direction}:${distance}`;
+
+      if (triggerMode === "once") {
+        const alreadyTriggered = sessions.entries.some((sessionEntry) => {
+          const existing = sessionEntry.data?.reminders;
+          if (!Array.isArray(existing)) return false;
+          return (existing as SessionReminder[]).some(
+            (r) => r.id === reminderId,
+          );
+        });
+        if (alreadyTriggered) continue;
+      }
+
+      reminders.push({
+        id:
+          triggerMode === "repeat"
+            ? `${reminderId}:s${currentSession}`
+            : reminderId,
+        sourceType,
+        sourceId,
+        sourceName,
+        message,
+        anchorSession,
+        direction,
+        distance,
+        triggeredAtSession: currentSession,
+      });
+    }
+
+    const nextData: SessionEntryData = { ...sessions.currentData };
+    if (reminders.length) {
+      nextData.reminders = reminders;
+    } else {
+      delete nextData.reminders;
+    }
+    sessions.currentData = nextData;
+  }
+
   // ── Factions helpers ─────────────────────────────────────────────
 
   getFactions(campaignId: string): FactionsData {
@@ -707,11 +1074,50 @@ class Store {
     const id = `fc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
     fd.factions.push({
       id,
+      name: factionNpcId, // fallback; caller should migrate this
       factionNpcId,
+      renown: {},
       ranks: [],
       members: [],
       npcRanks: {},
     });
+    this.save();
+  }
+
+  /** Create a faction directly by name — no NPC required. */
+  addFaction(campaignId: string, name: string): void {
+    const fd = this.getFactions(campaignId);
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    if (
+      fd.factions.find((fc) => fc.name.toLowerCase() === trimmed.toLowerCase())
+    )
+      return;
+    const id = `fc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    fd.factions.push({
+      id,
+      name: trimmed,
+      renown: {},
+      ranks: [],
+      members: [],
+      npcRanks: {},
+    });
+    this.save();
+  }
+
+  /** Adjust the faction renown score for a specific player. */
+  adjustFactionRenown(
+    campaignId: string,
+    factionId: string,
+    playerId: string,
+    delta: number,
+  ): void {
+    const fd = this.getFactions(campaignId);
+    const fc = fd.factions.find((f) => f.id === factionId);
+    if (!fc) return;
+    if (!fc.renown) fc.renown = {};
+    const current = fc.renown[playerId] ?? 50;
+    fc.renown[playerId] = Math.max(0, Math.min(100, current + delta));
     this.save();
   }
 

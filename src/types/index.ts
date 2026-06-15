@@ -116,12 +116,31 @@ export interface FavorSettings {
   increment: 1 | 5 | 10 | 25;
 }
 
+export type NPCType = "scene" | "recurring" | "major";
+
 export interface NPC {
   id: string;
   name: string;
   role: string;
-  faction: string;
-  isFactionHeader?: boolean;
+  faction: string; // display label — kept for backward compat
+  factionId?: string; // references FactionConfig.id
+  isFactionHeader?: boolean; // deprecated — cleaned up by migration
+  // NPC Creator fields
+  npcType?: NPCType;
+  // Scene NPC fields
+  npcFunction?: string;
+  distinctDetail?: string;
+  npcNeed?: string;
+  // Recurring NPC fields (cumulative)
+  wound?: string;
+  gap?: string;
+  protecting?: string;
+  whatWouldBreakThem?: string;
+  // Major NPC fields (cumulative)
+  selfBelief?: string;
+  relationshipContradictions?: string;
+  // Portrait image (compressed JPEG base64 — see src/utils/npc-image.ts for size config)
+  portrait?: string;
 }
 
 export interface Schema {
@@ -256,10 +275,21 @@ export interface ConvoState {
 // ═══════════════════════════════════════════════════════════════
 
 export type TrackerDirection = "countup" | "countdown";
+export type SessionDiffDirection = "countup" | "countdown";
+export type SessionTriggerMode = "once" | "repeat";
 
 export interface TrackerWarning {
   value: number;
   label: string;
+}
+
+export interface SessionLinkRule {
+  enabled: boolean;
+  anchorSession: number;
+  direction: SessionDiffDirection;
+  distance: number;
+  triggerMode: SessionTriggerMode;
+  reminderText: string;
 }
 
 export interface TrackerEntry {
@@ -271,10 +301,44 @@ export interface TrackerEntry {
   current: number;
   direction: TrackerDirection;
   warnings: TrackerWarning[];
+  sessionLink?: SessionLinkRule;
 }
 
 export interface TrackerData {
   entries: TrackerEntry[];
+}
+
+export interface SessionReminder {
+  id: string;
+  sourceType: string;
+  sourceId: string;
+  sourceName: string;
+  message: string;
+  anchorSession: number;
+  direction: SessionDiffDirection;
+  distance: number;
+  triggeredAtSession: number;
+}
+
+export interface SessionEntryData {
+  reminders?: SessionReminder[];
+  activeNotes?: string[];
+  [key: string]: unknown;
+}
+
+export interface SessionEntry {
+  id: string;
+  number: number;
+  note: string;
+  timestamp: number;
+  data: SessionEntryData;
+}
+
+export interface SessionTrackerData {
+  currentNumber: number;
+  currentNote: string;
+  currentData: SessionEntryData;
+  entries: SessionEntry[];
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -331,7 +395,9 @@ export interface FactionMember {
 
 export interface FactionConfig {
   id: string;
-  factionNpcId: string; // references NPC.id where isFactionHeader === true
+  name: string; // faction display name
+  factionNpcId?: string; // deprecated — used only during migration
+  renown: Record<string, number>; // playerId → score (0–100)
   ranks: FactionRank[];
   members: FactionMember[];
   npcRanks: Record<string, string>; // npcId → rankId
@@ -351,6 +417,7 @@ export interface CampaignData {
   houses: Record<string, HouseData>;
   timeline: TimelineData | null;
   tracker: TrackerData;
+  sessions?: SessionTrackerData;
   party: PartyData;
   factions: FactionsData;
   favor?: FavorSettings;
@@ -381,21 +448,29 @@ export interface InitiativeState {
 
 export type TabId =
   | "favor"
+  | "npcs"
   | "convo"
   | "tree"
   | "chronicle"
   | "tracker"
+  | "sessions"
   | "party"
   | "factions"
   | "initiative"
   | "dice"
   | "enemies";
 
+export type GroupId = "session" | "game" | "world" | "toolbox" | "custom";
+
 export interface UIState {
   activeCampaign: string;
   activePlayer: string;
   activeHouse: string;
   activeTab: TabId;
+  activeGroup: GroupId;
+  lastTabPerGroup: Partial<Record<GroupId, TabId>>;
+  customGroupName: string;
+  customGroupTabs: TabId[];
   convo: ConvoState;
 }
 
