@@ -1,6 +1,7 @@
 <script lang="ts">
   import { store } from '@/state/store.svelte';
   import type { NPC } from '@/types/index';
+  import { scenePlaceholders } from './NpcPlaceholderText';
 
   interface Props { npc: NPC; }
   let { npc }: Props = $props();
@@ -15,13 +16,13 @@
     <textarea id="npc-sb-{npc.id}" class="npc-field-input"
       value={npc.selfBelief ?? ''}
       onchange={(e) => cid && store.updateNPC(cid, npc.id, { selfBelief: (e.target as HTMLTextAreaElement).value })}
-    ></textarea>
+    placeholder={scenePlaceholders.npcBelief}></textarea>
   </div>
   <div class="npc-field-group">
     <label class="npc-field-label" for="npc-rc-{npc.id}">Relationship Contradictions</label>
     <textarea id="npc-rc-{npc.id}" class="npc-field-input"
       value={npc.relationshipContradictions ?? ''}
       onchange={(e) => cid && store.updateNPC(cid, npc.id, { relationshipContradictions: (e.target as HTMLTextAreaElement).value })}
-    ></textarea>
+    placeholder={scenePlaceholders.npcContradiction}></textarea>
   </div>
 </div>
