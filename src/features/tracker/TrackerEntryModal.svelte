@@ -13,10 +13,11 @@
     open: boolean;
     editing: TrackerEntry | null;
     sessionNumbers: number[];
+    prefill?: { reminderText: string } | null;
     onsave: (entry: TrackerEntry) => void;
     onclose: () => void;
   }
-  let { open, editing, sessionNumbers, onsave, onclose }: Props = $props();
+  let { open, editing, sessionNumbers, prefill = null, onsave, onclose }: Props = $props();
 
   // ─── Form state ───────────────────────────────────────────────
   let modalName     = $state('');
@@ -59,12 +60,12 @@
       modalStart    = 0;
       modalDir      = 'countup';
       modalWarnings = [];
-      modalUseSessionTie = false;
+      modalUseSessionTie = prefill != null;
       modalAnchorSession = sessionNumbers[0] ?? 1;
       modalSessionDirection = 'countup';
       modalSessionDistance = 3;
       modalTriggerMode = 'once';
-      modalReminderText = '';
+      modalReminderText = prefill?.reminderText ?? '';
     }
     setTimeout(() => nameInputEl?.focus(), 50);
   });

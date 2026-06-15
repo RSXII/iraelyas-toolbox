@@ -942,19 +942,50 @@ class Store {
     this.save();
   }
 
-  startSession(campaignId: string): void {
+  updateSessionEntryNote(
+    campaignId: string,
+    entryId: string,
+    note: string,
+  ): void {
+    const sessions = this.getSessions(campaignId);
+    const entry = sessions.entries.find((e) => e.id === entryId);
+    if (entry) {
+      entry.note = note;
+      this.save();
+    }
+  }
+
+  deleteSessionEntry(campaignId: string, entryId: string): void {
+    const sessions = this.getSessions(campaignId);
+    sessions.entries = sessions.entries.filter((e) => e.id !== entryId);
+    this.save();
+  }
+
+  /** Resets currentData and runs reminder calculations without committing. Call at session start. */
+  prepareSessionReminders(campaignId: string): void {
+    const sessions = this.getSessions(campaignId);
+    sessions.currentData = {};
+    this.runSessionCalculations(campaignId);
+  }
+
+  startSession(campaignId: string, activeNotes?: string[]): void {
     const sessions = this.getSessions(campaignId);
 
     // Rebuild per-session derived data (e.g. reminders) just before snapshot.
     sessions.currentData = {};
     this.runSessionCalculations(campaignId);
 
+    const extraData: Record<string, unknown> = {};
+    if (activeNotes && activeNotes.length > 0) {
+      extraData.activeNotes = activeNotes;
+    }
+
     const snapshot: SessionEntry = {
       id: `session_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       number: sessions.currentNumber,
       note: sessions.currentNote,
       timestamp: Date.now(),
-      data: { ...sessions.currentData },
+      data: { ...sessions.currentData, ...extraData },
     };
 
     sessions.entries.push(snapshot);

@@ -322,6 +322,7 @@ export interface SessionReminder {
 
 export interface SessionEntryData {
   reminders?: SessionReminder[];
+  activeNotes?: string[];
   [key: string]: unknown;
 }
 
