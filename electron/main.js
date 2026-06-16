@@ -16,6 +16,7 @@ const IS_DEV = process.env.NODE_ENV === "development" || !app.isPackaged;
 const DEV_URL = "http://localhost:5173";
 const DATA_FILE = path.join(app.getPath("userData"), "toolbox-data.json");
 const API_KEY_FILE = path.join(app.getPath("userData"), "api-key.enc");
+const PLUGINS_DIR = path.join(app.getPath("userData"), "plugins");
 
 // ─── Windows ──────────────────────────────────────────────────────────────────
 let mainWindow = null;
@@ -295,6 +296,114 @@ ipcMain.handle("get-editor-context", () => {
   } catch (err) {
     console.error("get-editor-context error:", err);
     return null;
+  }
+});
+
+// ─── IPC: Plugin system ───────────────────────────────────────────────────────
+
+/**
+ * Scan PLUGINS_DIR for valid plugin manifests and return them.
+ * Each manifest gets a runtime `_folderPath` so the renderer can
+ * construct the iframe src without knowing userData.
+ */
+ipcMain.handle("get-plugins", () => {
+  try {
+    if (!fs.existsSync(PLUGINS_DIR)) {
+      fs.mkdirSync(PLUGINS_DIR, { recursive: true });
+      return [];
+    }
+    const entries = fs.readdirSync(PLUGINS_DIR, { withFileTypes: true });
+    const manifests = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const manifestPath = path.join(PLUGINS_DIR, entry.name, "plugin.json");
+      if (!fs.existsSync(manifestPath)) continue;
+      try {
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+        // Validate required fields before trusting any manifest
+        if (
+          typeof manifest.id !== "string" ||
+          typeof manifest.name !== "string" ||
+          typeof manifest.version !== "string" ||
+          typeof manifest.apiVersion !== "string" ||
+          typeof manifest.entry !== "string"
+        ) {
+          console.warn("[plugins] skipping malformed manifest in", entry.name);
+          continue;
+        }
+        // Attach computed folder path for the renderer to build the iframe src
+        manifest._folderPath = path.join(PLUGINS_DIR, entry.name);
+        manifests.push(manifest);
+      } catch (parseErr) {
+        console.warn("[plugins] failed to parse manifest in", entry.name, parseErr.message);
+      }
+    }
+    return manifests;
+  } catch (err) {
+    console.error("get-plugins error:", err);
+    return [];
+  }
+});
+
+/** Return the absolute path to PLUGINS_DIR (used by settings UI). */
+ipcMain.handle("get-plugin-data-path", () => PLUGINS_DIR);
+
+/** Read plugin-namespaced data from the main data file. */
+ipcMain.handle("plugin-data-get", (_event, pluginId, campaignId) => {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return {};
+    const state = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+    return state?.pluginData?.[pluginId]?.[campaignId] ?? {};
+  } catch (err) {
+    console.error("plugin-data-get error:", err);
+    return {};
+  }
+});
+
+/** Write plugin-namespaced data into the main data file. */
+ipcMain.handle("plugin-data-set", (_event, pluginId, campaignId, data) => {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return { ok: false, error: "No data file" };
+    const state = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+    if (!state.pluginData) state.pluginData = {};
+    if (!state.pluginData[pluginId]) state.pluginData[pluginId] = {};
+    state.pluginData[pluginId][campaignId] = data;
+    fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), "utf-8");
+    return { ok: true };
+  } catch (err) {
+    console.error("plugin-data-set error:", err);
+    return { ok: false, error: err.message };
+  }
+});
+
+/** Delete all stored data for a plugin (explicit user-initiated cleanup only). */
+ipcMain.handle("plugin-data-delete", (_event, pluginId) => {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return { ok: false, error: "No data file" };
+    const state = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+    if (state.pluginData) delete state.pluginData[pluginId];
+    fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2), "utf-8");
+    return { ok: true };
+  } catch (err) {
+    console.error("plugin-data-delete error:", err);
+    return { ok: false, error: err.message };
+  }
+});
+
+/**
+ * Given the list of currently-loaded plugin IDs, return any IDs in
+ * pluginData that have no matching loaded plugin (orphaned data).
+ */
+ipcMain.handle("get-orphaned-plugin-data", (_event, loadedPluginIds) => {
+  try {
+    if (!fs.existsSync(DATA_FILE)) return [];
+    const state = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
+    if (!state.pluginData) return [];
+    const loaded = new Set(Array.isArray(loadedPluginIds) ? loadedPluginIds : []);
+    return Object.keys(state.pluginData).filter((id) => !loaded.has(id));
+  } catch (err) {
+    console.error("get-orphaned-plugin-data error:", err);
+    return [];
   }
 });
 

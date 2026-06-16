@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
+  import { initPluginBridge, initPlugin, broadcastEvent, broadcastCampaignChange, destroyPluginBridge } from '@/modules/plugin-bridge';
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
   import { applyTheme } from '@/utils/theme';
@@ -57,8 +58,27 @@
   let updateAvailableVersion = $state<string | null>(null);
   let updateDismissed = $state(false);
 
+  // ─── Plugin state ─────────────────────────────────────────────
+  const pluginIframeMap = new Map<string, HTMLIFrameElement>();
+  let activePluginId = $state<string | null>(null);
+
+  function onPluginIframeLoad(pluginId: string, iframe: HTMLIFrameElement): void {
+    pluginIframeMap.set(pluginId, iframe);
+    initPlugin(pluginId);
+  }
+
   // ─── Theme ──────────────────────────────────────────────
   $effect(() => { applyTheme(store.theme); });
+
+  // ─── Plugin event broadcasts ──────────────────────────────────
+  // Broadcast session number changes so plugins can react (e.g. reset counters)
+  $effect(() => {
+    const cid = store.activeCampaignId;
+    if (!cid || !store.plugins.length) return;
+    const sessions = store.getCampaignData(cid)?.sessions;
+    const num = sessions?.currentNumber ?? 1;
+    broadcastEvent('session.changed', { number: num, note: sessions?.currentNote ?? '', campaignId: cid });
+  });;
   // ─── Campaign modals ──────────────────────────────────────────
   let showAddCampaign = $state(false);
   let showRenameCampaign = $state(false);
@@ -101,8 +121,15 @@
   function switchGroup(group: GroupId): void {
     activeGroup = group;
     store.setActiveGroup(group);
+    // Plugin tabs are not standard TabIds — handle separately
+    if (group === 'plugins') {
+      if (!activePluginId && store.plugins.length > 0) {
+        activePluginId = store.plugins[0].id;
+      }
+      return;
+    }
     // Resolve which tab to activate within the group
-    const groupTabs = group === 'custom' ? store.customGroupTabs : GROUP_TABS[group];
+    const groupTabs = group === 'custom' ? store.customGroupTabs : GROUP_TABS[group as keyof typeof GROUP_TABS];
     if (!groupTabs || groupTabs.length === 0) return; // empty custom group
     const last = store.lastTabPerGroup[group];
     const resolved = (last && groupTabs.includes(last)) ? last : groupTabs[0];
@@ -114,6 +141,7 @@
   function switchCampaign(id: string): void {
     if (!id) return;
     store.setActiveCampaign(id);
+    broadcastCampaignChange();
   }
 
   // ─── Boot ─────────────────────────────────────────────────────
@@ -348,6 +376,10 @@
       boot();
     }
 
+    // Load installed plugins and initialise the postMessage bridge
+    store.plugins = (await window.toolbox.getPlugins()) as typeof store.plugins;
+    initPluginBridge(pluginIframeMap, () => store.activeCampaignId);
+
     // Backup staleness check
     const lastBackup = localStorage.getItem('lastBackupDate');
     const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -377,6 +409,10 @@
     });
 
     window.addEventListener('beforeunload', () => store.forceSave());
+  });
+
+  onDestroy(() => {
+    destroyPluginBridge();
   });
 </script>
 
@@ -607,6 +643,12 @@
   </button>
   <button class="group-gear-btn" title="Configure {store.customGroupName}"
     onclick={() => (showCustomModal = true)}>⚙</button>
+  {#if store.plugins.length > 0}
+  <button class="group-btn" class:active={activeGroup === 'plugins'}
+    onclick={() => switchGroup('plugins')}>
+    🧩 Plugins
+  </button>
+  {/if}
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -614,10 +656,17 @@
 ═══════════════════════════════════════════════════════════════ -->
 {#if activeGroup !== 'session'}
 <div class="tab-nav">
-  {#if activeGroup === 'custom' && store.customGroupTabs.length === 0}
+  {#if activeGroup === 'plugins'}
+    {#each store.plugins as plugin (plugin.id)}
+      <button class="tab-btn" class:active={activePluginId === plugin.id}
+        onclick={() => { activePluginId = plugin.id; }}>
+        <span class="tab-icon">{plugin.icon ?? '🧩'}</span> {plugin.name}
+      </button>
+    {/each}
+  {:else if activeGroup === 'custom' && store.customGroupTabs.length === 0}
     <span class="tab-nav-empty">Nothing here — click <span class="tab-icon">⚙</span> to add tabs</span>
   {:else}
-    {@const groupTabs = activeGroup === 'custom' ? store.customGroupTabs : GROUP_TABS[activeGroup]}
+    {@const groupTabs = activeGroup === 'custom' ? store.customGroupTabs : GROUP_TABS[activeGroup as keyof typeof GROUP_TABS]}
     {#each groupTabs as tid (tid)}
       {@const meta = TAB_META[tid]}
       <button class="tab-btn" class:active={activeTab === tid}
@@ -669,6 +718,21 @@
 
   <!-- ── SESSION TRACKING ── -->
   <SessionTab active={activeTab === 'sessions'} />
+
+  <!-- ── PLUGIN TABS ── -->
+  {#each store.plugins as plugin (plugin.id)}
+    {@const _p = plugin as typeof plugin & { _folderPath?: string }}
+    {@const pluginSrc = _p.devUrl ?? `file://${_p._folderPath ?? ''}/${plugin.entry}`}
+    <div class="tab-panel plugin-panel" class:active={activeGroup === 'plugins' && activePluginId === plugin.id}>
+      <iframe
+        class="plugin-iframe"
+        src={pluginSrc}
+        sandbox="allow-scripts allow-forms allow-modals"
+        title={plugin.name}
+        onload={(e) => onPluginIframeLoad(plugin.id, e.currentTarget as HTMLIFrameElement)}
+      ></iframe>
+    </div>
+  {/each}
 
   <!-- ── CUSTOM GROUP EMPTY STATE (last = renders on top) ── -->
   {#if activeGroup === 'custom' && store.customGroupTabs.length === 0}

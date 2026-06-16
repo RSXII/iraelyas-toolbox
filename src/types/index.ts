@@ -53,6 +53,16 @@ export interface ToolboxBridge {
   onTreeUpdated: (cb: (campaignId: string) => void) => void;
   offTreeUpdated: (cb: (campaignId: string) => void) => void;
 
+  // Plugin system
+  getPlugins: () => Promise<PluginManifest[]>;
+  getPluginDataPath: () => Promise<string>;
+  pluginData: {
+    get: (pluginId: string, campaignId: string) => Promise<Record<string, unknown>>;
+    set: (pluginId: string, campaignId: string, data: Record<string, unknown>) => Promise<{ ok: boolean }>;
+    delete: (pluginId: string) => Promise<{ ok: boolean }>;
+    getOrphaned: (loadedPluginIds: string[]) => Promise<string[]>;
+  };
+
   // Enemy library / AI generation
   setApiKey: (key: string) => Promise<{ ok: boolean; error?: string }>;
   hasApiKey: () => Promise<boolean>;
@@ -460,7 +470,7 @@ export type TabId =
   | "dice"
   | "enemies";
 
-export type GroupId = "session" | "game" | "world" | "toolbox" | "custom";
+export type GroupId = "session" | "game" | "world" | "toolbox" | "custom" | "plugins";
 
 export interface UIState {
   activeCampaign: string;
@@ -507,6 +517,32 @@ export interface AppState {
   aiModel: AiModel;
   tokenUsage: TokenUsage;
   hideAiFeatures: boolean;
+  /** Namespaced plugin storage. Core app never reads these values. */
+  pluginData?: Record<string, Record<string, unknown>>;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PLUGIN SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+/** Manifest file (plugin.json) for a plugin installed in userData/plugins/<id>/ */
+export interface PluginManifest {
+  /** Reverse-domain unique identifier — e.g. "com.author.plugin-name" */
+  id: string;
+  /** Human-readable display name */
+  name: string;
+  /** Semver string — e.g. "1.0.0" */
+  version: string;
+  /** Plugin API contract version this plugin targets. Currently "1". */
+  apiVersion: string;
+  /** HTML file (relative to plugin folder) to load as the tab iframe */
+  entry: string;
+  /** Optional emoji or single char to show in the tab bar */
+  icon?: string;
+  /** Short description shown in plugin management UI */
+  description?: string;
+  /** Dev override: load from this URL instead of the local file path */
+  devUrl?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════

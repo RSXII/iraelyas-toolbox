@@ -111,4 +111,30 @@ contextBridge.exposeInMainWorld("toolbox", {
   // ── Build variant ─────────────────────────────────────────────
   /** True when this is a beta build (productName contains 'Beta') */
   isBeta: (require("../package.json").productName ?? "").includes("Beta"),
+
+  // ── Plugin system ──────────────────────────────────────────────
+  /** Scan userData/plugins/ and return an array of valid PluginManifest objects */
+  getPlugins: () => ipcRenderer.invoke("get-plugins"),
+
+  /** Return the absolute path to the plugins directory */
+  getPluginDataPath: () => ipcRenderer.invoke("get-plugin-data-path"),
+
+  /** Plugin data — all operations are scoped to pluginId + campaignId */
+  pluginData: {
+    /** Read stored data for a plugin in a specific campaign */
+    get: (pluginId, campaignId) =>
+      ipcRenderer.invoke("plugin-data-get", pluginId, campaignId),
+
+    /** Write stored data for a plugin in a specific campaign */
+    set: (pluginId, campaignId, data) =>
+      ipcRenderer.invoke("plugin-data-set", pluginId, campaignId, data),
+
+    /** Delete all stored data for a plugin (user-initiated cleanup) */
+    delete: (pluginId) =>
+      ipcRenderer.invoke("plugin-data-delete", pluginId),
+
+    /** Return plugin IDs that have stored data but are no longer installed */
+    getOrphaned: (loadedPluginIds) =>
+      ipcRenderer.invoke("get-orphaned-plugin-data", loadedPluginIds),
+  },
 });

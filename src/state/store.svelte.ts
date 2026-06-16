@@ -16,6 +16,7 @@ import type {
   MonsterStatBlock,
   NPC,
   PlayerData,
+  PluginManifest,
   Schema,
   TabId,
   ThemeSettings,
@@ -136,6 +137,7 @@ function defaultState(): AppState {
       lastOutput: 0,
       generationCount: 0,
     },
+    pluginData: {},
   };
 }
 
@@ -170,6 +172,9 @@ class Store {
   private _state = $state<AppState>(defaultState());
   private _dirty = false;
   private _saveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /** Loaded plugin manifests — populated after load() by App.svelte */
+  plugins = $state<PluginManifest[]>([]);
 
   // ── Boot ─────────────────────────────────────────────────────
 
@@ -249,6 +254,8 @@ class Store {
     if (!s.ui.lastTabPerGroup) s.ui.lastTabPerGroup = {};
     if (!s.ui.customGroupName) s.ui.customGroupName = "My View";
     if (!s.ui.customGroupTabs) s.ui.customGroupTabs = [];
+    // Lazy-init plugin data namespace for saves that predate this feature
+    if (!s.pluginData) s.pluginData = {};
     return s;
   }
 
@@ -1312,6 +1319,53 @@ class Store {
 
   toJSON(): string {
     return JSON.stringify(this._state, null, 2);
+  }
+
+  // ── Plugin data helpers ───────────────────────────────────────
+
+  /**
+   * Returns the stored data for a plugin scoped to a campaign.
+   * The core app never inspects these values.
+   */
+  getPluginData(pluginId: string, campaignId: string): Record<string, unknown> {
+    if (!this._state.pluginData) this._state.pluginData = {};
+    if (!this._state.pluginData[pluginId]) this._state.pluginData[pluginId] = {};
+    const bucket = this._state.pluginData[pluginId] as Record<string, unknown>;
+    return (bucket[campaignId] as Record<string, unknown>) ?? {};
+  }
+
+  /**
+   * Saves plugin data for a given plugin + campaign.
+   * Triggers a debounced save of the full app state.
+   */
+  setPluginData(
+    pluginId: string,
+    campaignId: string,
+    data: Record<string, unknown>,
+  ): void {
+    if (!this._state.pluginData) this._state.pluginData = {};
+    if (!this._state.pluginData[pluginId]) this._state.pluginData[pluginId] = {};
+    (this._state.pluginData[pluginId] as Record<string, unknown>)[campaignId] = data;
+    this.save();
+  }
+
+  /**
+   * Removes all stored data for a plugin (user-initiated cleanup only).
+   */
+  deletePluginData(pluginId: string): void {
+    if (!this._state.pluginData) return;
+    delete this._state.pluginData[pluginId];
+    this.save();
+  }
+
+  /**
+   * Returns plugin IDs that have stored data but whose manifest is no longer
+   * in store.plugins (i.e. the plugin folder has been removed).
+   */
+  getOrphanedPluginIds(): string[] {
+    if (!this._state.pluginData) return [];
+    const loadedIds = new Set(this.plugins.map((p) => p.id));
+    return Object.keys(this._state.pluginData).filter((id) => !loadedIds.has(id));
   }
 }
 
