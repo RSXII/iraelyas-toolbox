@@ -335,7 +335,11 @@ ipcMain.handle("get-plugins", () => {
         manifest._folderPath = path.join(PLUGINS_DIR, entry.name);
         manifests.push(manifest);
       } catch (parseErr) {
-        console.warn("[plugins] failed to parse manifest in", entry.name, parseErr.message);
+        console.warn(
+          "[plugins] failed to parse manifest in",
+          entry.name,
+          parseErr.message,
+        );
       }
     }
     return manifests;
@@ -399,7 +403,9 @@ ipcMain.handle("get-orphaned-plugin-data", (_event, loadedPluginIds) => {
     if (!fs.existsSync(DATA_FILE)) return [];
     const state = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
     if (!state.pluginData) return [];
-    const loaded = new Set(Array.isArray(loadedPluginIds) ? loadedPluginIds : []);
+    const loaded = new Set(
+      Array.isArray(loadedPluginIds) ? loadedPluginIds : [],
+    );
     return Object.keys(state.pluginData).filter((id) => !loaded.has(id));
   } catch (err) {
     console.error("get-orphaned-plugin-data error:", err);
