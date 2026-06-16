@@ -116,6 +116,15 @@ contextBridge.exposeInMainWorld("toolbox", {
   /** Scan userData/plugins/ and return an array of valid PluginManifest objects */
   getPlugins: () => ipcRenderer.invoke("get-plugins"),
 
+  /** Rescan after install/remove and return a fresh manifest list */
+  rescanPlugins: () => ipcRenderer.invoke("rescan-plugins"),
+
+  /** Open a folder picker, validate, copy into userData/plugins/, return manifest */
+  installPlugin: () => ipcRenderer.invoke("install-plugin"),
+
+  /** Delete a plugin folder from userData/plugins/ */
+  removePlugin: (pluginId) => ipcRenderer.invoke("remove-plugin", pluginId),
+
   /** Return the absolute path to the plugins directory */
   getPluginDataPath: () => ipcRenderer.invoke("get-plugin-data-path"),
 
@@ -130,8 +139,7 @@ contextBridge.exposeInMainWorld("toolbox", {
       ipcRenderer.invoke("plugin-data-set", pluginId, campaignId, data),
 
     /** Delete all stored data for a plugin (user-initiated cleanup) */
-    delete: (pluginId) =>
-      ipcRenderer.invoke("plugin-data-delete", pluginId),
+    delete: (pluginId) => ipcRenderer.invoke("plugin-data-delete", pluginId),
 
     /** Return plugin IDs that have stored data but are no longer installed */
     getOrphaned: (loadedPluginIds) =>

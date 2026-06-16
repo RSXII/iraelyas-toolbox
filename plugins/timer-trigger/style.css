@@ -1,0 +1,226 @@
+/*
+ * Timer Trigger Plugin — styles
+ *
+ * CSS vars mirror the app's default dark theme. They are hardcoded here because
+ * the iframe boundary prevents inheriting vars from the parent window.
+ */
+
+:root {
+  --bg: #111115;
+  --surface: #181819;
+  --card: #1e1e23;
+  --border: rgba(180, 150, 90, 0.13);
+  --border-h: rgba(180, 150, 90, 0.32);
+  --gold: #c9a84c;
+  --gold-dim: #7a6230;
+  --gold-pale: #f0dfa0;
+  --gold-glow: rgba(201, 168, 76, 0.15);
+  --text: #e2d8c8;
+  --text-dim: #8a7f6e;
+  --hostile: #b84040;
+  --friendly: #4a8c60;
+  --radius: 6px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+}
+
+#root {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* ── State visibility ──────────────────────────────────────────── */
+
+.state {
+  display: block;
+}
+.state.hidden {
+  display: none;
+}
+
+/* ── Card ──────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gold);
+}
+
+/* ── Badges ────────────────────────────────────────────────────── */
+
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-radius: var(--radius);
+  padding: 0.2rem 0.55rem;
+  align-self: flex-start;
+}
+
+.badge-armed {
+  color: var(--gold);
+  background: var(--gold-glow);
+  border: 1px solid var(--border);
+}
+
+.badge-fired {
+  color: var(--friendly);
+  background: rgba(74, 140, 96, 0.12);
+  border: 1px solid rgba(74, 140, 96, 0.28);
+}
+
+.badge-error {
+  color: var(--hostile);
+  background: rgba(184, 64, 64, 0.1);
+  border: 1px solid rgba(184, 64, 64, 0.28);
+}
+
+/* ── Countdown ─────────────────────────────────────────────────── */
+
+.countdown {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--gold-pale);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* ── Form fields ───────────────────────────────────────────────── */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+label {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+select,
+input[type="datetime-local"],
+input[type="number"] {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 0.4rem 0.65rem;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+select:focus,
+input:focus {
+  border-color: var(--gold-dim);
+}
+
+select {
+  width: 100%;
+}
+input[type="number"] {
+  width: 72px;
+}
+input[type="datetime-local"] {
+  width: 100%;
+  color-scheme: dark;
+}
+
+/* ── Buttons ───────────────────────────────────────────────────── */
+
+.btn {
+  padding: 0.45rem 1.2rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-start;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.btn-gold {
+  background: var(--gold-glow);
+  border-color: var(--gold-dim);
+  color: var(--gold);
+}
+.btn-gold:hover {
+  background: rgba(201, 168, 76, 0.25);
+  border-color: var(--gold);
+}
+
+.btn-danger {
+  background: transparent;
+  border-color: rgba(184, 64, 64, 0.35);
+  color: var(--hostile);
+}
+.btn-danger:hover {
+  background: rgba(184, 64, 64, 0.1);
+  border-color: rgba(184, 64, 64, 0.6);
+}
+
+/* ── Utility ───────────────────────────────────────────────────── */
+
+.dim {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.warn {
+  color: #c08840;
+}
+
+.error-text {
+  font-size: 13px;
+  color: var(--hostile);
+}
+
+.hidden {
+  display: none !important;
+}

@@ -302,55 +302,154 @@ ipcMain.handle("get-editor-context", () => {
 // ─── IPC: Plugin system ───────────────────────────────────────────────────────
 
 /**
- * Scan PLUGINS_DIR for valid plugin manifests and return them.
- * Each manifest gets a runtime `_folderPath` so the renderer can
- * construct the iframe src without knowing userData.
+ * Shared helper — scan PLUGINS_DIR and return all valid manifests.
+ * Each manifest gets a `_folderPath` runtime field.
  */
+function scanPluginsDir() {
+  if (!fs.existsSync(PLUGINS_DIR)) {
+    fs.mkdirSync(PLUGINS_DIR, { recursive: true });
+    return [];
+  }
+  const entries = fs.readdirSync(PLUGINS_DIR, { withFileTypes: true });
+  const manifests = [];
+  for (const entry of entries) {
+    const entryPath = path.join(PLUGINS_DIR, entry.name);
+    const isDir =
+      entry.isDirectory() ||
+      (entry.isSymbolicLink() && fs.statSync(entryPath).isDirectory());
+    if (!isDir) continue;
+    const manifestPath = path.join(entryPath, "plugin.json");
+    if (!fs.existsSync(manifestPath)) continue;
+    try {
+      const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+      if (
+        typeof manifest.id !== "string" ||
+        typeof manifest.name !== "string" ||
+        typeof manifest.version !== "string" ||
+        typeof manifest.apiVersion !== "string" ||
+        typeof manifest.entry !== "string"
+      ) {
+        console.warn("[plugins] skipping malformed manifest in", entry.name);
+        continue;
+      }
+      manifest._folderPath = entryPath;
+      manifests.push(manifest);
+    } catch (parseErr) {
+      console.warn(
+        "[plugins] failed to parse manifest in",
+        entry.name,
+        parseErr.message,
+      );
+    }
+  }
+  return manifests;
+}
+
+/** Return all installed plugin manifests. */
 ipcMain.handle("get-plugins", () => {
   try {
-    if (!fs.existsSync(PLUGINS_DIR)) {
-      fs.mkdirSync(PLUGINS_DIR, { recursive: true });
-      return [];
-    }
-    const entries = fs.readdirSync(PLUGINS_DIR, { withFileTypes: true });
-    const manifests = [];
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      const manifestPath = path.join(PLUGINS_DIR, entry.name, "plugin.json");
-      if (!fs.existsSync(manifestPath)) continue;
-      try {
-        const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-        // Validate required fields before trusting any manifest
-        if (
-          typeof manifest.id !== "string" ||
-          typeof manifest.name !== "string" ||
-          typeof manifest.version !== "string" ||
-          typeof manifest.apiVersion !== "string" ||
-          typeof manifest.entry !== "string"
-        ) {
-          console.warn("[plugins] skipping malformed manifest in", entry.name);
-          continue;
-        }
-        // Attach computed folder path for the renderer to build the iframe src
-        manifest._folderPath = path.join(PLUGINS_DIR, entry.name);
-        manifests.push(manifest);
-      } catch (parseErr) {
-        console.warn(
-          "[plugins] failed to parse manifest in",
-          entry.name,
-          parseErr.message,
-        );
-      }
-    }
-    return manifests;
+    return scanPluginsDir();
   } catch (err) {
     console.error("get-plugins error:", err);
     return [];
   }
 });
 
+/** Rescan and return a fresh manifest list (call after install/remove). */
+ipcMain.handle("rescan-plugins", () => {
+  try {
+    return scanPluginsDir();
+  } catch (err) {
+    console.error("rescan-plugins error:", err);
+    return [];
+  }
+});
+
 /** Return the absolute path to PLUGINS_DIR (used by settings UI). */
 ipcMain.handle("get-plugin-data-path", () => PLUGINS_DIR);
+
+/**
+ * Open a native folder picker, validate the selected folder as a plugin,
+ * copy it into PLUGINS_DIR/<plugin.id>/, and return the manifest.
+ * Overwrites any existing installation with the same id (supports updates).
+ */
+ipcMain.handle("install-plugin", async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: "Select Plugin Folder",
+    buttonLabel: "Install Plugin",
+    properties: ["openDirectory"],
+  });
+  if (result.canceled || !result.filePaths.length) {
+    return { ok: false, canceled: true };
+  }
+
+  const srcPath = result.filePaths[0];
+  const manifestPath = path.join(srcPath, "plugin.json");
+
+  if (!fs.existsSync(manifestPath)) {
+    return { ok: false, error: "No plugin.json found in the selected folder." };
+  }
+
+  let manifest;
+  try {
+    manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+  } catch {
+    return { ok: false, error: "plugin.json is not valid JSON." };
+  }
+
+  if (
+    typeof manifest.id !== "string" ||
+    !manifest.id.trim() ||
+    typeof manifest.name !== "string" ||
+    !manifest.name.trim() ||
+    typeof manifest.version !== "string" ||
+    typeof manifest.apiVersion !== "string" ||
+    typeof manifest.entry !== "string" ||
+    !manifest.entry.trim()
+  ) {
+    return {
+      ok: false,
+      error:
+        "plugin.json is missing required fields (id, name, version, apiVersion, entry).",
+    };
+  }
+
+  if (!fs.existsSync(PLUGINS_DIR)) {
+    fs.mkdirSync(PLUGINS_DIR, { recursive: true });
+  }
+
+  const destPath = path.join(PLUGINS_DIR, manifest.id);
+  if (fs.existsSync(destPath)) {
+    fs.rmSync(destPath, { recursive: true, force: true });
+  }
+
+  try {
+    await fs.promises.cp(srcPath, destPath, { recursive: true });
+  } catch (err) {
+    console.error("install-plugin copy error:", err);
+    return { ok: false, error: "Failed to copy plugin files: " + err.message };
+  }
+
+  manifest._folderPath = destPath;
+  return { ok: true, manifest };
+});
+
+/**
+ * Delete a plugin's folder from PLUGINS_DIR.
+ * Plugin data in the data file is left intact — user can clean it up via settings.
+ */
+ipcMain.handle("remove-plugin", (_event, pluginId) => {
+  try {
+    const pluginPath = path.join(PLUGINS_DIR, String(pluginId));
+    if (!fs.existsSync(pluginPath))
+      return { ok: false, error: "Plugin folder not found." };
+    fs.rmSync(pluginPath, { recursive: true, force: true });
+    return { ok: true };
+  } catch (err) {
+    console.error("remove-plugin error:", err);
+    return { ok: false, error: err.message };
+  }
+});
 
 /** Read plugin-namespaced data from the main data file. */
 ipcMain.handle("plugin-data-get", (_event, pluginId, campaignId) => {

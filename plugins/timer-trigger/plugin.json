@@ -1,0 +1,9 @@
+{
+  "id": "com.toolbox.timer-trigger",
+  "name": "Timer Trigger",
+  "version": "1.0.0",
+  "apiVersion": "1",
+  "icon": "⏰",
+  "description": "Set a target date & time — when it arrives, a tracker entry is automatically adjusted.",
+  "entry": "index.html"
+}

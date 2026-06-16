@@ -55,10 +55,25 @@ export interface ToolboxBridge {
 
   // Plugin system
   getPlugins: () => Promise<PluginManifest[]>;
+  rescanPlugins: () => Promise<PluginManifest[]>;
+  installPlugin: () => Promise<{
+    ok: boolean;
+    canceled?: boolean;
+    manifest?: PluginManifest;
+    error?: string;
+  }>;
+  removePlugin: (pluginId: string) => Promise<{ ok: boolean; error?: string }>;
   getPluginDataPath: () => Promise<string>;
   pluginData: {
-    get: (pluginId: string, campaignId: string) => Promise<Record<string, unknown>>;
-    set: (pluginId: string, campaignId: string, data: Record<string, unknown>) => Promise<{ ok: boolean }>;
+    get: (
+      pluginId: string,
+      campaignId: string,
+    ) => Promise<Record<string, unknown>>;
+    set: (
+      pluginId: string,
+      campaignId: string,
+      data: Record<string, unknown>,
+    ) => Promise<{ ok: boolean }>;
     delete: (pluginId: string) => Promise<{ ok: boolean }>;
     getOrphaned: (loadedPluginIds: string[]) => Promise<string[]>;
   };
@@ -470,7 +485,13 @@ export type TabId =
   | "dice"
   | "enemies";
 
-export type GroupId = "session" | "game" | "world" | "toolbox" | "custom" | "plugins";
+export type GroupId =
+  | "session"
+  | "game"
+  | "world"
+  | "toolbox"
+  | "custom"
+  | "plugins";
 
 export interface UIState {
   activeCampaign: string;
@@ -481,6 +502,7 @@ export interface UIState {
   lastTabPerGroup: Partial<Record<GroupId, TabId>>;
   customGroupName: string;
   customGroupTabs: TabId[];
+  pluginsEnabled: boolean;
   convo: ConvoState;
 }
 

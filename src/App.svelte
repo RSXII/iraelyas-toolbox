@@ -144,6 +144,18 @@
     broadcastCampaignChange();
   }
 
+  // ─── Plugin install ───────────────────────────────────────────
+  async function handleInstallPlugin(): Promise<void> {
+    const result = await window.toolbox.installPlugin();
+    if (!result.ok) {
+      if (!result.canceled) toast.add(result.error ?? 'Install failed', 'error');
+      return;
+    }
+    store.plugins = (await window.toolbox.rescanPlugins()) as typeof store.plugins;
+    if (result.manifest) activePluginId = result.manifest.id;
+    toast.add(`Plugin "${result.manifest?.name}" installed`, 'success');
+  }
+
   // ─── Boot ─────────────────────────────────────────────────────
   function boot(): void {
     showMigrationOverlay = false;
@@ -643,7 +655,7 @@
   </button>
   <button class="group-gear-btn" title="Configure {store.customGroupName}"
     onclick={() => (showCustomModal = true)}>⚙</button>
-  {#if store.plugins.length > 0}
+  {#if store.pluginsEnabled}
   <button class="group-btn" class:active={activeGroup === 'plugins'}
     onclick={() => switchGroup('plugins')}>
     🧩 Plugins
@@ -684,40 +696,40 @@
 <div class="content-area">
 
   <!-- ── FAVOR TRACKER ── -->
-  <FavorTab active={activeTab === 'favor'} onswitchToNPCs={() => switchTab('npcs')} />
+  <FavorTab active={activeGroup !== 'plugins' && activeTab === 'favor'} onswitchToNPCs={() => switchTab('npcs')} />
 
   <!-- ── NPC CREATOR ── -->
-  <NPCTab active={activeTab === 'npcs'} />
+  <NPCTab active={activeGroup !== 'plugins' && activeTab === 'npcs'} />
 
   <!-- ── CONVERSATION TRACKER ── -->
-  <ConvoTab active={activeTab === 'convo'} />
+  <ConvoTab active={activeGroup !== 'plugins' && activeTab === 'convo'} />
 
   <!-- ── FAMILY TREE ── -->
-  <TreeTab active={activeTab === 'tree'} />
+  <TreeTab active={activeGroup !== 'plugins' && activeTab === 'tree'} />
 
   <!-- ── CHRONICLE ── -->
-  <ChronicleTab active={activeTab === 'chronicle'} />
+  <ChronicleTab active={activeGroup !== 'plugins' && activeTab === 'chronicle'} />
 
   <!-- ── TRACKER ── -->
-  <TrackerTab active={activeTab === 'tracker'} />
+  <TrackerTab active={activeGroup !== 'plugins' && activeTab === 'tracker'} />
 
   <!-- ── PARTY QUICK VIEW ── -->
-  <PartyTab active={activeTab === 'party'} />
+  <PartyTab active={activeGroup !== 'plugins' && activeTab === 'party'} />
 
   <!-- ── FACTION MEMBERSHIPS ── -->
-  <FactionsTab active={activeTab === 'factions'} />
+  <FactionsTab active={activeGroup !== 'plugins' && activeTab === 'factions'} />
 
   <!-- ── INITIATIVE TRACKER ── -->
-  <InitiativeTab active={activeTab === 'initiative'} />
+  <InitiativeTab active={activeGroup !== 'plugins' && activeTab === 'initiative'} />
 
   <!-- ── DICE ROLLER ── -->
-  <DiceTab active={activeTab === 'dice'} />
+  <DiceTab active={activeGroup !== 'plugins' && activeTab === 'dice'} />
 
   <!-- ── ENEMY LIBRARY ── -->
-  <EnemyTab active={activeTab === 'enemies'} />
+  <EnemyTab active={activeGroup !== 'plugins' && activeTab === 'enemies'} />
 
   <!-- ── SESSION TRACKING ── -->
-  <SessionTab active={activeTab === 'sessions'} />
+  <SessionTab active={activeGroup !== 'plugins' && activeTab === 'sessions'} />
 
   <!-- ── PLUGIN TABS ── -->
   {#each store.plugins as plugin (plugin.id)}
@@ -733,6 +745,18 @@
       ></iframe>
     </div>
   {/each}
+
+  <!-- ── NO PLUGINS EMPTY STATE ── -->
+  {#if activeGroup === 'plugins' && store.plugins.length === 0}
+    <div class="tab-panel active">
+      <div class="custom-group-empty">
+        <div class="custom-group-empty-icon">🧩</div>
+        <h2 class="custom-group-empty-title">No Plugins Installed</h2>
+        <p class="custom-group-empty-msg">Import a plugin folder to get started.</p>
+        <button class="btn btn-gold" onclick={handleInstallPlugin}>Import Plugin…</button>
+      </div>
+    </div>
+  {/if}
 
   <!-- ── CUSTOM GROUP EMPTY STATE (last = renders on top) ── -->
   {#if activeGroup === 'custom' && store.customGroupTabs.length === 0}

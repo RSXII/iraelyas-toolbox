@@ -75,6 +75,24 @@
       <p class="custom-group-hint">Select at least one tab to show in your custom group.</p>
     {/if}
 
+    <div class="settings-divider"></div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">App Settings</div>
+      <label class="settings-toggle-row">
+        <div class="settings-toggle-info">
+          <span class="settings-toggle-label">Enable Plugins</span>
+          <span class="settings-toggle-hint">Show the Plugins group in the navigation bar.</span>
+        </div>
+        <input
+          type="checkbox"
+          class="settings-toggle"
+          checked={store.pluginsEnabled}
+          onchange={(e) => store.setPluginsEnabled((e.target as HTMLInputElement).checked)}
+        />
+      </label>
+    </div>
+
     <div class="modal-foot">
       <button class="btn" onclick={onclose}>Cancel</button>
       <button class="btn btn-gold" onclick={handleSave}>Save</button>

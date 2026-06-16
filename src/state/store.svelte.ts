@@ -74,6 +74,7 @@ const DEFAULT_UI: UIState = {
   lastTabPerGroup: {},
   customGroupName: "My View",
   customGroupTabs: [],
+  pluginsEnabled: false,
   convo: DEFAULT_CONVO,
 };
 
@@ -739,6 +740,15 @@ class Store {
     this.save();
   }
 
+  get pluginsEnabled(): boolean {
+    return this._state.ui.pluginsEnabled ?? false;
+  }
+
+  setPluginsEnabled(enabled: boolean): void {
+    this._state.ui.pluginsEnabled = enabled;
+    this.save();
+  }
+
   // ── Theme helpers ─────────────────────────────────────────────
 
   get theme(): ThemeSettings {
@@ -1329,7 +1339,8 @@ class Store {
    */
   getPluginData(pluginId: string, campaignId: string): Record<string, unknown> {
     if (!this._state.pluginData) this._state.pluginData = {};
-    if (!this._state.pluginData[pluginId]) this._state.pluginData[pluginId] = {};
+    if (!this._state.pluginData[pluginId])
+      this._state.pluginData[pluginId] = {};
     const bucket = this._state.pluginData[pluginId] as Record<string, unknown>;
     return (bucket[campaignId] as Record<string, unknown>) ?? {};
   }
@@ -1344,8 +1355,10 @@ class Store {
     data: Record<string, unknown>,
   ): void {
     if (!this._state.pluginData) this._state.pluginData = {};
-    if (!this._state.pluginData[pluginId]) this._state.pluginData[pluginId] = {};
-    (this._state.pluginData[pluginId] as Record<string, unknown>)[campaignId] = data;
+    if (!this._state.pluginData[pluginId])
+      this._state.pluginData[pluginId] = {};
+    (this._state.pluginData[pluginId] as Record<string, unknown>)[campaignId] =
+      data;
     this.save();
   }
 
@@ -1365,7 +1378,9 @@ class Store {
   getOrphanedPluginIds(): string[] {
     if (!this._state.pluginData) return [];
     const loadedIds = new Set(this.plugins.map((p) => p.id));
-    return Object.keys(this._state.pluginData).filter((id) => !loadedIds.has(id));
+    return Object.keys(this._state.pluginData).filter(
+      (id) => !loadedIds.has(id),
+    );
   }
 }
 
