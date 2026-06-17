@@ -57,8 +57,9 @@
     <div class="faction-row-favor">
       {#each partyPcs as pc (pc.id)}
         {@const score = fc.renown?.[pc.id] ?? 50}
+        {@const isMember = fc.members.some((m) => m.pcId === pc.id)}
         <div class="faction-favor-pc">
-          <span class="faction-favor-label">{pc.name}</span>
+          <span class="faction-favor-label" style={isMember ? 'color: #9999FA' : undefined}>{pc.name}</span>
           <span class="faction-favor-dot" style="background: {favorColor(score)}"></span>
         </div>
       {/each}

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
+  import { pickAndCompressPortrait } from '@/utils/npc-image';
   import type { PCCard } from '@/types/index';
 
   interface Props { active?: boolean; }
@@ -92,6 +93,18 @@
 
   function collapseAll(): void { collapsedCards = new Set(pcs.map(p => p.id)); }
   function expandAll(): void   { collapsedCards = new Set(); }
+
+  // ─── Portrait ────────────────────────────────────────────────
+  async function handlePickPortrait(pc: PCCard): Promise<void> {
+    const dataUrl = await pickAndCompressPortrait();
+    if (dataUrl) { pc.portrait = dataUrl; store.save(); }
+  }
+
+  function handleRemovePortrait(pc: PCCard): void {
+    delete pc.portrait;
+    store.save();
+  }
+
   // ─── Delete toggle ───────────────────────────────────────────────────────
   let deleteEnabled = $state(false);</script>
 
@@ -187,6 +200,27 @@
                 <button class="btn-icon danger" title="Remove PC" onclick={() => promptDeletePC(pc)}
                   style="display: {deleteEnabled ? 'flex' : 'none'}">✕</button>
               </div>
+            </div>
+
+            <!-- Portrait -->
+            <div class="pc-portrait-section">
+              {#if pc.portrait}
+                <img class="pc-portrait-img" src={pc.portrait} alt="" aria-hidden="true" />
+                <div class="pc-portrait-actions">
+                  <button class="btn btn-sm" onclick={() => handlePickPortrait(pc)}>Change</button>
+                  <button class="btn btn-sm" onclick={() => handleRemovePortrait(pc)}>✕ Remove</button>
+                </div>
+              {:else}
+                <!-- svelte-ignore a11y_interactive_supports_focus -->
+                <div class="pc-portrait-placeholder" role="button" tabindex="0"
+                  onclick={() => handlePickPortrait(pc)}
+                  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePickPortrait(pc); } }}>
+                  <div class="pc-portrait-placeholder-inner">
+                    <span class="pc-portrait-placeholder-icon">🖼</span>
+                    <span>Add Portrait</span>
+                  </div>
+                </div>
+              {/if}
             </div>
 
             <!-- Card body -->

@@ -354,6 +354,7 @@ export interface PCCustomField {
 export interface PCCard {
   id: string;
   name: string;
+  portrait?: string; // base64 compressed JPEG — same format as NPC portrait
   ac: string;
   saves: {
     str: string;
