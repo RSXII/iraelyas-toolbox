@@ -37,39 +37,44 @@
   onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onselect(); } }}
 >
 
-  <!-- Insignia circle -->
-  <div class="faction-insignia">
-    {#if fc.insignia}
-      <img src={fc.insignia} alt="" aria-hidden="true" class="faction-insignia-img" />
-    {:else}
-      <span class="faction-insignia-initials">{initials(fc.name)}</span>
-    {/if}
-  </div>
+  <!-- Left half: member avatars (absolute) + insignia/name (normal flow) -->
+  <div class="faction-row-left">
 
-  <!-- Name + leader -->
-  <div class="faction-row-center">
-    <span class="faction-row-name">{fc.name}</span>
-    {#if fc.leader}
-      <span class="faction-row-leader">Leader: {fc.leader}</span>
+    <!-- Member portraits float above the row -->
+    {#if memberPcs.length > 0}
+      <div class="faction-row-members">
+        {#each memberPcs as pc (pc.id)}
+          <div class="faction-member-avatar" title={pc.name}>
+            {#if pc.portrait}
+              <img src={pc.portrait} alt="" aria-hidden="true" />
+            {:else}
+              <span class="faction-member-avatar-initials">{initials(pc.name)}</span>
+            {/if}
+          </div>
+        {/each}
+      </div>
     {/if}
-  </div>
 
-  <!-- Member portrait avatars -->
-  {#if memberPcs.length > 0}
-    <div class="faction-row-members">
-      {#each memberPcs as pc (pc.id)}
-        <div class="faction-member-avatar" title={pc.name}>
-          {#if pc.portrait}
-            <img src={pc.portrait} alt="" aria-hidden="true" />
-          {:else}
-            <span class="faction-member-avatar-initials">{initials(pc.name)}</span>
-          {/if}
-        </div>
-      {/each}
+    <!-- Insignia + name + leader -->
+    <div class="faction-row-info">
+      <div class="faction-insignia">
+        {#if fc.insignia}
+          <img src={fc.insignia} alt="" aria-hidden="true" class="faction-insignia-img" />
+        {:else}
+          <span class="faction-insignia-initials">{initials(fc.name)}</span>
+        {/if}
+      </div>
+      <div class="faction-row-center">
+        <span class="faction-row-name">{fc.name}</span>
+        {#if fc.leader}
+          <span class="faction-row-leader">Leader: {fc.leader}</span>
+        {/if}
+      </div>
     </div>
-  {/if}
 
-  <!-- Per-PC favor dots -->
+  </div>
+
+  <!-- Right: per-PC favor dots -->
   {#if partyPcs.length > 0}
     <div class="faction-row-favor">
       {#each partyPcs as pc (pc.id)}

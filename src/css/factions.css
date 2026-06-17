@@ -650,16 +650,17 @@
 .faction-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
+  padding-top: 24px;
 }
 
 .faction-list-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 12px 14px;
   background: var(--card);
   border: 1px solid var(--border);
   border-left: 3px solid var(--gold-dim);
@@ -714,6 +715,20 @@
   color: var(--gold-pale);
   pointer-events: none;
   user-select: none;
+}
+
+/* ── Left half wrapper: anchor for floating avatars + info block ── */
+.faction-row-left {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+/* Insignia + name/leader — normal flow */
+.faction-row-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* ── Center: name + leader ── */
@@ -779,8 +794,12 @@
 .faction-row-members {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
   flex-shrink: 0;
+  position: absolute;
+  top: -35px;
+  left: 0;
+  margin-top: 0;
 }
 
 .faction-member-avatar {
