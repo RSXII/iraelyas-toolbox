@@ -1,9 +1,16 @@
 import { defineConfig } from "vite";
 import path from "path";
+import { createRequire } from "module";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
+
+const require = createRequire(import.meta.url);
+const pkg = require("./package.json") as { version: string };
 
 export default defineConfig({
   plugins: [svelte()],
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   root: "src",
   base: "./",
   resolve: {

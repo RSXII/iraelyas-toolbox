@@ -532,7 +532,7 @@
 ═══════════════════════════════════════════════════════════════ -->
 <div class="topbar">
   <div class="topbar-brand">
-    <span class="topbar-brand-name">Iraelya's 5e Toolbox{window.toolbox.isBeta ? ' (Beta)' : ''}</span>
+    <span class="topbar-brand-name">Iraelya's Toolbox | v{__APP_VERSION__}{window.toolbox.isBeta ? ' (Beta)' : ''}</span>
     <span class="topbar-brand-sub">Dungeon Master's Dashboard</span>
   </div>
   <div class="topbar-divider"></div>
