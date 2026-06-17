@@ -1234,7 +1234,12 @@ class Store {
   patchFaction(
     campaignId: string,
     factionId: string,
-    patch: { name?: string; leader?: string; insignia?: string },
+    patch: {
+      name?: string;
+      leader?: string;
+      insignia?: string;
+      colors?: string[];
+    },
   ): void {
     const fc = this.getFactions(campaignId).factions.find(
       (f) => f.id === factionId,
@@ -1243,6 +1248,7 @@ class Store {
     if ("name" in patch) fc.name = patch.name!;
     if ("leader" in patch) fc.leader = patch.leader;
     if ("insignia" in patch) fc.insignia = patch.insignia;
+    if ("colors" in patch) fc.colors = patch.colors;
     this.save();
   }
 

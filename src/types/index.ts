@@ -399,6 +399,7 @@ export interface FactionConfig {
   name: string; // faction display name
   leader?: string; // faction leader name (display only)
   insignia?: string; // base64 compressed JPEG — same format as NPC portrait
+  colors?: string[]; // up to 5 hex color strings, e.g. "#a83b3b"
   factionNpcId?: string; // deprecated — used only during migration
   renown: Record<string, number>; // playerId → score (0–100)
   ranks: FactionRank[];

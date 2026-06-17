@@ -18,7 +18,7 @@
   const open = $derived(fc !== null);
   const campaignId = $derived(store.activeCampaignId);
 
-  function patch(p: { name?: string; leader?: string; insignia?: string }): void {
+  function patch(p: { name?: string; leader?: string; insignia?: string; colors?: string[] }): void {
     if (!campaignId || !fc) return;
     store.patchFaction(campaignId, fc.id, p);
   }
@@ -30,6 +30,25 @@
 
   function onLeaderChange(val: string): void {
     patch({ leader: val.trim() || '' });
+  }
+
+  function addColor(): void {
+    if (!campaignId || !fc) return;
+    const current = fc.colors ?? [];
+    if (current.length >= 5) return;
+    patch({ colors: [...current, '#ffffff'] });
+  }
+
+  function updateColor(index: number, value: string): void {
+    if (!campaignId || !fc) return;
+    const updated = [...(fc.colors ?? [])];
+    updated[index] = value;
+    patch({ colors: updated });
+  }
+
+  function removeColor(index: number): void {
+    if (!campaignId || !fc) return;
+    patch({ colors: (fc.colors ?? []).filter((_, i) => i !== index) });
   }
 
   async function handlePickInsignia(): Promise<void> {
@@ -124,6 +143,31 @@
               value={fc.leader ?? ''}
               onchange={(e) => onLeaderChange((e.target as HTMLInputElement).value)}
             />
+          </div>
+          <div class="faction-detail-field-group">
+            <span class="faction-detail-field-label">Faction Colors</span>
+            <div class="faction-colors-row">
+              {#each (fc.colors ?? []) as color, i}
+                <div class="faction-color-swatch">
+                  <div class="faction-color-box" style="background: {color}">
+                    <div class="faction-color-overlay">
+                      <label class="faction-color-edit-half">
+                        Edit
+                        <input
+                          type="color"
+                          value={color}
+                          oninput={(e) => updateColor(i, (e.target as HTMLInputElement).value)}
+                        />
+                      </label>
+                      <button class="faction-color-remove-half" onclick={() => removeColor(i)}>Remove</button>
+                    </div>
+                  </div>
+                </div>
+              {/each}
+              {#if (fc.colors?.length ?? 0) < 5}
+                <button class="faction-color-add-btn" onclick={addColor} title="Add color">+</button>
+              {/if}
+            </div>
           </div>
         </div>
 

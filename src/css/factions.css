@@ -831,6 +831,114 @@
   user-select: none;
 }
 
+/* ── Faction color swatches ── */
+.faction-colors-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.faction-color-swatch {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.faction-color-box {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.faction-color-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.faction-color-swatch:hover .faction-color-overlay {
+  opacity: 1;
+}
+
+.faction-color-edit-half {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: "Cinzel", serif;
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.faction-color-edit-half input[type="color"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+  border: none;
+  padding: 0;
+}
+
+.faction-color-remove-half {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: "Cinzel", serif;
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.faction-color-remove-half:hover {
+  background: rgba(180, 60, 60, 0.8);
+}
+
+.faction-color-add-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--gold-dim);
+  font-size: 20px;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.faction-color-add-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    FACTION DETAIL MODAL
 ═══════════════════════════════════════════════════════════════ */
