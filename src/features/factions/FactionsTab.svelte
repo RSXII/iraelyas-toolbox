@@ -1,7 +1,9 @@
 <script lang="ts">
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
-  import FactionCard from './FactionCard.svelte';
+  import FactionListRow from './FactionListRow.svelte';
+  import FactionDetailModal from './FactionDetailModal.svelte';
+  import type { FactionConfig } from '@/types/index';
 
   interface Props { active?: boolean; }
   let { active = false }: Props = $props();
@@ -9,9 +11,25 @@
   const campaignId = $derived(store.activeCampaignId);
   const cd         = $derived(campaignId ? store.getCampaignData(campaignId) : null);
   const factions   = $derived(campaignId ? store.getFactions(campaignId).factions : []);
+  const partyPcs   = $derived(cd?.party.pcs ?? []);
 
   let showAddFaction = $state(false);
   let newFactionName = $state('');
+
+  // ─── Selection state ──────────────────────────────────────────
+  let selectedFaction = $state<FactionConfig | null>(null);
+
+  const selectedFactionIdx = $derived(
+    selectedFaction ? factions.findIndex((f) => f.id === selectedFaction!.id) : -1
+  );
+
+  // Keep selectedFaction in sync when store mutates (name edits, etc.)
+  $effect(() => {
+    if (!selectedFaction) return;
+    const refreshed = factions.find((f) => f.id === selectedFaction!.id);
+    if (refreshed) selectedFaction = refreshed;
+    else selectedFaction = null;
+  });
 
   function addFaction(): void {
     if (!campaignId || !newFactionName.trim()) return;
@@ -51,13 +69,13 @@
       </div>
     {/if}
 
-    <!-- Faction cards -->
+    <!-- Faction list -->
     {#if factions.length === 0}
       <p class="empty-msg">No factions configured yet. Use "Add Faction" to get started.</p>
     {:else}
-      <div class="faction-cards">
-        {#each factions as fc, fcIdx (fc.id)}
-          <FactionCard {fc} {fcIdx} totalFactions={factions.length} />
+      <div class="faction-list">
+        {#each factions as fc (fc.id)}
+          <FactionListRow {fc} {partyPcs} onselect={() => (selectedFaction = fc)} />
         {/each}
       </div>
     {/if}
@@ -65,3 +83,11 @@
   {/if}
 
 </div>
+
+<!-- Faction detail modal (outside panel so it overlays correctly) -->
+<FactionDetailModal
+  fc={selectedFaction}
+  fcIdx={selectedFactionIdx}
+  totalFactions={factions.length}
+  onclose={() => (selectedFaction = null)}
+/>

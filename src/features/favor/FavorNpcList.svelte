@@ -71,6 +71,9 @@
       {@const renownMeta  = favorMeta(renownScore, tiers)}
 
       <div class="section-head">
+        {#if fc.insignia}
+          <img class="favor-section-insignia" src={fc.insignia} alt="" aria-hidden="true" />
+        {/if}
         <span class="section-name">{fc.name}</span>
         {#if editEnabled}
           <div class="faction-reorder-btns">
@@ -88,12 +91,18 @@
       <!-- Renown row -->
       <div class="npc-row faction-header">
         <div class="npc-left">
-          <div style="width:28px"></div>
+          {#if editEnabled}<div style="width:28px"></div>{/if}
           <div class="reorder-btns" style="visibility:hidden">
             <button class="reorder-arrow" disabled>▲</button>
             <button class="reorder-arrow" disabled>▼</button>
           </div>
-          <div class="npc-initials" style="font-size:10px">{fc.name.slice(0,2).toUpperCase()}</div>
+          <div class="npc-initials" class:npc-favor-portrait={!!fc.insignia} style="font-size:10px">
+              {#if fc.insignia}
+                <img src={fc.insignia} alt="" aria-hidden="true" />
+              {:else}
+                {fc.name.slice(0,2).toUpperCase()}
+              {/if}
+            </div>
           <div class="npc-info">
             <div class="npc-name">{fc.name} <span class="faction-header-badge">Renown</span></div>
             <div class="npc-role">Faction</div>
@@ -132,7 +141,13 @@
               <button class="reorder-arrow" title="Move down" disabled={i === factionNpcs.length - 1}
                 onclick={() => store.reorderNPC(cid!, npc.id, 1)}>▼</button>
             </div>
-            <div class="npc-initials">{initials(npc.name)}</div>
+            <div class="npc-initials" class:npc-favor-portrait={!!npc.portrait}>
+              {#if npc.portrait}
+                <img src={npc.portrait} alt="" aria-hidden="true" />
+              {:else}
+                {initials(npc.name)}
+              {/if}
+            </div>
             <div class="npc-info">
               <div class="npc-name">{npc.name}</div>
               {#if editEnabled}
@@ -182,7 +197,13 @@
               <button class="reorder-arrow" disabled>▲</button>
               <button class="reorder-arrow" disabled>▼</button>
             </div>
-            <div class="npc-initials">{initials(npc.name)}</div>
+            <div class="npc-initials" class:npc-favor-portrait={!!npc.portrait}>
+              {#if npc.portrait}
+                <img src={npc.portrait} alt="" aria-hidden="true" />
+              {:else}
+                {initials(npc.name)}
+              {/if}
+            </div>
             <div class="npc-info">
               <div class="npc-name">{npc.name}</div>
               {#if editEnabled}

@@ -13,9 +13,10 @@
   // ─── Reactive campaign data ───────────────────────────────────
   const cid      = $derived(store.activeCampaignId);
   const cd       = $derived(store.activeCampaignData);
-  const players  = $derived(cid ? store.getParty(cid).pcs : []);
-  const pid      = $derived(store.activePlayerId);
-  const pd       = $derived(pid && cd ? cd.players[pid] : null);
+  const players   = $derived(cid ? store.getParty(cid).pcs : []);
+  const pid       = $derived(store.activePlayerId);
+  const pd        = $derived(pid && cd ? cd.players[pid] : null);
+  const currentPc = $derived(players.find((p) => p.id === pid) ?? null);
 
   const factionConfigs = $derived(cid ? store.getFactions(cid).factions : []);
   const factionIds     = $derived(new Set(factionConfigs.map((fc) => fc.id)));
@@ -85,8 +86,13 @@
     <!-- Header: player viewer + controls -->
     <div class="favor-header">
       <div class="favor-player-block">
-        <h2>Viewing as</h2>
-        <div class="favor-player-name">{pd?.player ?? '—'}</div>
+        {#if currentPc?.portrait}
+          <img class="favor-header-portrait" src={currentPc.portrait} alt="" aria-hidden="true" />
+        {/if}
+        <div>
+          <h2>Viewing as</h2>
+          <div class="favor-player-name">{pd?.player ?? '—'}</div>
+        </div>
       </div>
       <div class="favor-controls">
         <select

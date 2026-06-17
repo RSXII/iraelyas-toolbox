@@ -20,6 +20,32 @@
   margin-bottom: 1.25rem;
 }
 
+.favor-player-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.favor-header-portrait {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gold-dim);
+  flex-shrink: 0;
+  display: block;
+}
+
+.favor-section-insignia {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--gold-dim);
+  flex-shrink: 0;
+  display: block;
+}
+
 .favor-player-block h2 {
   font-family: "Cinzel", serif;
   font-size: 9px;
@@ -82,6 +108,19 @@
   font-size: 10px;
   color: var(--text-dim);
   flex-shrink: 0;
+}
+
+.npc-initials.npc-favor-portrait {
+  padding: 0;
+  overflow: hidden;
+}
+
+.npc-initials.npc-favor-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 
 .npc-info {

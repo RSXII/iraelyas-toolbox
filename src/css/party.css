@@ -466,3 +466,67 @@ input.pc-custom-value:focus {
 .modal-party {
   width: 360px;
 }
+
+/* ── PC portrait ── */
+.pc-portrait-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border);
+  gap: 6px;
+}
+
+.pc-portrait-img {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  object-fit: cover;
+  display: block;
+}
+
+.pc-portrait-placeholder {
+  width: 88px;
+  height: 88px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.pc-portrait-placeholder:hover {
+  border-color: var(--gold-dim);
+  background: rgba(255, 255, 255, 0.04);
+}
+.pc-portrait-placeholder:focus-visible {
+  outline: none;
+  border-color: var(--gold-dim);
+  box-shadow: 0 0 0 2px rgba(188, 161, 89, 0.28);
+}
+
+.pc-portrait-placeholder-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-faint);
+  font-size: 10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pc-portrait-placeholder-icon {
+  font-size: 22px;
+  opacity: 0.45;
+}
+
+.pc-portrait-actions {
+  display: flex;
+  gap: 6px;
+}
