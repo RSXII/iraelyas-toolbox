@@ -775,6 +775,43 @@
   flex-shrink: 0;
 }
 
+/* ── Member avatar cluster ── */
+.faction-row-members {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.faction-member-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.faction-member-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.faction-member-avatar-initials {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--gold-pale);
+  pointer-events: none;
+  user-select: none;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    FACTION DETAIL MODAL
 ═══════════════════════════════════════════════════════════════ */

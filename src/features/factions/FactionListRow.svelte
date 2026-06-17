@@ -24,6 +24,8 @@
     if (score < 80) return 'var(--friendly)';
     return 'var(--allied)';
   }
+
+  const memberPcs = $derived(partyPcs.filter((pc) => fc.members.some((m) => m.pcId === pc.id)));
 </script>
 
 <!-- svelte-ignore a11y_interactive_supports_focus -->
@@ -52,14 +54,28 @@
     {/if}
   </div>
 
+  <!-- Member portrait avatars -->
+  {#if memberPcs.length > 0}
+    <div class="faction-row-members">
+      {#each memberPcs as pc (pc.id)}
+        <div class="faction-member-avatar" title={pc.name}>
+          {#if pc.portrait}
+            <img src={pc.portrait} alt="" aria-hidden="true" />
+          {:else}
+            <span class="faction-member-avatar-initials">{initials(pc.name)}</span>
+          {/if}
+        </div>
+      {/each}
+    </div>
+  {/if}
+
   <!-- Per-PC favor dots -->
   {#if partyPcs.length > 0}
     <div class="faction-row-favor">
       {#each partyPcs as pc (pc.id)}
         {@const score = fc.renown?.[pc.id] ?? 50}
-        {@const isMember = fc.members.some((m) => m.pcId === pc.id)}
         <div class="faction-favor-pc">
-          <span class="faction-favor-label" style={isMember ? 'color: #9999FA' : undefined}>{pc.name}</span>
+          <span class="faction-favor-label">{pc.name}</span>
           <span class="faction-favor-dot" style="background: {favorColor(score)}"></span>
         </div>
       {/each}
