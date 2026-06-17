@@ -132,7 +132,13 @@
               <button class="reorder-arrow" title="Move down" disabled={i === factionNpcs.length - 1}
                 onclick={() => store.reorderNPC(cid!, npc.id, 1)}>▼</button>
             </div>
-            <div class="npc-initials">{initials(npc.name)}</div>
+            <div class="npc-initials" class:npc-favor-portrait={!!npc.portrait}>
+              {#if npc.portrait}
+                <img src={npc.portrait} alt="" aria-hidden="true" />
+              {:else}
+                {initials(npc.name)}
+              {/if}
+            </div>
             <div class="npc-info">
               <div class="npc-name">{npc.name}</div>
               {#if editEnabled}
@@ -182,7 +188,13 @@
               <button class="reorder-arrow" disabled>▲</button>
               <button class="reorder-arrow" disabled>▼</button>
             </div>
-            <div class="npc-initials">{initials(npc.name)}</div>
+            <div class="npc-initials" class:npc-favor-portrait={!!npc.portrait}>
+              {#if npc.portrait}
+                <img src={npc.portrait} alt="" aria-hidden="true" />
+              {:else}
+                {initials(npc.name)}
+              {/if}
+            </div>
             <div class="npc-info">
               <div class="npc-name">{npc.name}</div>
               {#if editEnabled}
