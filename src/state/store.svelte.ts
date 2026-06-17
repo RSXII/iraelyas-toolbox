@@ -1240,9 +1240,9 @@ class Store {
       (f) => f.id === factionId,
     );
     if (!fc) return;
-    if ('name' in patch) fc.name = patch.name!;
-    if ('leader' in patch) fc.leader = patch.leader;
-    if ('insignia' in patch) fc.insignia = patch.insignia;
+    if ("name" in patch) fc.name = patch.name!;
+    if ("leader" in patch) fc.leader = patch.leader;
+    if ("insignia" in patch) fc.insignia = patch.insignia;
     this.save();
   }
 
