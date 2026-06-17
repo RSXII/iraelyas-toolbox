@@ -5,7 +5,10 @@ const {
   dialog,
   shell,
   safeStorage,
+  protocol,
+  net,
 } = require("electron");
+const { pathToFileURL } = require("url");
 const path = require("path");
 const fs = require("fs");
 const https = require("https");
@@ -512,8 +515,41 @@ ipcMain.handle("get-orphaned-plugin-data", (_event, loadedPluginIds) => {
   }
 });
 
+// ─── Custom protocol: plugin:// ───────────────────────────────────────────────
+// Must be called before app is ready.
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: "plugin",
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      bypassCSP: false,
+    },
+  },
+]);
+
 // ─── App lifecycle ────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
+  // Serve plugin files via plugin://<pluginId>/<path> → PLUGINS_DIR/<pluginId>/<path>
+  protocol.handle("plugin", (request) => {
+    const url = new URL(request.url);
+    const pluginId = url.hostname;
+    const pluginBase = path.join(PLUGINS_DIR, pluginId);
+    // Decode and resolve the path, then validate it stays inside the plugin folder
+    const resolved = path.normalize(
+      path.join(pluginBase, decodeURIComponent(url.pathname)),
+    );
+    if (
+      !resolved.startsWith(pluginBase + path.sep) &&
+      resolved !== pluginBase
+    ) {
+      console.warn("[plugin://] blocked path traversal attempt:", request.url);
+      return new Response("Forbidden", { status: 403 });
+    }
+    return net.fetch(pathToFileURL(resolved).href);
+  });
+
   createWindow();
 
   // macOS: re-create window when clicking dock icon

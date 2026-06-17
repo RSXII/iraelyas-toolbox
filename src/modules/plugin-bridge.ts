@@ -91,6 +91,14 @@ function sendToIframe(
   iframe.contentWindow?.postMessage(msg, "*");
 }
 
+/**
+ * Strip Svelte 5 reactive proxies so the value is safe to pass to postMessage
+ * (which uses the structured clone algorithm and cannot clone Proxy objects).
+ */
+function toPlain<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value));
+}
+
 /** Generate a TrackerEntry id matching the app's existing util format */
 function genTrackerId(): string {
   return `tracker_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -135,7 +143,7 @@ const ACTION_HANDLERS: Record<string, ActionHandler> = {
     };
 
     store.upsertTrackerEntry(campaignId, entry);
-    broadcastEvent("tracker.entryChanged", entry);
+    broadcastEvent("tracker.entryChanged", toPlain(entry));
     return { ok: true, result: { id: entry.id } };
   },
 
@@ -157,7 +165,7 @@ const ACTION_HANDLERS: Record<string, ActionHandler> = {
     const updated = store
       .getTracker(campaignId)
       .entries.find((e) => e.id === p.entryId);
-    if (updated) broadcastEvent("tracker.entryChanged", updated);
+    if (updated) broadcastEvent("tracker.entryChanged", toPlain(updated));
     return {
       ok: true,
       result: { newValue: updated?.current ?? entry.current },
@@ -182,7 +190,7 @@ const ACTION_HANDLERS: Record<string, ActionHandler> = {
     const updated = store
       .getTracker(campaignId)
       .entries.find((e) => e.id === p.entryId);
-    if (updated) broadcastEvent("tracker.entryChanged", updated);
+    if (updated) broadcastEvent("tracker.entryChanged", toPlain(updated));
     return {
       ok: true,
       result: { newValue: updated?.current ?? entry.current },
@@ -192,7 +200,7 @@ const ACTION_HANDLERS: Record<string, ActionHandler> = {
   // ── tracker.getEntries ────────────────────────────────────────
   "tracker.getEntries": (_payload, campaignId) => {
     const entries = store.getTracker(campaignId).entries;
-    return { ok: true, result: entries };
+    return { ok: true, result: toPlain(entries) };
   },
 
   // ── sessions.getCurrent ───────────────────────────────────────
@@ -211,7 +219,7 @@ const ACTION_HANDLERS: Record<string, ActionHandler> = {
   // ── party.getMembers ──────────────────────────────────────────
   "party.getMembers": (_payload, campaignId) => {
     const pcs = store.getParty(campaignId).pcs;
-    return { ok: true, result: pcs };
+    return { ok: true, result: toPlain(pcs) };
   },
   // ── data.load ──────────────────────────────────────────────────
   "data.load": async (_payload, campaignId, pluginId) => {

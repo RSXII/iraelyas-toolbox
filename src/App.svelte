@@ -733,8 +733,8 @@
 
   <!-- ── PLUGIN TABS ── -->
   {#each store.plugins as plugin (plugin.id)}
-    {@const _p = plugin as typeof plugin & { _folderPath?: string }}
-    {@const pluginSrc = _p.devUrl ?? `file://${_p._folderPath ?? ''}/${plugin.entry}`}
+    {@const _p = plugin as typeof plugin & { devUrl?: string }}
+    {@const pluginSrc = _p.devUrl ?? `plugin://${plugin.id}/${plugin.entry}`}
     <div class="tab-panel plugin-panel" class:active={activeGroup === 'plugins' && activePluginId === plugin.id}>
       <iframe
         class="plugin-iframe"
