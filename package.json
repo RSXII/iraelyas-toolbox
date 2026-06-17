@@ -1,6 +1,6 @@
 {
   "name": "iraelyas-toolbox",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Iraelya's 5e Toolbox — Dungeon Master's Dashboard",
   "main": "electron/main.js",
   "author": {
