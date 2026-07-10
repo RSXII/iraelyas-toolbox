@@ -5,7 +5,8 @@
   import NpcSceneFields from './NpcSceneFields.svelte';
   import NpcRecurringFields from './NpcRecurringFields.svelte';
   import NpcMajorFields from './NpcMajorFields.svelte';
-  import type { NPC, NPCType, FactionConfig } from '@/types/index';
+  import CPRSkillsPanel from '@/features/party/cpr/CPRSkillsPanel.svelte';
+  import type { NPC, NPCType, FactionConfig, CPRSkills } from '@/types/index';
 
   interface Props {
     npc: NPC | null;
@@ -14,9 +15,12 @@
   }
   let { npc, factionConfigs, onclose }: Props = $props();
 
-  const open = $derived(npc !== null);
-  const cid  = $derived(store.activeCampaignId);
-  const t    = $derived(npc ? resolvedType(npc) : 'scene');
+  const open      = $derived(npc !== null);
+  const cid       = $derived(store.activeCampaignId);
+  const t         = $derived(npc ? resolvedType(npc) : 'scene');
+  const isCpr     = $derived(store.activeCampaignGameSystem === 'cpr');
+
+  let npcSkillsOpen = $state(false);
 
   // ─── Helpers ──────────────────────────────────────────────────
   function patch(update: Partial<Omit<NPC, 'id'>>): void {
@@ -36,6 +40,19 @@
   function onFactionChange(factionId: string): void {
     const fc = factionConfigs.find((f) => f.id === factionId);
     patch({ factionId: factionId || undefined, faction: fc?.name ?? 'Unaffiliated' });
+  }
+
+  // ─── Skills ───────────────────────────────────────────────────
+  function saveNpcSkill(key: keyof CPRSkills, value: number | undefined): void {
+    if (!cid || !npc) return;
+    const current = npc.cprSkills ?? {};
+    const updated = { ...current };
+    if (value === undefined) {
+      delete updated[key];
+    } else {
+      updated[key] = value;
+    }
+    patch({ cprSkills: updated });
   }
 
   // ─── Portrait ─────────────────────────────────────────────────
@@ -152,6 +169,25 @@
       {/if}
       {#if t === 'major'}
         <NpcMajorFields {npc} />
+      {/if}
+
+      <!-- CPR Skills (CPR campaigns only) -->
+      {#if isCpr}
+        <div class="npc-skills-section">
+          <!-- svelte-ignore a11y_interactive_supports_focus -->
+          <div class="npc-skills-toggle" role="button" tabindex="0"
+            onclick={() => (npcSkillsOpen = !npcSkillsOpen)}
+            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); npcSkillsOpen = !npcSkillsOpen; } }}>
+            <span class="npc-skills-toggle-label">Skills</span>
+            <span class="npc-skills-toggle-arrow" class:open={npcSkillsOpen}>▶</span>
+          </div>
+          <div class="npc-skills-body" class:collapsed={!npcSkillsOpen}>
+            <CPRSkillsPanel
+              skills={npc.cprSkills ?? {}}
+              onchange={saveNpcSkill}
+            />
+          </div>
+        </div>
       {/if}
 
       <div class="modal-foot">

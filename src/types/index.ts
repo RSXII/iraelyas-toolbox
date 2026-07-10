@@ -121,6 +121,74 @@ export interface FavorSettings {
 
 export type NPCType = "scene" | "recurring" | "major";
 
+export interface CPRSkills {
+  accounting?: number;
+  acting?: number;
+  airVehicleTech?: number;
+  animalHandling?: number;
+  archery?: number;
+  athletics?: number;
+  autofire?: number;
+  basicTech?: number;
+  brawling?: number;
+  bribery?: number;
+  bureaucracy?: number;
+  business?: number;
+  composition?: number;
+  concealRevealObject?: number;
+  concentration?: number;
+  contortionist?: number;
+  conversation?: number;
+  criminology?: number;
+  cryptography?: number;
+  cybertech?: number;
+  dance?: number;
+  deduction?: number;
+  demolitions?: number;
+  driveLandVehicle?: number;
+  education?: number;
+  electronicsSecurityTech?: number;
+  endurance?: number;
+  evasion?: number;
+  firstAid?: number;
+  forgery?: number;
+  gamble?: number;
+  handgun?: number;
+  heavyWeapons?: number;
+  humanPerception?: number;
+  interrogation?: number;
+  landVehicleTech?: number;
+  language?: number;
+  librarySearch?: number;
+  lipReading?: number;
+  localExpert?: number;
+  martialArts?: number;
+  meleeWeapon?: number;
+  paramedic?: number;
+  perception?: number;
+  personalGrooming?: number;
+  persuasion?: number;
+  pharmacology?: number;
+  pickLock?: number;
+  pickPocket?: number;
+  pilotAirVehicle?: number;
+  pilotSeaVehicle?: number;
+  playInstrument?: number;
+  resistTortureDrugs?: number;
+  riding?: number;
+  science?: number;
+  seaVehicleTech?: number;
+  shoulderArms?: number;
+  stealth?: number;
+  streetwise?: number;
+  tactics?: number;
+  tracking?: number;
+  trading?: number;
+  wardrobeStyle?: number;
+  weaponstech?: number;
+  wildernesssurvival?: number;
+}
+
 export interface NPC {
   id: string;
   name: string;
@@ -144,6 +212,8 @@ export interface NPC {
   relationshipContradictions?: string;
   // Portrait image (compressed JPEG base64 — see src/utils/npc-image.ts for size config)
   portrait?: string;
+  // CPR skills (optional, CPR campaigns only)
+  cprSkills?: CPRSkills;
 }
 
 export interface Schema {
@@ -377,6 +447,8 @@ export interface CPRPCStats {
   luck?: string;
   luckMax?: string;
   plat?: number;
+  // Skills
+  skills?: CPRSkills;
 }
 
 export interface PCCard {

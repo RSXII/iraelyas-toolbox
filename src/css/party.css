@@ -5,6 +5,12 @@
   padding: 1.5rem 2rem 3rem;
 }
 
+/* CPR: move top padding off the scroll container so sticky headers sit flush
+   with the top edge. The spacing is restored on the inner content div. */
+[data-system="cpr"] #panel-party {
+  padding-top: 0;
+}
+
 .party-inner {
   max-width: 1400px;
   margin: 0 auto;
@@ -536,9 +542,10 @@ input.pc-custom-value:focus {
 ═══════════════════════════════════════════════════════════════ */
 
 .cpr-party-inner {
-  max-width: 1200px;
+  max-width: 1500px;
   margin: 0 auto;
   width: 100%;
+  padding-top: 1.5rem;
 }
 
 /* ── Page header ── */
@@ -599,7 +606,7 @@ input.pc-custom-value:focus {
 /* ── Card grid ── */
 .cpr-pc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
   gap: 1rem;
   align-items: start;
 }
@@ -621,7 +628,6 @@ input.pc-custom-value:focus {
   border-top: 2px solid var(--gold);
   border-left: 3px solid var(--gold);
   border-radius: var(--radius);
-  overflow: hidden;
   box-shadow:
     inset 0 1px 3px rgba(245, 194, 0, 0.35),
     inset 0 4px 32px -6px rgba(245, 194, 0, 0.14);
@@ -634,8 +640,12 @@ input.pc-custom-value:focus {
   min-height: 78px;
   background: var(--surface);
   border-bottom: 1px solid var(--border-h);
-  box-shadow: inset 10px 10px 30px 1px #e1bd5854;
-  position: relative;
+  box-shadow:
+    inset 10px 10px 30px 1px #e1bd5854,
+    0 2px 8px rgba(0, 0, 0, 0.45);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 /* Avatar column — full height, right border only, click to change portrait */
@@ -646,6 +656,7 @@ input.pc-custom-value:focus {
   border-right: 1.5px solid var(--border-h);
   border-radius: 0;
   background: var(--bg);
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -904,3 +915,195 @@ input.pc-custom-value:focus {
   transition: color 0.15s;
 }
 .cpr-add-field:hover { color: var(--gold); }
+
+/* ── Skills collapse toggle ── */
+.cpr-skills-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 12px;
+  border-top: 1px solid var(--border-h);
+  background: var(--bg);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.cpr-skills-toggle:hover { background: rgba(245, 194, 0, 0.04); }
+
+.cpr-skills-toggle-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--gold-dim);
+}
+
+.cpr-skills-toggle-arrow {
+  font-size: 11px;
+  color: var(--text-faint);
+  transition: transform 0.2s;
+  line-height: 1;
+}
+.cpr-skills-toggle-arrow.open { transform: rotate(90deg); }
+
+/* ── Collapsible skills section ── */
+.cpr-skills-section {
+  overflow: hidden;
+  max-height: 2400px;
+  transition: max-height 0.3s ease;
+}
+.cpr-skills-section.collapsed {
+  max-height: 0;
+}
+
+/* ── Skills two-column layout ── */
+.cpr-skills-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--border);
+}
+
+.cpr-skills-col {
+  padding: 0 10px 10px;
+}
+.cpr-skills-col:first-child {
+  border-right: 1px solid var(--border);
+}
+
+/* ── Skills table ── */
+.cpr-skills-table {
+  padding: 0 12px 10px;
+  border-top: 1px solid var(--border);
+}
+
+.cpr-skills-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0 4px;
+  border-bottom: 1px solid var(--border-h);
+  margin-bottom: 2px;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--gold-dim);
+}
+
+.cpr-skill-row {
+  display: grid;
+  grid-template-columns: 1fr 48px;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(180, 150, 90, 0.06);
+  min-height: 26px;
+}
+.cpr-skill-row:last-child { border-bottom: none; }
+
+.cpr-skill-name-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.cpr-skill-rollable {
+  cursor: pointer;
+}
+.cpr-skill-rollable:hover .cpr-skill-name {
+  color: var(--gold-pale);
+}
+.cpr-skill-rollable:hover .cpr-skill-stat {
+  color: var(--text);
+}
+
+.cpr-skill-name {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.1s;
+}
+
+.cpr-skill-stat {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.cpr-skill-base-input {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 0 2px;
+  width: 48px;
+  min-width: 0;
+  text-align: right;
+  transition: border-color 0.15s;
+}
+.cpr-skill-base-input:hover { border-bottom-color: var(--border); }
+.cpr-skill-base-input:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+}
+.cpr-skill-base-input::placeholder { color: var(--text-faint); font-size: 11px; }
+
+/* ── NPC modal skills section ── */
+.npc-skills-section {
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--border-h);
+  padding-top: 0;
+}
+
+.npc-skills-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0 6px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.npc-skills-toggle-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--gold-dim);
+}
+
+.npc-skills-toggle-arrow {
+  font-size: 11px;
+  color: var(--text-faint);
+  transition: transform 0.2s;
+}
+.npc-skills-toggle-arrow.open { transform: rotate(90deg); }
+
+.npc-skills-body {
+  overflow: hidden;
+  max-height: 2400px;
+  transition: max-height 0.3s ease, opacity 0.2s ease;
+  opacity: 1;
+}
+.npc-skills-body.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
