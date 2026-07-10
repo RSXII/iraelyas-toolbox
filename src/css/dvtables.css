@@ -169,6 +169,47 @@
   background: #111116;
 }
 
+/* ── Fire mode toggle ── */
+.dv-toggle-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.25rem;
+  border: 1.5px solid var(--border-h);
+  border-radius: var(--radius);
+  overflow: hidden;
+  width: fit-content;
+}
+
+.dv-toggle-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 7px 22px;
+  background: var(--bg);
+  color: var(--text-dim);
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+.dv-toggle-btn:not(:last-child) {
+  border-right: 1.5px solid var(--border-h);
+}
+.dv-toggle-btn:hover {
+  background: var(--card-hover);
+  color: var(--text);
+}
+.dv-toggle-btn.dv-toggle-active {
+  background: var(--gold);
+  color: #000;
+}
+.dv-toggle-btn.dv-toggle-active:hover {
+  background: var(--gold);
+  color: #000;
+}
 /* ── Footnote ── */
 .dv-footnote {
   font-family: "Rajdhani", sans-serif;

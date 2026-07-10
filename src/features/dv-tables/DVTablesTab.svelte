@@ -2,6 +2,9 @@
   interface Props { active?: boolean; }
   let { active = false }: Props = $props();
 
+  type FireMode = 'single' | 'autofire';
+  let fireMode = $state<FireMode>('single');
+
   const RANGES = [
     { label: '0–6',     unit: 'm/yds' },
     { label: '7–12',    unit: 'm/yds' },
@@ -23,6 +26,19 @@
     { name: 'Grenade Launcher', dv: [16, 15, 15, 17, 20, 22,   25, null] },
     { name: 'Rocket Launcher',  dv: [17, 16, 15, 15, 20, 20,   25,   30] },
   ];
+
+  const AUTOFIRE_RANGES = [
+    { label: '0–6',    unit: 'm/yds' },
+    { label: '7–12',   unit: 'm/yds' },
+    { label: '13–25',  unit: 'm/yds' },
+    { label: '26–50',  unit: 'm/yds' },
+    { label: '51–100', unit: 'm/yds' },
+  ] as const;
+
+  const AUTOFIRE_WEAPONS: { name: string; dv: number[] }[] = [
+    { name: 'SMGs',          dv: [20, 17, 20, 25, 30] },
+    { name: 'Assault Rifle', dv: [22, 20, 17, 20, 25] },
+  ];
 </script>
 
 <div class="tab-panel" id="panel-dvtables" class:active>
@@ -33,35 +49,78 @@
       <p class="dv-sub">Difficulty values for ranged attacks by weapon type and range band</p>
     </div>
 
-    <div class="dv-section-label">Ranged Weapons</div>
+    <div class="dv-toggle-row">
+      <button
+        class="dv-toggle-btn"
+        class:dv-toggle-active={fireMode === 'single'}
+        onclick={() => fireMode = 'single'}
+      >Single Fire</button>
+      <button
+        class="dv-toggle-btn"
+        class:dv-toggle-active={fireMode === 'autofire'}
+        onclick={() => fireMode = 'autofire'}
+      >Autofire</button>
+    </div>
 
-    <div class="dv-table-wrap">
-      <table class="dv-table">
-        <thead>
-          <tr>
-            <th>Weapon Type</th>
-            {#each RANGES as r}
-              <th>
-                {r.label}
-                <span class="dv-range-unit">{r.unit}</span>
-              </th>
-            {/each}
-          </tr>
-        </thead>
-        <tbody>
-          {#each RANGED_WEAPONS as weapon}
+    {#if fireMode === 'single'}
+      <div class="dv-section-label">Ranged Weapons</div>
+
+      <div class="dv-table-wrap">
+        <table class="dv-table">
+          <thead>
             <tr>
-              <td class="dv-weapon-cell">{weapon.name}</td>
-              {#each weapon.dv as val}
-                <td class="dv-cell" class:dv-na={val === null}>
-                  {val !== null ? val : 'N/A'}
-                </td>
+              <th>Weapon Type</th>
+              {#each RANGES as r}
+                <th>
+                  {r.label}
+                  <span class="dv-range-unit">{r.unit}</span>
+                </th>
               {/each}
             </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {#each RANGED_WEAPONS as weapon}
+              <tr>
+                <td class="dv-weapon-cell">{weapon.name}</td>
+                {#each weapon.dv as val}
+                  <td class="dv-cell" class:dv-na={val === null}>
+                    {val !== null ? val : 'N/A'}
+                  </td>
+                {/each}
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {:else}
+      <div class="dv-section-label">Autofire DVs Based on Range</div>
+
+      <div class="dv-table-wrap">
+        <table class="dv-table">
+          <thead>
+            <tr>
+              <th>Weapon Type</th>
+              {#each AUTOFIRE_RANGES as r}
+                <th>
+                  {r.label}
+                  <span class="dv-range-unit">{r.unit}</span>
+                </th>
+              {/each}
+            </tr>
+          </thead>
+          <tbody>
+            {#each AUTOFIRE_WEAPONS as weapon}
+              <tr>
+                <td class="dv-weapon-cell">{weapon.name}</td>
+                {#each weapon.dv as val}
+                  <td class="dv-cell">{val}</td>
+                {/each}
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
 
     <p class="dv-footnote">DV = Difficulty Value · Roll REF + Skill + 1d10 vs. DV to hit</p>
 
