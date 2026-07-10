@@ -85,10 +85,34 @@
   border-bottom: 1px solid var(--border-h);
 }
 
-/* Nav — bolder active indicator */
-[data-system="cpr"] .group-nav-btn.active,
-[data-system="cpr"] .tab-nav-btn.active {
-  border-bottom-width: 2px;
+/* Nav — group buttons */
+[data-system="cpr"] .group-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+}
+[data-system="cpr"] .group-btn.active {
+  border-bottom-width: 3px;
+}
+
+/* Nav — tab buttons */
+[data-system="cpr"] .tab-nav {
+  background: var(--bg);
+  border-bottom-color: var(--border-h);
+}
+[data-system="cpr"] .tab-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+[data-system="cpr"] .tab-btn.active {
+  border-bottom-width: 3px;
+}
+[data-system="cpr"] .tab-btn:hover {
+  color: var(--gold-pale);
+  background: rgba(245, 194, 0, 0.04);
 }
 
 /* NPC cards — left-edge accent stripe, Demiplane-style */

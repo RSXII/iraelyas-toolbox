@@ -33,6 +33,13 @@
     toolbox:  ['enemies', 'tracker'] as TabId[],
   });
 
+  const CPR_LABEL_OVERRIDES: Partial<Record<TabId, string>> = {
+    favor:    'Rep',
+    factions: 'Corps',
+  };
+
+  const isCpr = $derived(store.activeCampaignGameSystem === 'cpr');
+
   const TAB_META: Record<TabId, { label: string; icon: string }> = {
     dvtables:   { label: 'DV Tables',       icon: '◈' },
     initiative: { label: 'Initiative',      icon: '⚡' },
@@ -640,9 +647,10 @@
     {@const groupTabs = activeGroup === 'custom' ? store.customGroupTabs : GROUP_TABS[activeGroup]}
     {#each groupTabs as tid (tid)}
       {@const meta = TAB_META[tid]}
+      {@const label = (isCpr && CPR_LABEL_OVERRIDES[tid]) ? CPR_LABEL_OVERRIDES[tid] : meta.label}
       <button class="tab-btn" class:active={activeTab === tid}
         id="tab-{tid}" onclick={() => switchTab(tid)}>
-        <span class="tab-icon">{meta.icon}</span> {meta.label}
+        <span class="tab-icon">{meta.icon}</span> {label}
       </button>
     {/each}
   {/if}
