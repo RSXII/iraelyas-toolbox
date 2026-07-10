@@ -722,6 +722,325 @@ textarea.npc-field-input {
   border-radius: 50%;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   CPR NPC CREATOR OVERRIDES
+   All rules are scoped to [data-system="cpr"] so D&D is untouched.
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Title ── */
+[data-system="cpr"] .npc-creator-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+
+/* ── Filter chips → angular, Rajdhani ── */
+[data-system="cpr"] .chip {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  border-radius: var(--radius);
+}
+[data-system="cpr"] .chip.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #0d0d10;
+}
+
+/* ── NPC list gap ── */
+[data-system="cpr"] .npc-list {
+  gap: 6px;
+}
+
+/* ── List row → CPR card ── */
+[data-system="cpr"] .npc-list-row {
+  background: var(--card);
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.30),
+    inset 0 4px 28px -6px rgba(245, 194, 0, 0.12);
+  overflow: hidden;
+}
+[data-system="cpr"] .npc-list-row:hover {
+  border-color: var(--border-h);
+  border-top-color: var(--gold);
+  border-left-color: var(--gold);
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.40),
+    inset 0 4px 28px -6px rgba(245, 194, 0, 0.18);
+}
+
+/* Suppress the blurred portrait background texture — portrait is in the column */
+[data-system="cpr"] .npc-list-row.has-portrait::before {
+  display: none;
+}
+
+/* ── Card header: full-height avatar column layout ── */
+[data-system="cpr"] .npc-card-header {
+  align-items: stretch;
+  padding: 0;
+  gap: 0;
+  background: var(--surface);
+  box-shadow: inset 10px 10px 30px 1px #e1bd5854;
+  min-height: 64px;
+}
+[data-system="cpr"] .npc-card-header:hover {
+  background: var(--surface);
+}
+
+/* ── Avatar column: full height, right border only ── */
+[data-system="cpr"] .npc-card-initials {
+  width: 64px;
+  height: auto;
+  min-height: 64px;
+  align-self: stretch;
+  border-radius: 0;
+  border: none;
+  border-right: 1.5px solid var(--border-h);
+  background: var(--bg);
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--gold-dim);
+  flex-shrink: 0;
+}
+/* Portrait fills the column without circle crop */
+[data-system="cpr"] .npc-card-initials.npc-list-portrait img {
+  border-radius: 0;
+}
+
+/* ── Identity gets its own padding now ── */
+[data-system="cpr"] .npc-card-identity {
+  padding: 10px 12px;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Name → gold Rajdhani ── */
+[data-system="cpr"] .npc-card-name {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  font-style: normal;
+}
+
+/* ── Role → cyan underline ── */
+[data-system="cpr"] .npc-card-role {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #13eeed;
+  font-style: normal;
+  border-bottom: 1px solid rgba(19, 238, 237, 0.35);
+  display: inline;
+  width: fit-content;
+}
+
+/* ── Badges → angular ── */
+[data-system="cpr"] .npc-type-badge {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  border-radius: 0;
+  padding: 2px 6px;
+}
+[data-system="cpr"] .npc-type-badge.scene {
+  background: transparent;
+  color: var(--text-faint);
+  border-color: var(--text-faint);
+}
+[data-system="cpr"] .npc-type-badge.recurring {
+  background: transparent;
+  color: #2980b9;
+  border-color: #2980b9;
+}
+[data-system="cpr"] .npc-type-badge.major {
+  background: transparent;
+  color: var(--gold-dim);
+  border-color: var(--gold-dim);
+}
+[data-system="cpr"] .npc-faction-badge {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  border-radius: 0;
+  padding: 2px 6px;
+}
+
+/* ── Badges padding on right side ── */
+[data-system="cpr"] .npc-card-badges {
+  padding-right: 12px;
+}
+
+/* ── Add form ── */
+[data-system="cpr"] .npc-add-form {
+  border: 1.5px solid var(--border-h);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+}
+[data-system="cpr"] .npc-add-form-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--gold-dim);
+}
+
+/* ── Field labels ── */
+[data-system="cpr"] .npc-field-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--gold-dim);
+}
+
+/* ── Field inputs ── */
+[data-system="cpr"] .npc-field-input {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+}
+[data-system="cpr"] .npc-field-input:focus {
+  border-color: var(--gold-dim);
+}
+[data-system="cpr"] select.npc-field-input option {
+  background: #18181f;
+  color: var(--text);
+}
+
+/* ── Type selector → Rajdhani, angular ── */
+[data-system="cpr"] .npc-type-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+[data-system="cpr"] .npc-type-btn.active-scene {
+  background: rgba(120, 140, 160, 0.18);
+  border-color: var(--text-faint);
+  color: var(--text-dim);
+}
+[data-system="cpr"] .npc-type-btn.active-recurring {
+  background: rgba(41, 128, 185, 0.18);
+  border-color: #2980b9;
+  color: #2980b9;
+}
+[data-system="cpr"] .npc-type-btn.active-major {
+  background: rgba(245, 194, 0, 0.15);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ── Edit mode bar ── */
+[data-system="cpr"] .npc-edit-bar {
+  font-family: "Rajdhani", sans-serif;
+  border-radius: var(--radius);
+}
+[data-system="cpr"] .npc-edit-bar label {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Empty state ── */
+[data-system="cpr"] .npc-empty {
+  font-family: "Rajdhani", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ═══════════════════════════════════════
+   CPR DETAIL MODAL OVERRIDES
+═══════════════════════════════════════ */
+
+/* Card-style border on the modal */
+[data-system="cpr"] .modal-npc-detail {
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+}
+
+/* Modal header — glowing surface */
+[data-system="cpr"] .npc-detail-modal-header {
+  background: var(--surface);
+  border-bottom-color: var(--border-h);
+  box-shadow: inset 10px 10px 30px 1px #e1bd5854;
+}
+
+/* Name input — Rajdhani gold */
+[data-system="cpr"] .npc-detail-modal-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+
+/* Top strip (portrait + meta) — surface with glow */
+[data-system="cpr"] .npc-top-strip {
+  background: var(--bg);
+  border-bottom-color: var(--border-h);
+}
+
+/* Portrait section border */
+[data-system="cpr"] .npc-portrait-section {
+  border-right-color: var(--border-h);
+}
+
+/* Portrait preview — slight gold border */
+[data-system="cpr"] .npc-portrait-preview {
+  border-color: var(--border-h);
+}
+
+/* Portrait placeholder */
+[data-system="cpr"] .npc-portrait-placeholder {
+  border-color: var(--border);
+  font-family: "Rajdhani", sans-serif;
+}
+[data-system="cpr"] .npc-portrait-placeholder:hover {
+  border-color: var(--gold-dim);
+}
+[data-system="cpr"] .npc-portrait-placeholder-inner {
+  font-family: "Rajdhani", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+}
+
+/* Fields section cards inside modal */
+[data-system="cpr"] .modal-npc-detail .npc-fields-section {
+  border: 1px solid var(--border-h);
+  border-left: 2px solid var(--gold-dim);
+  background: rgba(245, 194, 0, 0.02);
+}
+
+/* Section titles */
+[data-system="cpr"] .npc-fields-section-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  border-bottom-color: var(--border-h);
+  color: var(--gold-dim);
+}
+
 /* ── Responsive: stack portrait above meta fields on small screens ── */
 @media (max-width: 640px) {
   .npc-top-strip {

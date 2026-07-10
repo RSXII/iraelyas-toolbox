@@ -21,13 +21,17 @@
   import NPCTab from '@/features/npcs/NPCTab.svelte';
   import SessionTab from '@/features/sessions/SessionTab.svelte';
 
-  // ─── Static nav data ──────────────────────────────────────────
-  const GROUP_TABS: Record<'session' | 'game' | 'world' | 'toolbox', TabId[]> = {
-    session:  ['sessions'],
-    game:     ['dvtables', 'initiative', 'dice', 'convo', 'party'],
-    world:    ['favor', 'npcs', 'factions', 'chronicle', 'tree'],
-    toolbox:  ['enemies', 'tracker'],
-  };
+  // ─── Nav data — game tabs vary by active campaign system ─────
+  const GROUP_TABS = $derived({
+    session:  ['sessions'] as TabId[],
+    game:     (store.activeCampaignGameSystem === 'cpr'
+      ? ['dvtables', 'initiative', 'dice', 'convo', 'party']
+      : ['initiative', 'dice', 'convo', 'party']) as TabId[],
+    world:    (store.activeCampaignGameSystem === 'cpr'
+      ? ['favor', 'npcs', 'factions']
+      : ['favor', 'npcs', 'factions', 'chronicle', 'tree']) as TabId[],
+    toolbox:  ['enemies', 'tracker'] as TabId[],
+  });
 
   const TAB_META: Record<TabId, { label: string; icon: string }> = {
     dvtables:   { label: 'DV Tables',       icon: '◈' },
@@ -59,6 +63,21 @@
 
   // ─── Theme ──────────────────────────────────────────────
   $effect(() => { setGameSystem(store.activeCampaignGameSystem); });
+
+  // Redirect away from CPR-only tabs when switching to a non-CPR campaign
+  $effect(() => {
+    if (store.activeCampaignGameSystem !== 'cpr' && activeTab === 'dvtables') {
+      switchTab('initiative');
+    }
+  });
+
+  // Redirect away from non-CPR tabs when switching to a CPR campaign
+  $effect(() => {
+    if (store.activeCampaignGameSystem === 'cpr' && (activeTab === 'chronicle' || activeTab === 'tree')) {
+      switchTab('favor');
+    }
+  });
+
   // ─── Campaign modals ──────────────────────────────────────────
   let showAddCampaign = $state(false);
   let showRenameCampaign = $state(false);
