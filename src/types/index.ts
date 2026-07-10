@@ -95,9 +95,12 @@ declare global {
 // CAMPAIGNS
 // ═══════════════════════════════════════════════════════════════
 
+export type GameSystem = "dnd5e" | "cpr";
+
 export interface Campaign {
   id: string;
   label: string;
+  gameSystem?: GameSystem;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -351,6 +354,31 @@ export interface PCCustomField {
   value: string;
 }
 
+export interface CPRPCStats {
+  role?: string;
+  // Base stats (0–10)
+  statInt?: string;
+  statRef?: string;
+  statDex?: string;
+  statTech?: string;
+  statCool?: string;
+  statWill?: string;
+  statLuck?: string;
+  statMove?: string;
+  statBody?: string;
+  statEmp?: string;
+  // Combat / resources
+  hp?: string;
+  hpMax?: string;
+  armorSP?: string;
+  humanity?: string;
+  humanityMax?: string;
+  streetCred?: string;
+  luck?: string;
+  luckMax?: string;
+  plat?: number;
+}
+
 export interface PCCard {
   id: string;
   name: string;
@@ -374,6 +402,7 @@ export interface PCCard {
     gold: number;
   };
   custom: PCCustomField[];
+  cprStats?: CPRPCStats;
 }
 
 export interface PartyData {
@@ -426,6 +455,8 @@ export interface CampaignData {
   factions: FactionsData;
   favor?: FavorSettings;
   initiative?: InitiativeState | null;
+  // CPR-only: npcId → playerId → score (-3 to 5)
+  cprRelationships?: Record<string, Record<string, number>>;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -462,7 +493,9 @@ export type TabId =
   | "factions"
   | "initiative"
   | "dice"
-  | "enemies";
+  | "enemies"
+  | "dvtables"
+  | "mechanics";
 
 export type GroupId = "session" | "game" | "world" | "toolbox" | "custom";
 
@@ -476,17 +509,6 @@ export interface UIState {
   customGroupName: string;
   customGroupTabs: TabId[];
   convo: ConvoState;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// THEME
-// ═══════════════════════════════════════════════════════════════
-
-export interface ThemeSettings {
-  uiScale: number; // 0.80 – 1.20, applied as CSS zoom on <html>
-  bgColor: string; // hex — base background; surface/card stack derived from this
-  textColor: string; // hex — primary text color (--text)
-  accentColor: string; // hex — accent color; gold scale derived from this
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -506,7 +528,6 @@ export interface AppState {
   campaigns: Campaign[];
   campaignData: Record<string, CampaignData>;
   ui: UIState;
-  theme: ThemeSettings;
   enemies: MonsterStatBlock[];
   aiModel: AiModel;
   tokenUsage: TokenUsage;

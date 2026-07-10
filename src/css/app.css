@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    FONTS
 ═══════════════════════════════════════════════════════════════ */
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Rajdhani:wght@400;600;700&display=swap");
 
 /* ═══════════════════════════════════════════════════════════════
    ROOT VARIABLES
@@ -46,6 +46,83 @@
 
   /* macOS traffic light inset when titleBarStyle: hiddenInset */
   --mac-inset: env(titlebar-area-x, 0px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CPR SYSTEM — full static palette + structural overrides
+   Applied when html[data-system="cpr"]. No JS color math —
+   all values are hardcoded here so we can go wild with CPR style
+   without touching the 5e defaults above.
+═══════════════════════════════════════════════════════════════ */
+[data-system="cpr"] {
+  /* Background stack — near-black, cooler/darker than 5e */
+  --bg:         #0d0d10;
+  --surface:    #131318;
+  --card:       #18181f;
+  --card-hover: #1e1e27;
+
+  /* Text — crisp white-leaning, higher contrast than warm 5e parchment */
+  --text:       #e8eaf0;
+  --text-dim:   #8890a8;
+  --text-faint: #3a3d4a;
+
+  /* Accent — electric cyber yellow */
+  --gold:       #f5c200;
+  --gold-pale:  #ffe566;
+  --gold-dim:   #c49500;
+  --gold-glow:  rgba(245, 194, 0, 0.18);
+
+  /* Borders — higher opacity so they read as sharp lines, not subtle tints */
+  --border:   rgba(245, 194, 0, 0.20);
+  --border-h: rgba(245, 194, 0, 0.55);
+
+  /* Tighter radius — industrial, not soft */
+  --radius: 2px;
+}
+
+/* Top bar — solid yellow-tinted bottom edge */
+[data-system="cpr"] #topbar {
+  border-bottom: 1px solid var(--border-h);
+}
+
+/* Nav — group buttons */
+[data-system="cpr"] .group-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+}
+[data-system="cpr"] .group-btn.active {
+  border-bottom-width: 3px;
+}
+
+/* Nav — tab buttons */
+[data-system="cpr"] .tab-nav {
+  background: var(--bg);
+  border-bottom-color: var(--border-h);
+}
+[data-system="cpr"] .tab-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+[data-system="cpr"] .tab-btn.active {
+  border-bottom-width: 3px;
+}
+[data-system="cpr"] .tab-btn:hover {
+  color: var(--gold-pale);
+  background: rgba(245, 194, 0, 0.04);
+}
+
+/* NPC cards — left-edge accent stripe, Demiplane-style */
+[data-system="cpr"] .cpr-card {
+  border-left: 2px solid var(--gold-dim);
+}
+
+/* Filter chips — square corners */
+[data-system="cpr"] .filter-chip {
+  border-radius: 2px;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -737,6 +814,34 @@ input[type="number"]::placeholder {
   gap: 8px;
   justify-content: flex-end;
   margin-top: 1.25rem;
+}
+
+.system-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border-h);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.system-toggle-btn {
+  flex: 1;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.system-toggle-btn + .system-toggle-btn {
+  border-left: 1px solid var(--border-h);
+}
+
+.system-toggle-btn.active {
+  background: var(--gold-dim);
+  color: var(--text);
 }
 
 /* ═══════════════════════════════════════════════════════════════

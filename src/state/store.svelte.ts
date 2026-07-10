@@ -8,6 +8,7 @@ import type {
   FactionRank,
   FavorSettings,
   FavorTier,
+  GameSystem,
   GroupId,
   TokenUsage,
   FactionsData,
@@ -18,20 +19,19 @@ import type {
   PlayerData,
   Schema,
   TabId,
-  ThemeSettings,
   TimelineData,
   UIState,
   TrackerData,
   TrackerEntry,
   PartyData,
   PCCard,
+  CPRPCStats,
   InitiativeState,
   SessionEntry,
   SessionReminder,
   SessionTrackerData,
   SessionEntryData,
 } from "@/types/index";
-import { DEFAULT_THEME } from "@/utils/theme";
 
 interface SessionReminderCandidate {
   sourceType: string;
@@ -125,7 +125,6 @@ function defaultState(): AppState {
       ...DEFAULT_UI,
       convo: { ...DEFAULT_CONVO, pcs: [...DEFAULT_CONVO_PCS] },
     },
-    theme: { ...DEFAULT_THEME },
     enemies: [],
     aiModel: "claude-haiku-4-5",
     hideAiFeatures: false,
@@ -188,8 +187,6 @@ class Store {
   /** Run any version migrations needed on loaded data */
   private _migrate(raw: AppState): AppState {
     const s = { ...defaultState(), ...raw };
-    // Ensure theme keys added in later versions are present with defaults
-    s.theme = { ...DEFAULT_THEME, ...raw.theme };
     // Ensure every campaign has a full data bucket
     s.campaigns.forEach((c) => {
       if (!s.campaignData[c.id]) {
@@ -222,6 +219,16 @@ class Store {
       // Lazy-init initiative for saves that predate this field
       if (!("initiative" in s.campaignData[c.id])) {
         s.campaignData[c.id].initiative = null;
+      }
+      // Lazy-init CPR relationship data for saves that predate this field
+      if (!s.campaignData[c.id].cprRelationships) {
+        s.campaignData[c.id].cprRelationships = {};
+      }
+      // Lazy-init cprStats on each PC for saves that predate this field
+      if (s.campaignData[c.id].party?.pcs) {
+        s.campaignData[c.id].party.pcs.forEach((pc) => {
+          if (!pc.cprStats) pc.cprStats = {};
+        });
       }
     });
     // Ensure convo pcs array always has 6 entries
@@ -384,6 +391,15 @@ class Store {
     this.save();
   }
 
+  getGameSystem(campaignId: string): GameSystem {
+    return this._state.campaigns.find((c) => c.id === campaignId)?.gameSystem ?? "dnd5e";
+  }
+
+  get activeCampaignGameSystem(): GameSystem {
+    const cid = this.activeCampaignId;
+    return cid ? this.getGameSystem(cid) : "dnd5e";
+  }
+
   setActiveCampaign(id: string): void {
     this._state.ui.activeCampaign = id;
     this._state.ui.activePlayer = "";
@@ -490,6 +506,22 @@ class Store {
     if (!cd.favor) return;
     if (cd.favor.tiers.length <= 1) return; // must keep at least one
     cd.favor.tiers = cd.favor.tiers.filter((t) => t.id !== tierId);
+    this.save();
+  }
+
+  // ── CPR relationship helpers ──────────────────────────────────
+
+  getCprRelationship(campaignId: string, npcId: string, playerId: string): number {
+    const cd = this.getCampaignData(campaignId);
+    return cd.cprRelationships?.[npcId]?.[playerId] ?? 0;
+  }
+
+  adjustCprRelationship(campaignId: string, npcId: string, playerId: string, delta: 1 | -1): void {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.cprRelationships) cd.cprRelationships = {};
+    if (!cd.cprRelationships[npcId]) cd.cprRelationships[npcId] = {};
+    const current = cd.cprRelationships[npcId][playerId] ?? 0;
+    cd.cprRelationships[npcId][playerId] = Math.max(-3, Math.min(5, current + delta));
     this.save();
   }
 
@@ -734,15 +766,6 @@ class Store {
 
   // ── Theme helpers ─────────────────────────────────────────────
 
-  get theme(): ThemeSettings {
-    return this._state.theme;
-  }
-
-  updateTheme(patch: Partial<ThemeSettings>): void {
-    this._state.theme = { ...this._state.theme, ...patch };
-    this.save();
-  }
-
   // ── Tracker helpers ───────────────────────────────────────────
 
   getTracker(campaignId: string): TrackerData {
@@ -850,6 +873,13 @@ class Store {
   deletePC(campaignId: string, pcId: string): void {
     const party = this.getParty(campaignId);
     party.pcs = party.pcs.filter((p) => p.id !== pcId);
+    this.save();
+  }
+
+  updateCprPCStats(campaignId: string, pcId: string, partial: Partial<CPRPCStats>): void {
+    const pc = this.getParty(campaignId).pcs.find((p) => p.id === pcId);
+    if (!pc) return;
+    pc.cprStats = { ...pc.cprStats, ...partial };
     this.save();
   }
 

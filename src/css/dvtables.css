@@ -1,0 +1,221 @@
+/* ═══════════════════════════════════════════════════════════════
+   DV TABLES
+═══════════════════════════════════════════════════════════════ */
+
+#panel-dvtables {
+  padding: 1.5rem 2rem 3rem;
+}
+
+.dv-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Page header ── */
+.dv-header {
+  margin-bottom: 1.75rem;
+}
+
+.dv-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin: 0 0 3px;
+}
+
+.dv-sub {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ── Section label ── */
+.dv-section-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--gold-dim);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dv-section-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Table scroll wrapper ── */
+.dv-table-wrap {
+  overflow-x: auto;
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.25),
+    inset 0 4px 28px -6px rgba(245, 194, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+/* ── Table base ── */
+.dv-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Rajdhani", sans-serif;
+}
+
+/* ── Column header cells (range bands) ── */
+.dv-table thead th {
+  background: var(--surface);
+  padding: 10px 14px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  border-bottom: 2px solid var(--border-h);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+}
+.dv-table thead th:first-child {
+  text-align: left;
+  border-right: 2px solid var(--border-h);
+  min-width: 148px;
+  color: var(--text-dim);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+.dv-table thead th:last-child {
+  border-right: none;
+}
+
+/* Range sub-label */
+.dv-range-unit {
+  display: block;
+  font-size: 8px;
+  color: var(--text-faint);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+
+/* ── Weapon type (first column) ── */
+.dv-weapon-cell {
+  background: var(--bg);
+  padding: 11px 16px;
+  border-right: 2px solid var(--border-h);
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+/* ── DV value cells ── */
+.dv-cell {
+  padding: 11px 14px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--card);
+  transition: background 0.12s;
+}
+.dv-table tbody tr:last-child .dv-cell,
+.dv-table tbody tr:last-child .dv-weapon-cell {
+  border-bottom: none;
+}
+.dv-table tbody tr:last-child .dv-weapon-cell {
+  border-bottom: none;
+}
+.dv-cell:last-child {
+  border-right: none;
+}
+
+/* Hover highlight for the whole row */
+.dv-table tbody tr:hover .dv-cell {
+  background: var(--card-hover);
+}
+.dv-table tbody tr:hover .dv-weapon-cell {
+  background: rgba(245, 194, 0, 0.04);
+}
+
+/* ── N/A cells ── */
+.dv-cell.dv-na {
+  background: var(--bg);
+  color: var(--text-faint);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.dv-table tbody tr:hover .dv-cell.dv-na {
+  background: #111116;
+}
+
+/* ── Fire mode toggle ── */
+.dv-toggle-row {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.25rem;
+  border: 1.5px solid var(--border-h);
+  border-radius: var(--radius);
+  overflow: hidden;
+  width: fit-content;
+}
+
+.dv-toggle-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 7px 22px;
+  background: var(--bg);
+  color: var(--text-dim);
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+.dv-toggle-btn:not(:last-child) {
+  border-right: 1.5px solid var(--border-h);
+}
+.dv-toggle-btn:hover {
+  background: var(--card-hover);
+  color: var(--text);
+}
+.dv-toggle-btn.dv-toggle-active {
+  background: var(--gold);
+  color: #000;
+}
+.dv-toggle-btn.dv-toggle-active:hover {
+  background: var(--gold);
+  color: #000;
+}
+/* ── Footnote ── */
+.dv-footnote {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 12px;
+  color: #13eeed;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: -1rem;
+}

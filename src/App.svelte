@@ -2,14 +2,15 @@
   import { onMount } from 'svelte';
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
-  import { applyTheme } from '@/utils/theme';
+  import { setGameSystem } from '@/utils/theme';
   import type { TabId, GroupId, Campaign, AppState, Schema, HouseData, TimelineData } from '@/types/index';
   import Toast from '@/components/ui/Toast.svelte';
-  import ThemeModal from '@/components/ui/ThemeModal.svelte';
   import Banner from '@/components/ui/Banner.svelte';
   import CustomGroupModal from '@/components/ui/CustomGroupModal.svelte';
   import ConvoTab from '@/components/tabs/ConvoTab.svelte';
-  import PartyTab from '@/components/tabs/PartyTab.svelte';
+  import PartyTab from '@/features/party/PartyTab.svelte';
+  import DVTablesTab from '@/features/dv-tables/DVTablesTab.svelte';
+  import MechanicsTab from '@/features/mechanics/MechanicsTab.svelte';
   import TrackerTab from '@/features/tracker/TrackerTab.svelte';
   import FavorTab from '@/features/favor/FavorTab.svelte';
   import ChronicleTab from '@/components/tabs/ChronicleTab.svelte';
@@ -21,15 +22,28 @@
   import NPCTab from '@/features/npcs/NPCTab.svelte';
   import SessionTab from '@/features/sessions/SessionTab.svelte';
 
-  // ─── Static nav data ──────────────────────────────────────────
-  const GROUP_TABS: Record<'session' | 'game' | 'world' | 'toolbox', TabId[]> = {
-    session:  ['sessions'],
-    game:     ['initiative', 'dice', 'convo', 'party'],
-    world:    ['favor', 'npcs', 'factions', 'chronicle', 'tree'],
-    toolbox:  ['enemies', 'tracker'],
+  // ─── Nav data — game tabs vary by active campaign system ─────
+  const GROUP_TABS = $derived({
+    session:  ['sessions'] as TabId[],
+    game:     (store.activeCampaignGameSystem === 'cpr'
+      ? ['dvtables', 'mechanics', 'initiative', 'dice', 'convo', 'party']
+      : ['initiative', 'dice', 'convo', 'party']) as TabId[],
+    world:    (store.activeCampaignGameSystem === 'cpr'
+      ? ['favor', 'npcs', 'factions']
+      : ['favor', 'npcs', 'factions', 'chronicle', 'tree']) as TabId[],
+    toolbox:  ['enemies', 'tracker'] as TabId[],
+  });
+
+  const CPR_LABEL_OVERRIDES: Partial<Record<TabId, string>> = {
+    favor:    'Rep',
+    factions: 'Corps',
   };
 
+  const isCpr = $derived(store.activeCampaignGameSystem === 'cpr');
+
   const TAB_META: Record<TabId, { label: string; icon: string }> = {
+    dvtables:   { label: 'DV Tables',       icon: '◈' },
+    mechanics:  { label: 'Mechanics',       icon: '⚙' },
     initiative: { label: 'Initiative',      icon: '⚡' },
     dice:       { label: 'Dice Roller',     icon: '🎲' },
     convo:      { label: 'Conversation',    icon: '💬' },
@@ -48,7 +62,6 @@
   let showMigrationOverlay = $state(true);
   let activeTab = $state<TabId>('favor');
   let activeGroup = $state<GroupId>('world');
-  let showTheme = $state(false);
   let showCustomModal = $state(false);
 
   // ─── Banners ──────────────────────────────────────────────────
@@ -58,12 +71,28 @@
   let updateDismissed = $state(false);
 
   // ─── Theme ──────────────────────────────────────────────
-  $effect(() => { applyTheme(store.theme); });
+  $effect(() => { setGameSystem(store.activeCampaignGameSystem); });
+
+  // Redirect away from CPR-only tabs when switching to a non-CPR campaign
+  $effect(() => {
+    if (store.activeCampaignGameSystem !== 'cpr' && (activeTab === 'dvtables' || activeTab === 'mechanics')) {
+      switchTab('initiative');
+    }
+  });
+
+  // Redirect away from non-CPR tabs when switching to a CPR campaign
+  $effect(() => {
+    if (store.activeCampaignGameSystem === 'cpr' && (activeTab === 'chronicle' || activeTab === 'tree')) {
+      switchTab('favor');
+    }
+  });
+
   // ─── Campaign modals ──────────────────────────────────────────
   let showAddCampaign = $state(false);
   let showRenameCampaign = $state(false);
   let newCampaignLabel = $state('');
   let newCampaignId = $state('');
+  let newCampaignSystem = $state<'dnd5e' | 'cpr'>('dnd5e');
   let renameCampaignLabel = $state('');
 
   // ─── Migration status ─────────────────────────────────────────
@@ -134,9 +163,10 @@
     if (!label) { showToast('Name required'); return; }
     if (!id) id = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
     if (store.campaigns.find((c) => c.id === id)) { showToast('Campaign already exists'); return; }
-    store.addCampaign({ id, label });
+    store.addCampaign({ id, label, gameSystem: newCampaignSystem });
     newCampaignLabel = '';
     newCampaignId = '';
+    newCampaignSystem = 'dnd5e';
     showAddCampaign = false;
     switchCampaign(id);
     showToast(`${label} created`);
@@ -556,7 +586,6 @@
   <div class="topbar-actions">
     <button class="btn btn-sm" onclick={exportBackup}>Export Backup</button>
     <button class="btn btn-sm btn-gold" onclick={importBackup}>Import Backup</button>
-    <button class="btn btn-sm" onclick={() => (showTheme = true)}>⚙ Theme</button>
     <button class="btn btn-sm btn-danger-subtle" onclick={openDangerOverlay}>⚠ Danger Zone</button>
   </div>
 </div>
@@ -620,9 +649,10 @@
     {@const groupTabs = activeGroup === 'custom' ? store.customGroupTabs : GROUP_TABS[activeGroup]}
     {#each groupTabs as tid (tid)}
       {@const meta = TAB_META[tid]}
+      {@const label = (isCpr && CPR_LABEL_OVERRIDES[tid]) ? CPR_LABEL_OVERRIDES[tid] : meta.label}
       <button class="tab-btn" class:active={activeTab === tid}
         id="tab-{tid}" onclick={() => switchTab(tid)}>
-        <span class="tab-icon">{meta.icon}</span> {meta.label}
+        <span class="tab-icon">{meta.icon}</span> {label}
       </button>
     {/each}
   {/if}
@@ -654,6 +684,12 @@
 
   <!-- ── PARTY QUICK VIEW ── -->
   <PartyTab active={activeTab === 'party'} />
+
+  <!-- ── DV TABLES ── -->
+  <DVTablesTab active={activeTab === 'dvtables'} />
+
+  <!-- ── MECHANICS ── -->
+  <MechanicsTab active={activeTab === 'mechanics'} />
 
   <!-- ── FACTION MEMBERSHIPS ── -->
   <FactionsTab active={activeTab === 'factions'} />
@@ -716,6 +752,21 @@
         placeholder="e.g. goldhaven_arc"
         bind:value={newCampaignId}
       />
+    </div>
+    <div class="field-group">
+      <label class="field-label">Game system</label>
+      <div class="system-toggle">
+        <button
+          class="system-toggle-btn"
+          class:active={newCampaignSystem === 'dnd5e'}
+          onclick={() => (newCampaignSystem = 'dnd5e')}
+        >D&amp;D 5e</button>
+        <button
+          class="system-toggle-btn"
+          class:active={newCampaignSystem === 'cpr'}
+          onclick={() => (newCampaignSystem = 'cpr')}
+        >Cyberpunk Red</button>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn" onclick={() => (showAddCampaign = false)}>Cancel</button>
@@ -822,7 +873,6 @@
 <!-- ═══════════════════════════════════════════════════════════════
      THEME MODAL
 ═══════════════════════════════════════════════════════════════ -->
-<ThemeModal open={showTheme} onclose={() => (showTheme = false)} />
 
 <!-- ═══════════════════════════════════════════════════════════════
      CUSTOM GROUP MODAL

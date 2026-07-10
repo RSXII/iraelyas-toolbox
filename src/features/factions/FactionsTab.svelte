@@ -1,7 +1,7 @@
 <script lang="ts">
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
-  import FactionListRow from './FactionListRow.svelte';
+  import FactionGridCard from './FactionGridCard.svelte';
   import FactionDetailModal from './FactionDetailModal.svelte';
   import type { FactionConfig } from '@/types/index';
 
@@ -73,9 +73,9 @@
     {#if factions.length === 0}
       <p class="empty-msg">No factions configured yet. Use "Add Faction" to get started.</p>
     {:else}
-      <div class="faction-list">
+      <div class="faction-grid">
         {#each factions as fc (fc.id)}
-          <FactionListRow {fc} {partyPcs} onselect={() => (selectedFaction = fc)} />
+          <FactionGridCard {fc} {partyPcs} onselect={() => (selectedFaction = fc)} />
         {/each}
       </div>
     {/if}

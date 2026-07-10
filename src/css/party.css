@@ -530,3 +530,377 @@ input.pc-custom-value:focus {
   display: flex;
   gap: 6px;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   CPR CREW VIEW
+═══════════════════════════════════════════════════════════════ */
+
+.cpr-party-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Page header ── */
+.cpr-party-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.cpr-party-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin: 0 0 3px;
+}
+
+.cpr-party-sub {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.cpr-party-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.cpr-add-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  background: transparent;
+  border: 1.5px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cpr-add-btn:hover {
+  background: rgba(245, 194, 0, 0.1);
+  color: var(--gold-pale);
+}
+
+/* ── Card grid ── */
+.cpr-pc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.cpr-empty-crew {
+  grid-column: 1 / -1;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 15px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 3rem 0;
+}
+
+/* ── Character card ── */
+.cpr-pc-card {
+  background: var(--card);
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.35),
+    inset 0 4px 32px -6px rgba(245, 194, 0, 0.14);
+}
+
+/* ── Card header ── */
+.cpr-pc-header {
+  display: flex;
+  align-items: stretch;
+  min-height: 78px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-h);
+  box-shadow: inset 10px 10px 30px 1px #e1bd5854;
+  position: relative;
+}
+
+/* Avatar column — full height, right border only, click to change portrait */
+.cpr-pc-avatar {
+  width: 82px;
+  flex-shrink: 0;
+  border: none;
+  border-right: 1.5px solid var(--border-h);
+  border-radius: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  overflow: hidden;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.cpr-pc-avatar:hover { opacity: 0.85; }
+.cpr-pc-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.cpr-pc-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Editable name input — styled like cpr-npc-name */
+.cpr-pc-name-input {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 0;
+  width: 100%;
+  line-height: 1.2;
+  transition: border-color 0.15s;
+}
+.cpr-pc-name-input:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+}
+.cpr-pc-name-input::placeholder { color: var(--text-faint); }
+
+/* Role dropdown — styled like cpr-npc-role */
+.cpr-pc-role-select {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #13eeed;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(19, 238, 237, 0.35);
+  padding: 0;
+  width: 100%;
+  margin-top: 2px;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.cpr-pc-role-select:focus {
+  outline: none;
+  border-bottom-color: #13eeed;
+}
+.cpr-pc-role-select option {
+  background: #18181f;
+  color: var(--text);
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.cpr-pc-delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Base stats grid (5 × 2) ── */
+.cpr-base-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  border-bottom: 1px solid var(--border-h);
+  background: var(--bg);
+}
+
+.cpr-base-stat-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px;
+  border-right: 1px solid var(--border);
+}
+.cpr-base-stat-cell:nth-child(5),
+.cpr-base-stat-cell:last-child { border-right: none; }
+
+.cpr-base-stat-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold-dim);
+  margin-bottom: 3px;
+}
+
+.cpr-base-stat-input {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+  width: 32px;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+.cpr-base-stat-input:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+}
+.cpr-base-stat-input::placeholder { color: var(--text-faint); font-size: 11px; }
+
+/* ── Stats rows ── */
+.cpr-pc-stats-row {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.cpr-pc-stats-row-2 {
+  border-bottom: none;
+}
+
+.cpr-stat-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  border-right: 1px solid var(--border);
+  min-width: 0;
+}
+.cpr-stat-cell:last-child { border-right: none; }
+
+.cpr-stat-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.cpr-stat-inputs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.cpr-stat-input {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 0 2px;
+  width: 36px;
+  text-align: center;
+  transition: border-color 0.15s;
+  -moz-appearance: textfield;
+}
+.cpr-stat-input.wide { width: 56px; }
+.cpr-stat-input:focus { outline: none; border-bottom-color: var(--gold-dim); }
+.cpr-stat-input::placeholder { color: var(--text-faint); font-size: 12px; }
+.cpr-stat-input::-webkit-inner-spin-button,
+.cpr-stat-input::-webkit-outer-spin-button { display: none; }
+
+.cpr-stat-sep {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  color: var(--text-faint);
+  flex-shrink: 0;
+  margin: 0 1px;
+}
+
+/* ── Custom fields section ── */
+.cpr-pc-custom {
+  padding: 8px 12px 10px;
+  border-top: 1px solid var(--border);
+}
+
+.cpr-custom-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.cpr-custom-name,
+.cpr-custom-value {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 12px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 2px 4px;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.cpr-custom-name { color: var(--text-dim); text-transform: uppercase; font-size: 10px; letter-spacing: 0.06em; }
+.cpr-custom-name:focus,
+.cpr-custom-value:focus { outline: none; border-bottom-color: var(--gold-dim); }
+
+.cpr-custom-del {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.12s;
+}
+.cpr-custom-del:hover {
+  border-color: rgba(180, 60, 60, 0.5);
+  color: #c06060;
+}
+
+.cpr-add-field {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  background: transparent;
+  border: none;
+  padding: 4px 0 0;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.cpr-add-field:hover { color: var(--gold); }

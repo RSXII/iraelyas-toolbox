@@ -1181,3 +1181,577 @@
     display: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   FACTION GRID CARDS (new default view)
+═══════════════════════════════════════════════════════════════ */
+
+.faction-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Card shell */
+.faction-grid-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold-dim);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    border-color 0.14s ease,
+    box-shadow 0.14s ease;
+}
+.faction-grid-card:hover {
+  border-color: var(--border-h);
+  border-left-color: var(--gold);
+  box-shadow: 0 0 0 1px rgba(188, 161, 89, 0.18);
+}
+.faction-grid-card:focus-visible {
+  outline: none;
+  border-color: var(--gold-dim);
+  border-left-color: var(--gold);
+  box-shadow:
+    0 0 0 1px var(--gold-dim),
+    0 0 0 3px rgba(188, 161, 89, 0.22);
+}
+
+/* Image header — insignia fills as bg */
+.faction-grid-card-header {
+  height: 130px;
+  background-color: #000;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* Initials fallback — centred in the header */
+.faction-grid-card-initials {
+  font-family: "Cinzel", serif;
+  font-size: 34px;
+  font-weight: 600;
+  color: var(--gold-pale);
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Body */
+.faction-grid-card-body {
+  padding: 10px 14px 12px;
+}
+
+.faction-grid-card-name {
+  font-family: "Cinzel", serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gold-pale);
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.faction-grid-card-leader {
+  font-family: "Crimson Pro", serif;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* PC favor dots row */
+.faction-grid-card-pcs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 6px;
+}
+
+.faction-grid-card-pc {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.faction-grid-card-pc-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.faction-grid-card-pc-name {
+  font-family: "Crimson Pro", serif;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CPR FACTIONS TAB OVERRIDES
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Grid cards ── */
+[data-system="cpr"] .faction-grid-card {
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.28),
+    inset 0 4px 28px -6px rgba(245, 194, 0, 0.11);
+}
+[data-system="cpr"] .faction-grid-card:hover {
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.42),
+    inset 0 4px 28px -6px rgba(245, 194, 0, 0.2);
+  border-color: var(--border-h);
+  border-top-color: var(--gold);
+  border-left-color: var(--gold);
+}
+[data-system="cpr"] .faction-grid-card-header {
+  border-bottom-color: var(--border-h);
+  box-shadow: inset 10px 10px 30px 1px #e1bd5854;
+}
+[data-system="cpr"] .faction-grid-card-initials {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 40px;
+  color: var(--gold-dim);
+  opacity: 0.7;
+}
+[data-system="cpr"] .faction-grid-card-name {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gold);
+}
+[data-system="cpr"] .faction-grid-card-leader {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #13eeed;
+  border-bottom: 1px solid rgba(19, 238, 237, 0.3);
+  display: inline-block;
+  margin-bottom: 8px;
+}
+[data-system="cpr"] .faction-grid-card-pc-dot {
+  border-radius: 0;
+  width: 7px;
+  height: 7px;
+}
+[data-system="cpr"] .faction-grid-card-pc-name {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Page title ── */
+[data-system="cpr"] .factions-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* ── Add faction / add member bars ── */
+[data-system="cpr"] .add-faction-bar,
+[data-system="cpr"] .add-member-bar {
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+}
+
+/* ── Buttons → Rajdhani ── */
+[data-system="cpr"] .btn-add-faction,
+[data-system="cpr"] .btn-add-member,
+[data-system="cpr"] .btn-confirm,
+[data-system="cpr"] .btn-cancel,
+[data-system="cpr"] .btn-edit-ranks,
+[data-system="cpr"] .btn-delete-faction {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  border-radius: var(--radius);
+}
+[data-system="cpr"] .btn-add-rank {
+  border-radius: var(--radius);
+}
+
+/* ── Selects ── */
+[data-system="cpr"] .faction-select,
+[data-system="cpr"] .rank-select {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  border-radius: var(--radius);
+}
+
+/* ── Section label ── */
+[data-system="cpr"] .section-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+}
+
+/* ── Rank chips → angular ── */
+[data-system="cpr"] .rank-chip {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: var(--radius);
+  font-style: normal;
+}
+
+/* ── Rank editor ── */
+[data-system="cpr"] .rank-num {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+}
+[data-system="cpr"] .rank-input {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 14px;
+  border-radius: var(--radius);
+}
+
+/* ── Members table ── */
+[data-system="cpr"] .members-table-head {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+[data-system="cpr"] .member-name {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+[data-system="cpr"] .favor-word {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+[data-system="cpr"] .favor-num {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+}
+[data-system="cpr"] .favor-bar-fill {
+  border-radius: 0;
+}
+[data-system="cpr"] .favor-bar-track {
+  border-radius: 0;
+}
+
+/* ── NPC member rows ── */
+[data-system="cpr"] .npc-member-name {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+[data-system="cpr"] .npc-member-role {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #13eeed;
+}
+
+/* ── Utility text ── */
+[data-system="cpr"] .empty-msg {
+  font-family: "Rajdhani", sans-serif;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+[data-system="cpr"] .hint-text {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Old card view (faction-card) → CPR border treatment ── */
+[data-system="cpr"] .faction-card {
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+}
+[data-system="cpr"] .faction-card-header {
+  background: var(--surface);
+  box-shadow: inset 10px 10px 30px 1px #e1bd5854;
+}
+[data-system="cpr"] .faction-name {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+}
+[data-system="cpr"] .faction-role {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #13eeed;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CPR FACTION LIST ROW — full-height insignia column
+═══════════════════════════════════════════════════════ */
+
+/* Reset row padding; insignia will be flush left */
+[data-system="cpr"] .faction-list-row {
+  padding: 0;
+  align-items: stretch;
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  background: var(--card);
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.28),
+    inset 0 4px 28px -6px rgba(245, 194, 0, 0.11);
+}
+[data-system="cpr"] .faction-list-row:hover {
+  border-color: var(--border-h);
+  border-top-color: var(--gold);
+  border-left-color: var(--gold);
+  background: var(--card);
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.38),
+    inset 0 4px 28px -6px rgba(245, 194, 0, 0.17);
+}
+[data-system="cpr"] .faction-list-row:focus-visible {
+  border-color: var(--border-h);
+  border-top-color: var(--gold);
+  border-left-color: var(--gold);
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.38),
+    0 0 0 2px rgba(188, 161, 89, 0.28);
+}
+
+/* Make left wrapper a flex column so info fills height */
+[data-system="cpr"] .faction-row-left {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+}
+
+/* Insignia + name row stretches to full height */
+[data-system="cpr"] .faction-row-info {
+  flex: 1;
+  align-items: stretch;
+  gap: 0;
+}
+
+/* Square insignia column — same pattern as npc-card-initials */
+[data-system="cpr"] .faction-insignia {
+  width: 66px;
+  height: auto;
+  min-height: 58px;
+  align-self: stretch;
+  border-radius: 0;
+  border: none;
+  border-right: 1.5px solid var(--border-h);
+  background: var(--bg);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+[data-system="cpr"] .faction-insignia-img {
+  border-radius: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+[data-system="cpr"] .faction-insignia-initials {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--gold-dim);
+}
+
+/* Name/leader column restores its own padding */
+[data-system="cpr"] .faction-row-center {
+  padding: 10px 12px;
+  justify-content: center;
+}
+
+/* Name → Rajdhani gold uppercase */
+[data-system="cpr"] .faction-row-name {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+}
+
+/* Leader → cyan underline, Rajdhani */
+[data-system="cpr"] .faction-row-leader {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #13eeed;
+  font-style: normal;
+  border-bottom: 1px solid rgba(19, 238, 237, 0.3);
+  display: inline-block;
+  width: fit-content;
+}
+
+/* Favor side: restore padding */
+[data-system="cpr"] .faction-row-favor {
+  padding: 10px 12px;
+  align-self: center;
+}
+[data-system="cpr"] .faction-favor-label {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+[data-system="cpr"] .faction-favor-dot {
+  border-radius: 0;
+  width: 9px;
+  height: 9px;
+}
+
+/* Floating member avatars → angular */
+[data-system="cpr"] .faction-member-avatar {
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+[data-system="cpr"] .faction-member-avatar-initials {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  color: var(--gold-dim);
+}
+
+/* ═══════════════════════════════════════════════════════
+   CPR FACTION DETAIL MODAL
+═══════════════════════════════════════════════════════ */
+
+[data-system="cpr"] .modal-faction-detail {
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+}
+
+/* Header → surface bg + inner glow */
+[data-system="cpr"] .faction-detail-header {
+  background: var(--surface);
+  background: none;
+  background-color: var(--surface);
+  border-bottom-color: var(--border-h);
+  box-shadow: inset 10px 10px 30px 1px #e1bd5854;
+}
+
+/* Insignia section border */
+[data-system="cpr"] .faction-insignia-section {
+  border-right-color: var(--border-h);
+}
+
+/* Insignia preview and placeholder → angular */
+[data-system="cpr"] .faction-insignia-preview {
+  border-color: var(--border-h);
+  border-radius: var(--radius);
+}
+[data-system="cpr"] .faction-insignia-placeholder {
+  border-radius: var(--radius);
+}
+[data-system="cpr"] .faction-insignia-placeholder-inner {
+  font-family: "Rajdhani", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+}
+
+/* Detail title → Rajdhani gold */
+[data-system="cpr"] .faction-detail-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+[data-system="cpr"] .faction-detail-title:focus {
+  border-bottom-color: var(--gold-dim);
+}
+
+/* Field labels + inputs */
+[data-system="cpr"] .faction-detail-field-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+[data-system="cpr"] .faction-detail-field-input {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 14px;
+  border-radius: var(--radius);
+}
+[data-system="cpr"] .faction-detail-field-input:focus {
+  border-color: var(--gold-dim);
+}
+
+/* Footer border */
+[data-system="cpr"] .faction-detail-foot {
+  border-top-color: var(--border-h);
+  background: none;
+}
+
+/* Color swatch add button → angular */
+[data-system="cpr"] .faction-color-add-btn,
+[data-system="cpr"] .faction-color-box {
+  border-radius: var(--radius);
+}
+[data-system="cpr"] .faction-color-edit-half,
+[data-system="cpr"] .faction-color-remove-half {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+}

@@ -700,6 +700,238 @@
   color: var(--text-faint);
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   CPR SESSIONS OVERRIDES
+═══════════════════════════════════════════════════════════════ */
+
+/* ── Page header ── */
+[data-system="cpr"] .sessions-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+}
+
+[data-system="cpr"] .sessions-subtitle {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+[data-system="cpr"] .session-start-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+/* ── Section / field labels (all Cinzel usages) ── */
+[data-system="cpr"] .sessions-label,
+[data-system="cpr"] .sessions-history-title,
+[data-system="cpr"] .sessions-reminders-label,
+[data-system="cpr"] .sessions-active-notes-title,
+[data-system="cpr"] .sessions-reminders-section-title,
+[data-system="cpr"] .sessions-running-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+}
+
+/* ── Session number input ── */
+[data-system="cpr"] .sessions-input {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--gold);
+  border-radius: var(--radius);
+}
+
+/* ── Textareas ── */
+[data-system="cpr"] .sessions-textarea,
+[data-system="cpr"] .sessions-note-edit {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 14px;
+  border-radius: var(--radius);
+  line-height: 1.5;
+}
+
+/* ── Editor cards → CPR border ── */
+[data-system="cpr"] .sessions-card {
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.22),
+    inset 0 4px 24px -6px rgba(245, 194, 0, 0.09);
+}
+[data-system="cpr"] .sessions-card:hover {
+  border-color: var(--border-h);
+  border-top-color: var(--gold);
+  border-left-color: var(--gold);
+}
+
+/* ── History container ── */
+[data-system="cpr"] .sessions-history {
+  background: none;
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+}
+
+/* ── History items ── */
+[data-system="cpr"] .sessions-history-item {
+  border: 1px solid var(--border-h);
+  border-left: 3px solid rgba(245, 194, 0, 0.3);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+[data-system="cpr"] .sessions-history-item:hover {
+  border-left-color: var(--gold);
+  background: var(--card);
+}
+
+/* ── Session chip → angular Rajdhani ── */
+[data-system="cpr"] .sessions-chip {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  border-radius: var(--radius);
+  border-color: rgba(245, 194, 0, 0.4);
+}
+
+/* ── Date / count ── */
+[data-system="cpr"] .sessions-date,
+[data-system="cpr"] .sessions-history-count {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+/* ── In-history note text ── */
+[data-system="cpr"] .sessions-note,
+[data-system="cpr"] .sessions-intro-text,
+[data-system="cpr"] .sessions-active-note-text,
+[data-system="cpr"] .sessions-history-note-item {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── Inline edit / action buttons ── */
+[data-system="cpr"] .sessions-edit-btn,
+[data-system="cpr"] .sessions-delete-btn,
+[data-system="cpr"] .sessions-add-tracker-btn,
+[data-system="cpr"] .sessions-note-save-btn,
+[data-system="cpr"] .sessions-note-cancel-btn,
+[data-system="cpr"] .sessions-add-note-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-radius: var(--radius);
+}
+
+/* ── Running banner → angular, dark surface, yellow border ── */
+[data-system="cpr"] .sessions-running-banner {
+  background: var(--surface);
+  border: 1.5px solid var(--border-h);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow: inset 10px 10px 30px 1px #e1bd5854;
+}
+
+[data-system="cpr"] .sessions-running-number {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+[data-system="cpr"] .sessions-end-btn {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  border-radius: var(--radius);
+}
+
+/* ── Intro card ── */
+[data-system="cpr"] .sessions-intro-card {
+  border: 1.5px solid var(--border-h);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+
+/* ── Reminders section ── */
+[data-system="cpr"] .sessions-reminders-section {
+  border: 1.5px solid rgba(245, 194, 0, 0.25);
+  border-left: 3px solid var(--gold-dim);
+  border-radius: var(--radius);
+  background: rgba(245, 194, 0, 0.03);
+}
+
+/* ── Reminder items ── */
+[data-system="cpr"] .sessions-reminder-item {
+  border-radius: var(--radius);
+}
+
+[data-system="cpr"] .sessions-reminder-source {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #13eeed;
+}
+
+[data-system="cpr"] .sessions-reminder-message {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+}
+
+/* ── Active notes section ── */
+[data-system="cpr"] .sessions-active-notes {
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+}
+
+/* ── Individual note items ── */
+[data-system="cpr"] .sessions-active-note-item {
+  border: 1px solid var(--border-h);
+  border-left: 2px solid rgba(245, 194, 0, 0.3);
+  border-radius: var(--radius);
+  background: var(--bg);
+}
+[data-system="cpr"] .sessions-active-note-item:hover {
+  border-left-color: var(--gold-dim);
+}
+
+/* ── Empty / hint text ── */
+[data-system="cpr"] .sessions-empty,
+[data-system="cpr"] .sessions-active-notes-empty,
+[data-system="cpr"] .sessions-summary-no-notes {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius);
+}
+
+[data-system="cpr"] .sessions-hint {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 11px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 900px) {
   .sessions-editor-grid {
