@@ -739,6 +739,34 @@ input[type="number"]::placeholder {
   margin-top: 1.25rem;
 }
 
+.system-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border-h);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.system-toggle-btn {
+  flex: 1;
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.system-toggle-btn + .system-toggle-btn {
+  border-left: 1px solid var(--border-h);
+}
+
+.system-toggle-btn.active {
+  background: var(--gold-dim);
+  color: var(--text);
+}
+
 /* ═══════════════════════════════════════════════════════════════
    TOAST
 ═══════════════════════════════════════════════════════════════ */

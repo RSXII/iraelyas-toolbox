@@ -95,9 +95,12 @@ declare global {
 // CAMPAIGNS
 // ═══════════════════════════════════════════════════════════════
 
+export type GameSystem = "dnd5e" | "cpr";
+
 export interface Campaign {
   id: string;
   label: string;
+  gameSystem?: GameSystem;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -426,6 +429,8 @@ export interface CampaignData {
   factions: FactionsData;
   favor?: FavorSettings;
   initiative?: InitiativeState | null;
+  // CPR-only: npcId → playerId → score (-3 to 5)
+  cprRelationships?: Record<string, Record<string, number>>;
 }
 
 // ═══════════════════════════════════════════════════════════════

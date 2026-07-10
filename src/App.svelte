@@ -64,6 +64,7 @@
   let showRenameCampaign = $state(false);
   let newCampaignLabel = $state('');
   let newCampaignId = $state('');
+  let newCampaignSystem = $state<'dnd5e' | 'cpr'>('dnd5e');
   let renameCampaignLabel = $state('');
 
   // ─── Migration status ─────────────────────────────────────────
@@ -134,9 +135,10 @@
     if (!label) { showToast('Name required'); return; }
     if (!id) id = label.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
     if (store.campaigns.find((c) => c.id === id)) { showToast('Campaign already exists'); return; }
-    store.addCampaign({ id, label });
+    store.addCampaign({ id, label, gameSystem: newCampaignSystem });
     newCampaignLabel = '';
     newCampaignId = '';
+    newCampaignSystem = 'dnd5e';
     showAddCampaign = false;
     switchCampaign(id);
     showToast(`${label} created`);
@@ -716,6 +718,21 @@
         placeholder="e.g. goldhaven_arc"
         bind:value={newCampaignId}
       />
+    </div>
+    <div class="field-group">
+      <label class="field-label">Game system</label>
+      <div class="system-toggle">
+        <button
+          class="system-toggle-btn"
+          class:active={newCampaignSystem === 'dnd5e'}
+          onclick={() => (newCampaignSystem = 'dnd5e')}
+        >D&amp;D 5e</button>
+        <button
+          class="system-toggle-btn"
+          class:active={newCampaignSystem === 'cpr'}
+          onclick={() => (newCampaignSystem = 'cpr')}
+        >Cyberpunk Red</button>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn" onclick={() => (showAddCampaign = false)}>Cancel</button>

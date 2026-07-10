@@ -8,6 +8,7 @@ import type {
   FactionRank,
   FavorSettings,
   FavorTier,
+  GameSystem,
   GroupId,
   TokenUsage,
   FactionsData,
@@ -223,6 +224,10 @@ class Store {
       if (!("initiative" in s.campaignData[c.id])) {
         s.campaignData[c.id].initiative = null;
       }
+      // Lazy-init CPR relationship data for saves that predate this field
+      if (!s.campaignData[c.id].cprRelationships) {
+        s.campaignData[c.id].cprRelationships = {};
+      }
     });
     // Ensure convo pcs array always has 6 entries
     while (s.ui.convo.pcs.length < 6) {
@@ -384,6 +389,15 @@ class Store {
     this.save();
   }
 
+  getGameSystem(campaignId: string): GameSystem {
+    return this._state.campaigns.find((c) => c.id === campaignId)?.gameSystem ?? "dnd5e";
+  }
+
+  get activeCampaignGameSystem(): GameSystem {
+    const cid = this.activeCampaignId;
+    return cid ? this.getGameSystem(cid) : "dnd5e";
+  }
+
   setActiveCampaign(id: string): void {
     this._state.ui.activeCampaign = id;
     this._state.ui.activePlayer = "";
@@ -490,6 +504,22 @@ class Store {
     if (!cd.favor) return;
     if (cd.favor.tiers.length <= 1) return; // must keep at least one
     cd.favor.tiers = cd.favor.tiers.filter((t) => t.id !== tierId);
+    this.save();
+  }
+
+  // ── CPR relationship helpers ──────────────────────────────────
+
+  getCprRelationship(campaignId: string, npcId: string, playerId: string): number {
+    const cd = this.getCampaignData(campaignId);
+    return cd.cprRelationships?.[npcId]?.[playerId] ?? 0;
+  }
+
+  adjustCprRelationship(campaignId: string, npcId: string, playerId: string, delta: 1 | -1): void {
+    const cd = this.getCampaignData(campaignId);
+    if (!cd.cprRelationships) cd.cprRelationships = {};
+    if (!cd.cprRelationships[npcId]) cd.cprRelationships[npcId] = {};
+    const current = cd.cprRelationships[npcId][playerId] ?? 0;
+    cd.cprRelationships[npcId][playerId] = Math.max(-3, Math.min(5, current + delta));
     this.save();
   }
 
