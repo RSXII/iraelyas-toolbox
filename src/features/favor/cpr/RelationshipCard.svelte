@@ -11,7 +11,6 @@
 
   const cid = $derived(store.activeCampaignId);
 
-  // Tier definitions: score → metadata
   const TIERS = [
     { score: -3, label: 'Enemy',        modifier: -8,  color: '#9b2020' },
     { score: -2, label: 'Hostile',      modifier: -4,  color: '#c0392b' },
@@ -25,7 +24,7 @@
   ] as const;
 
   function tierFor(score: number) {
-    return TIERS.find((t) => t.score === score) ?? TIERS[3]; // fallback Stranger
+    return TIERS.find((t) => t.score === score) ?? TIERS[3];
   }
 
   function modifierLabel(mod: number): string {
@@ -36,7 +35,6 @@
     return name.split(' ').filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('');
   }
 
-  // Player colors — cycle through a set if the party is large
   const PLAYER_COLORS = ['#2980b9', '#c0392b', '#8e44ad', '#27ae60', '#c07030', '#16a085'];
   function playerColor(idx: number): string {
     return PLAYER_COLORS[idx % PLAYER_COLORS.length];
@@ -52,17 +50,14 @@
     store.adjustCprRelationship(cid, npc.id, playerId, delta);
   }
 
-  // Pip helpers — 3 negative, 5 positive
   const NEG_PIPS = [-3, -2, -1] as const;
   const POS_PIPS = [1, 2, 3, 4, 5] as const;
 
   function negPipFilled(score: number, pip: number): boolean {
-    // pip is -3, -2, or -1; filled when score <= pip
     return score <= pip;
   }
 
   function posPipFilled(score: number, pip: number): boolean {
-    // pip is 1–5; filled when score >= pip
     return score >= pip;
   }
 </script>
@@ -90,10 +85,15 @@
       {@const tier  = tierFor(score)}
       {@const color = playerColor(idx)}
       <div class="cpr-player-row">
-        <div class="cpr-player-dot" style="background: {color}"></div>
-        <div class="cpr-player-name">{pc.name}</div>
+
+        <!-- Player label — yellow arrow tag, dark text -->
+        <div class="cpr-player-label">
+          <div class="cpr-player-dot" style="background: {color}"></div>
+          <div class="cpr-player-name">{pc.name}</div>
+        </div>
+
+        <!-- Pip track -->
         <div class="cpr-pip-track">
-          <!-- Negative pips (left side, fill right→left toward 0) -->
           <div class="cpr-neg-pips">
             {#each NEG_PIPS as pip}
               <span
@@ -104,7 +104,6 @@
             {/each}
           </div>
           <div class="cpr-pip-divider"></div>
-          <!-- Positive pips (right side, fill left→right from 0) -->
           <div class="cpr-pos-pips">
             {#each POS_PIPS as pip}
               <span
@@ -115,10 +114,14 @@
             {/each}
           </div>
         </div>
+
+        <!-- Tier stat box -->
         <div class="cpr-tier-info">
           <span class="cpr-modifier" style="color:{tier.color}">{modifierLabel(tier.modifier)}</span>
           <span class="cpr-tier-label">{tier.label}</span>
         </div>
+
+        <!-- Adjust buttons -->
         <div class="cpr-adj-btns">
           <button
             class="cpr-adj-btn"
@@ -133,6 +136,7 @@
             aria-label="Increase relationship"
           >+</button>
         </div>
+
       </div>
     {/each}
 
