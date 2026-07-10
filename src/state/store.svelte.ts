@@ -19,7 +19,6 @@ import type {
   PlayerData,
   Schema,
   TabId,
-  ThemeSettings,
   TimelineData,
   UIState,
   TrackerData,
@@ -32,7 +31,6 @@ import type {
   SessionTrackerData,
   SessionEntryData,
 } from "@/types/index";
-import { DEFAULT_THEME } from "@/utils/theme";
 
 interface SessionReminderCandidate {
   sourceType: string;
@@ -126,7 +124,6 @@ function defaultState(): AppState {
       ...DEFAULT_UI,
       convo: { ...DEFAULT_CONVO, pcs: [...DEFAULT_CONVO_PCS] },
     },
-    theme: { ...DEFAULT_THEME },
     enemies: [],
     aiModel: "claude-haiku-4-5",
     hideAiFeatures: false,
@@ -189,8 +186,6 @@ class Store {
   /** Run any version migrations needed on loaded data */
   private _migrate(raw: AppState): AppState {
     const s = { ...defaultState(), ...raw };
-    // Ensure theme keys added in later versions are present with defaults
-    s.theme = { ...DEFAULT_THEME, ...raw.theme };
     // Ensure every campaign has a full data bucket
     s.campaigns.forEach((c) => {
       if (!s.campaignData[c.id]) {
@@ -763,15 +758,6 @@ class Store {
   }
 
   // ── Theme helpers ─────────────────────────────────────────────
-
-  get theme(): ThemeSettings {
-    return this._state.theme;
-  }
-
-  updateTheme(patch: Partial<ThemeSettings>): void {
-    this._state.theme = { ...this._state.theme, ...patch };
-    this.save();
-  }
 
   // ── Tracker helpers ───────────────────────────────────────────
 

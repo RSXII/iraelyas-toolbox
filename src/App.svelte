@@ -2,10 +2,9 @@
   import { onMount } from 'svelte';
   import { store } from '@/state/store.svelte';
   import { showToast } from '@/state/toast.svelte';
-  import { applyTheme } from '@/utils/theme';
+  import { setGameSystem } from '@/utils/theme';
   import type { TabId, GroupId, Campaign, AppState, Schema, HouseData, TimelineData } from '@/types/index';
   import Toast from '@/components/ui/Toast.svelte';
-  import ThemeModal from '@/components/ui/ThemeModal.svelte';
   import Banner from '@/components/ui/Banner.svelte';
   import CustomGroupModal from '@/components/ui/CustomGroupModal.svelte';
   import ConvoTab from '@/components/tabs/ConvoTab.svelte';
@@ -48,7 +47,6 @@
   let showMigrationOverlay = $state(true);
   let activeTab = $state<TabId>('favor');
   let activeGroup = $state<GroupId>('world');
-  let showTheme = $state(false);
   let showCustomModal = $state(false);
 
   // ─── Banners ──────────────────────────────────────────────────
@@ -58,7 +56,7 @@
   let updateDismissed = $state(false);
 
   // ─── Theme ──────────────────────────────────────────────
-  $effect(() => { applyTheme(store.theme); });
+  $effect(() => { setGameSystem(store.activeCampaignGameSystem); });
   // ─── Campaign modals ──────────────────────────────────────────
   let showAddCampaign = $state(false);
   let showRenameCampaign = $state(false);
@@ -558,7 +556,6 @@
   <div class="topbar-actions">
     <button class="btn btn-sm" onclick={exportBackup}>Export Backup</button>
     <button class="btn btn-sm btn-gold" onclick={importBackup}>Import Backup</button>
-    <button class="btn btn-sm" onclick={() => (showTheme = true)}>⚙ Theme</button>
     <button class="btn btn-sm btn-danger-subtle" onclick={openDangerOverlay}>⚠ Danger Zone</button>
   </div>
 </div>
@@ -839,7 +836,6 @@
 <!-- ═══════════════════════════════════════════════════════════════
      THEME MODAL
 ═══════════════════════════════════════════════════════════════ -->
-<ThemeModal open={showTheme} onclose={() => (showTheme = false)} />
 
 <!-- ═══════════════════════════════════════════════════════════════
      CUSTOM GROUP MODAL
