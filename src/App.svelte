@@ -10,6 +10,7 @@
   import ConvoTab from '@/components/tabs/ConvoTab.svelte';
   import PartyTab from '@/features/party/PartyTab.svelte';
   import DVTablesTab from '@/features/dv-tables/DVTablesTab.svelte';
+  import MechanicsTab from '@/features/mechanics/MechanicsTab.svelte';
   import TrackerTab from '@/features/tracker/TrackerTab.svelte';
   import FavorTab from '@/features/favor/FavorTab.svelte';
   import ChronicleTab from '@/components/tabs/ChronicleTab.svelte';
@@ -25,7 +26,7 @@
   const GROUP_TABS = $derived({
     session:  ['sessions'] as TabId[],
     game:     (store.activeCampaignGameSystem === 'cpr'
-      ? ['dvtables', 'initiative', 'dice', 'convo', 'party']
+      ? ['dvtables', 'mechanics', 'initiative', 'dice', 'convo', 'party']
       : ['initiative', 'dice', 'convo', 'party']) as TabId[],
     world:    (store.activeCampaignGameSystem === 'cpr'
       ? ['favor', 'npcs', 'factions']
@@ -42,6 +43,7 @@
 
   const TAB_META: Record<TabId, { label: string; icon: string }> = {
     dvtables:   { label: 'DV Tables',       icon: '◈' },
+    mechanics:  { label: 'Mechanics',       icon: '⚙' },
     initiative: { label: 'Initiative',      icon: '⚡' },
     dice:       { label: 'Dice Roller',     icon: '🎲' },
     convo:      { label: 'Conversation',    icon: '💬' },
@@ -73,7 +75,7 @@
 
   // Redirect away from CPR-only tabs when switching to a non-CPR campaign
   $effect(() => {
-    if (store.activeCampaignGameSystem !== 'cpr' && activeTab === 'dvtables') {
+    if (store.activeCampaignGameSystem !== 'cpr' && (activeTab === 'dvtables' || activeTab === 'mechanics')) {
       switchTab('initiative');
     }
   });
@@ -685,6 +687,9 @@
 
   <!-- ── DV TABLES ── -->
   <DVTablesTab active={activeTab === 'dvtables'} />
+
+  <!-- ── MECHANICS ── -->
+  <MechanicsTab active={activeTab === 'mechanics'} />
 
   <!-- ── FACTION MEMBERSHIPS ── -->
   <FactionsTab active={activeTab === 'factions'} />

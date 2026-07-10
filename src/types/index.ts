@@ -494,7 +494,8 @@ export type TabId =
   | "initiative"
   | "dice"
   | "enemies"
-  | "dvtables";
+  | "dvtables"
+  | "mechanics";
 
 export type GroupId = "session" | "game" | "world" | "toolbox" | "custom";
 

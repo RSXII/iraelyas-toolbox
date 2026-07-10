@@ -1,0 +1,157 @@
+/* ═══════════════════════════════════════════════════════════════
+   MECHANICS TAB
+═══════════════════════════════════════════════════════════════ */
+
+#panel-mechanics {
+  padding: 1.5rem 2rem 3rem;
+}
+
+.mech-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Page header ── */
+.mech-header {
+  margin-bottom: 1.75rem;
+}
+
+.mech-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin: 0 0 3px;
+}
+
+.mech-sub {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ── Section label ── */
+.mech-section-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--gold-dim);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mech-section-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Callout boxes ── */
+.mech-callout {
+  background: var(--card);
+  border: 2px solid #c0392b;
+  border-radius: var(--radius);
+  padding: 1.5rem 2rem;
+  margin: 1.25rem 0;
+  text-align: center;
+  box-shadow:
+    inset 0 1px 4px rgba(192, 57, 43, 0.12),
+    0 0 16px rgba(192, 57, 43, 0.06);
+}
+
+/* ── Formula heading (facedown roll) ── */
+.mech-callout-formula {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  margin-bottom: 0.85rem;
+  line-height: 1.2;
+}
+
+/* ── Footnote / asterisk note ── */
+.mech-callout-note {
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ── Body text between callouts ── */
+.mech-body {
+  font-size: 1.05rem;
+  color: var(--text);
+  line-height: 1.65;
+  margin: 1.5rem 0;
+}
+
+.mech-body strong {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* ── Options layout inside a callout ── */
+.mech-callout-options {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.mech-callout-option-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.mech-callout-or {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+}
+
+.mech-callout-divider {
+  width: 50px;
+  height: 1px;
+  background: rgba(192, 57, 43, 0.35);
+  margin: 0.15rem auto;
+}
+
+/* ── Resolution text (netrunning) ── */
+.mech-callout-resolution {
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  margin-bottom: 0.85rem;
+  line-height: 1.55;
+}
+
+.mech-callout-main {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+  line-height: 1.2;
+}
