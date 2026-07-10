@@ -25,6 +25,7 @@ import type {
   TrackerEntry,
   PartyData,
   PCCard,
+  CPRPCStats,
   InitiativeState,
   SessionEntry,
   SessionReminder,
@@ -222,6 +223,12 @@ class Store {
       // Lazy-init CPR relationship data for saves that predate this field
       if (!s.campaignData[c.id].cprRelationships) {
         s.campaignData[c.id].cprRelationships = {};
+      }
+      // Lazy-init cprStats on each PC for saves that predate this field
+      if (s.campaignData[c.id].party?.pcs) {
+        s.campaignData[c.id].party.pcs.forEach((pc) => {
+          if (!pc.cprStats) pc.cprStats = {};
+        });
       }
     });
     // Ensure convo pcs array always has 6 entries
@@ -866,6 +873,13 @@ class Store {
   deletePC(campaignId: string, pcId: string): void {
     const party = this.getParty(campaignId);
     party.pcs = party.pcs.filter((p) => p.id !== pcId);
+    this.save();
+  }
+
+  updateCprPCStats(campaignId: string, pcId: string, partial: Partial<CPRPCStats>): void {
+    const pc = this.getParty(campaignId).pcs.find((p) => p.id === pcId);
+    if (!pc) return;
+    pc.cprStats = { ...pc.cprStats, ...partial };
     this.save();
   }
 

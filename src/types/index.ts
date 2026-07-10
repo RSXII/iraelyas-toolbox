@@ -354,6 +354,31 @@ export interface PCCustomField {
   value: string;
 }
 
+export interface CPRPCStats {
+  role?: string;
+  // Base stats (0–10)
+  statInt?: string;
+  statRef?: string;
+  statDex?: string;
+  statTech?: string;
+  statCool?: string;
+  statWill?: string;
+  statLuck?: string;
+  statMove?: string;
+  statBody?: string;
+  statEmp?: string;
+  // Combat / resources
+  hp?: string;
+  hpMax?: string;
+  armorSP?: string;
+  humanity?: string;
+  humanityMax?: string;
+  streetCred?: string;
+  luck?: string;
+  luckMax?: string;
+  plat?: number;
+}
+
 export interface PCCard {
   id: string;
   name: string;
@@ -377,6 +402,7 @@ export interface PCCard {
     gold: number;
   };
   custom: PCCustomField[];
+  cprStats?: CPRPCStats;
 }
 
 export interface PartyData {
@@ -467,7 +493,8 @@ export type TabId =
   | "factions"
   | "initiative"
   | "dice"
-  | "enemies";
+  | "enemies"
+  | "dvtables";
 
 export type GroupId = "session" | "game" | "world" | "toolbox" | "custom";
 

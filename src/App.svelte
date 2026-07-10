@@ -8,7 +8,8 @@
   import Banner from '@/components/ui/Banner.svelte';
   import CustomGroupModal from '@/components/ui/CustomGroupModal.svelte';
   import ConvoTab from '@/components/tabs/ConvoTab.svelte';
-  import PartyTab from '@/components/tabs/PartyTab.svelte';
+  import PartyTab from '@/features/party/PartyTab.svelte';
+  import DVTablesTab from '@/features/dv-tables/DVTablesTab.svelte';
   import TrackerTab from '@/features/tracker/TrackerTab.svelte';
   import FavorTab from '@/features/favor/FavorTab.svelte';
   import ChronicleTab from '@/components/tabs/ChronicleTab.svelte';
@@ -23,12 +24,13 @@
   // ─── Static nav data ──────────────────────────────────────────
   const GROUP_TABS: Record<'session' | 'game' | 'world' | 'toolbox', TabId[]> = {
     session:  ['sessions'],
-    game:     ['initiative', 'dice', 'convo', 'party'],
+    game:     ['dvtables', 'initiative', 'dice', 'convo', 'party'],
     world:    ['favor', 'npcs', 'factions', 'chronicle', 'tree'],
     toolbox:  ['enemies', 'tracker'],
   };
 
   const TAB_META: Record<TabId, { label: string; icon: string }> = {
+    dvtables:   { label: 'DV Tables',       icon: '◈' },
     initiative: { label: 'Initiative',      icon: '⚡' },
     dice:       { label: 'Dice Roller',     icon: '🎲' },
     convo:      { label: 'Conversation',    icon: '💬' },
@@ -653,6 +655,9 @@
 
   <!-- ── PARTY QUICK VIEW ── -->
   <PartyTab active={activeTab === 'party'} />
+
+  <!-- ── DV TABLES ── -->
+  <DVTablesTab active={activeTab === 'dvtables'} />
 
   <!-- ── FACTION MEMBERSHIPS ── -->
   <FactionsTab active={activeTab === 'factions'} />
