@@ -5,7 +5,8 @@
   import NpcSceneFields from './NpcSceneFields.svelte';
   import NpcRecurringFields from './NpcRecurringFields.svelte';
   import NpcMajorFields from './NpcMajorFields.svelte';
-  import type { NPC, NPCType, FactionConfig } from '@/types/index';
+  import CPRSkillsPanel from '@/features/party/cpr/CPRSkillsPanel.svelte';
+  import type { NPC, NPCType, FactionConfig, CPRSkills, CPRBaseStats } from '@/types/index';
 
   interface Props {
     npc: NPC | null;
@@ -14,9 +15,26 @@
   }
   let { npc, factionConfigs, onclose }: Props = $props();
 
-  const open = $derived(npc !== null);
-  const cid  = $derived(store.activeCampaignId);
-  const t    = $derived(npc ? resolvedType(npc) : 'scene');
+  const open      = $derived(npc !== null);
+  const cid       = $derived(store.activeCampaignId);
+  const t         = $derived(npc ? resolvedType(npc) : 'scene');
+  const isCpr     = $derived(store.activeCampaignGameSystem === 'cpr');
+
+  let npcSkillsOpen = $state(false);
+  let npcInfoOpen   = $state(true);
+
+  const BASE_STATS: [string, keyof CPRBaseStats][] = [
+    ['Int',  'statInt'],
+    ['Ref',  'statRef'],
+    ['Dex',  'statDex'],
+    ['Tech', 'statTech'],
+    ['Cool', 'statCool'],
+    ['Will', 'statWill'],
+    ['Luck', 'statLuck'],
+    ['Move', 'statMove'],
+    ['Body', 'statBody'],
+    ['Emp',  'statEmp'],
+  ];
 
   // ─── Helpers ──────────────────────────────────────────────────
   function patch(update: Partial<Omit<NPC, 'id'>>): void {
@@ -36,6 +54,25 @@
   function onFactionChange(factionId: string): void {
     const fc = factionConfigs.find((f) => f.id === factionId);
     patch({ factionId: factionId || undefined, faction: fc?.name ?? 'Unaffiliated' });
+  }
+
+  // ─── Base Stats ───────────────────────────────────────────────
+  function saveBaseStat(key: keyof CPRBaseStats, value: string): void {
+    if (!cid || !npc) return;
+    patch({ cprBaseStats: { ...npc.cprBaseStats, [key]: value } });
+  }
+
+  // ─── Skills ───────────────────────────────────────────────────
+  function saveNpcSkill(key: keyof CPRSkills, value: number | undefined): void {
+    if (!cid || !npc) return;
+    const current = npc.cprSkills ?? {};
+    const updated = { ...current };
+    if (value === undefined) {
+      delete updated[key];
+    } else {
+      updated[key] = value;
+    }
+    patch({ cprSkills: updated });
   }
 
   // ─── Portrait ─────────────────────────────────────────────────
@@ -145,13 +182,76 @@
       </div>
       <!-- /npc-top-strip -->
 
-      <!-- Full-width tier field sections -->
-      <NpcSceneFields {npc} />
-      {#if t === 'recurring' || t === 'major'}
-        <NpcRecurringFields {npc} />
+      <!-- CPR Base stats (CPR campaigns only) -->
+      {#if isCpr}
+        <div class="npc-base-stats-section">
+          <div class="cpr-base-stats">
+            {#each BASE_STATS as [label, key]}
+              <div class="cpr-base-stat-cell">
+                <div class="cpr-base-stat-label">{label}</div>
+                <input
+                  class="cpr-base-stat-input"
+                  type="text"
+                  value={(npc.cprBaseStats ?? {})[key] ?? ''}
+                  placeholder="—"
+                  onchange={(e) => saveBaseStat(key, (e.target as HTMLInputElement).value.trim())}
+                />
+              </div>
+            {/each}
+          </div>
+        </div>
       {/if}
-      {#if t === 'major'}
-        <NpcMajorFields {npc} />
+
+      <!-- Narrative field sections (non-CPR: always visible) -->
+      {#if !isCpr}
+        <NpcSceneFields {npc} />
+        {#if t === 'recurring' || t === 'major'}
+          <NpcRecurringFields {npc} />
+        {/if}
+        {#if t === 'major'}
+          <NpcMajorFields {npc} />
+        {/if}
+      {/if}
+
+      <!-- CPR Skills (CPR campaigns only) -->
+      {#if isCpr}
+        <div class="npc-skills-section">
+          <!-- svelte-ignore a11y_interactive_supports_focus -->
+          <div class="npc-skills-toggle" role="button" tabindex="0"
+            onclick={() => (npcSkillsOpen = !npcSkillsOpen)}
+            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); npcSkillsOpen = !npcSkillsOpen; } }}>
+            <span class="npc-skills-toggle-label">Skills</span>
+            <span class="npc-skills-toggle-arrow" class:open={npcSkillsOpen}>▶</span>
+          </div>
+          <div class="npc-skills-body" class:collapsed={!npcSkillsOpen}>
+            <CPRSkillsPanel
+              skills={npc.cprSkills ?? {}}
+              onchange={saveNpcSkill}
+            />
+          </div>
+        </div>
+      {/if}
+
+      <!-- CPR Character Details (CPR campaigns only, below skills) -->
+      {#if isCpr}
+        <div class="npc-info-section">
+          <!-- svelte-ignore a11y_interactive_supports_focus -->
+          <div class="npc-skills-toggle" role="button" tabindex="0"
+            onclick={() => (npcInfoOpen = !npcInfoOpen)}
+            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); npcInfoOpen = !npcInfoOpen; } }}>
+            <span class="npc-skills-toggle-label">Character Details</span>
+            <span class="npc-skills-toggle-arrow" class:open={npcInfoOpen}>▶</span>
+          </div>
+          <div class="npc-info-body" class:collapsed={!npcInfoOpen}>
+            <NpcSceneFields {npc} />
+            {#if t === 'recurring' || t === 'major'}
+              <NpcRecurringFields {npc} />
+            {/if}
+            {#if t === 'major'}
+              <NpcMajorFields {npc} />
+            {/if}
+          </div>
+        </div>
       {/if}
 
       <div class="modal-foot">

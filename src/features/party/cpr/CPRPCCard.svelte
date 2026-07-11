@@ -1,7 +1,8 @@
 <script lang="ts">
   import { store } from '@/state/store.svelte';
   import { pickAndCompressPortrait } from '@/utils/npc-image';
-  import type { PCCard } from '@/types/index';
+  import type { PCCard, CPRSkills } from '@/types/index';
+  import CPRSkillsPanel from './CPRSkillsPanel.svelte';
 
   interface Props {
     pc: PCCard;
@@ -63,6 +64,20 @@
   }
 
   const s = $derived(pc.cprStats ?? {});
+
+  let skillsOpen = $state(false);
+
+  function saveSkill(key: keyof CPRSkills, value: number | undefined): void {
+    if (!cid) return;
+    const current = pc.cprStats?.skills ?? {};
+    const updated = { ...current };
+    if (value === undefined) {
+      delete updated[key];
+    } else {
+      updated[key] = value;
+    }
+    store.updateCprPCStats(cid, pc.id, { skills: updated });
+  }
 
   function genId(): string {
     return `cf_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -203,6 +218,23 @@
       onclick={() => { pc.custom.push({ id: genId(), name: 'Field', value: '' }); store.save(); }}>
       + Add Field
     </button>
+  </div>
+
+  <!-- Skills toggle -->
+  <!-- svelte-ignore a11y_interactive_supports_focus -->
+  <div class="cpr-skills-toggle" role="button" tabindex="0"
+    onclick={() => (skillsOpen = !skillsOpen)}
+    onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); skillsOpen = !skillsOpen; } }}>
+    <span class="cpr-skills-toggle-label">Skills</span>
+    <span class="cpr-skills-toggle-arrow" class:open={skillsOpen}>▶</span>
+  </div>
+
+  <!-- Skills panel (collapsible) -->
+  <div class="cpr-skills-section" class:collapsed={!skillsOpen}>
+    <CPRSkillsPanel
+      skills={s.skills ?? {}}
+      onchange={saveSkill}
+    />
   </div>
 
 </div>
