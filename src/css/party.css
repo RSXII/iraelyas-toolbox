@@ -669,8 +669,15 @@ input.pc-custom-value:focus {
   cursor: pointer;
   transition: opacity 0.15s;
 }
-.cpr-pc-avatar:hover { opacity: 0.85; }
-.cpr-pc-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cpr-pc-avatar:hover {
+  opacity: 0.85;
+}
+.cpr-pc-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
 .cpr-pc-info {
   display: flex;
@@ -701,7 +708,9 @@ input.pc-custom-value:focus {
   outline: none;
   border-bottom-color: var(--gold-dim);
 }
-.cpr-pc-name-input::placeholder { color: var(--text-faint); }
+.cpr-pc-name-input::placeholder {
+  color: var(--text-faint);
+}
 
 /* Role dropdown — styled like cpr-npc-role */
 .cpr-pc-role-select {
@@ -756,7 +765,9 @@ input.pc-custom-value:focus {
   border-right: 1px solid var(--border);
 }
 .cpr-base-stat-cell:nth-child(5),
-.cpr-base-stat-cell:last-child { border-right: none; }
+.cpr-base-stat-cell:last-child {
+  border-right: none;
+}
 
 .cpr-base-stat-label {
   font-family: "Rajdhani", sans-serif;
@@ -785,7 +796,10 @@ input.pc-custom-value:focus {
   outline: none;
   border-bottom-color: var(--gold-dim);
 }
-.cpr-base-stat-input::placeholder { color: var(--text-faint); font-size: 11px; }
+.cpr-base-stat-input::placeholder {
+  color: var(--text-faint);
+  font-size: 11px;
+}
 
 /* ── Stats rows ── */
 .cpr-pc-stats-row {
@@ -806,7 +820,9 @@ input.pc-custom-value:focus {
   border-right: 1px solid var(--border);
   min-width: 0;
 }
-.cpr-stat-cell:last-child { border-right: none; }
+.cpr-stat-cell:last-child {
+  border-right: none;
+}
 
 .cpr-stat-label {
   font-family: "Rajdhani", sans-serif;
@@ -838,11 +854,21 @@ input.pc-custom-value:focus {
   transition: border-color 0.15s;
   -moz-appearance: textfield;
 }
-.cpr-stat-input.wide { width: 56px; }
-.cpr-stat-input:focus { outline: none; border-bottom-color: var(--gold-dim); }
-.cpr-stat-input::placeholder { color: var(--text-faint); font-size: 12px; }
+.cpr-stat-input.wide {
+  width: 56px;
+}
+.cpr-stat-input:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+}
+.cpr-stat-input::placeholder {
+  color: var(--text-faint);
+  font-size: 12px;
+}
 .cpr-stat-input::-webkit-inner-spin-button,
-.cpr-stat-input::-webkit-outer-spin-button { display: none; }
+.cpr-stat-input::-webkit-outer-spin-button {
+  display: none;
+}
 
 .cpr-stat-sep {
   font-family: "Rajdhani", sans-serif;
@@ -878,9 +904,17 @@ input.pc-custom-value:focus {
   width: 100%;
   transition: border-color 0.15s;
 }
-.cpr-custom-name { color: var(--text-dim); text-transform: uppercase; font-size: 10px; letter-spacing: 0.06em; }
+.cpr-custom-name {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
 .cpr-custom-name:focus,
-.cpr-custom-value:focus { outline: none; border-bottom-color: var(--gold-dim); }
+.cpr-custom-value:focus {
+  outline: none;
+  border-bottom-color: var(--gold-dim);
+}
 
 .cpr-custom-del {
   width: 20px;
@@ -914,7 +948,9 @@ input.pc-custom-value:focus {
   cursor: pointer;
   transition: color 0.15s;
 }
-.cpr-add-field:hover { color: var(--gold); }
+.cpr-add-field:hover {
+  color: var(--gold);
+}
 
 /* ── Skills collapse toggle ── */
 .cpr-skills-toggle {
@@ -928,7 +964,9 @@ input.pc-custom-value:focus {
   user-select: none;
   transition: background 0.15s;
 }
-.cpr-skills-toggle:hover { background: rgba(245, 194, 0, 0.04); }
+.cpr-skills-toggle:hover {
+  background: rgba(245, 194, 0, 0.04);
+}
 
 .cpr-skills-toggle-label {
   font-family: "Rajdhani", sans-serif;
@@ -945,7 +983,9 @@ input.pc-custom-value:focus {
   transition: transform 0.2s;
   line-height: 1;
 }
-.cpr-skills-toggle-arrow.open { transform: rotate(90deg); }
+.cpr-skills-toggle-arrow.open {
+  transform: rotate(90deg);
+}
 
 /* ── Collapsible skills section ── */
 .cpr-skills-section {
@@ -1001,7 +1041,9 @@ input.pc-custom-value:focus {
   border-bottom: 1px solid rgba(180, 150, 90, 0.06);
   min-height: 26px;
 }
-.cpr-skill-row:last-child { border-bottom: none; }
+.cpr-skill-row:last-child {
+  border-bottom: none;
+}
 
 .cpr-skill-name-wrap {
   display: flex;
@@ -1058,12 +1100,17 @@ input.pc-custom-value:focus {
   text-align: right;
   transition: border-color 0.15s;
 }
-.cpr-skill-base-input:hover { border-bottom-color: var(--border); }
+.cpr-skill-base-input:hover {
+  border-bottom-color: var(--border);
+}
 .cpr-skill-base-input:focus {
   outline: none;
   border-bottom-color: var(--gold-dim);
 }
-.cpr-skill-base-input::placeholder { color: var(--text-faint); font-size: 11px; }
+.cpr-skill-base-input::placeholder {
+  color: var(--text-faint);
+  font-size: 11px;
+}
 
 /* ── NPC modal skills section ── */
 .npc-skills-section {
@@ -1076,7 +1123,7 @@ input.pc-custom-value:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0 6px;
+  padding: 10px 10px 6px;
   cursor: pointer;
   user-select: none;
 }
@@ -1095,15 +1142,42 @@ input.pc-custom-value:focus {
   color: var(--text-faint);
   transition: transform 0.2s;
 }
-.npc-skills-toggle-arrow.open { transform: rotate(90deg); }
+.npc-skills-toggle-arrow.open {
+  transform: rotate(90deg);
+}
 
 .npc-skills-body {
   overflow: hidden;
   max-height: 2400px;
-  transition: max-height 0.3s ease, opacity 0.2s ease;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.2s ease;
   opacity: 1;
 }
 .npc-skills-body.collapsed {
   max-height: 0;
   opacity: 0;
+}
+
+/* NPC modal base stats */
+.npc-base-stats-section {
+  margin-top: 1.25rem;
+  border-top: 1px solid var(--border-h);
+  padding-top: 1rem;
+}
+
+/* NPC modal narrative details collapsible */
+.npc-info-section {
+  margin-top: 0;
+  border-top: 1px solid var(--border-h);
+  padding-top: 0;
+}
+
+.npc-info-body {
+  overflow: hidden;
+  max-height: 3000px;
+  transition: max-height 0.3s ease;
+}
+.npc-info-body.collapsed {
+  max-height: 0;
 }

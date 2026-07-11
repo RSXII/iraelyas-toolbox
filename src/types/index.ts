@@ -164,11 +164,12 @@ export interface CPRSkills {
   localExpert?: number;
   martialArts?: number;
   meleeWeapon?: number;
+  paintDrawSculpt?: number;
   paramedic?: number;
   perception?: number;
   personalGrooming?: number;
   persuasion?: number;
-  pharmacology?: number;
+  photographyFilm?: number;
   pickLock?: number;
   pickPocket?: number;
   pilotAirVehicle?: number;
@@ -187,6 +188,19 @@ export interface CPRSkills {
   wardrobeStyle?: number;
   weaponstech?: number;
   wildernesssurvival?: number;
+}
+
+export interface CPRBaseStats {
+  statInt?: string;
+  statRef?: string;
+  statDex?: string;
+  statTech?: string;
+  statCool?: string;
+  statWill?: string;
+  statLuck?: string;
+  statMove?: string;
+  statBody?: string;
+  statEmp?: string;
 }
 
 export interface NPC {
@@ -212,7 +226,8 @@ export interface NPC {
   relationshipContradictions?: string;
   // Portrait image (compressed JPEG base64 — see src/utils/npc-image.ts for size config)
   portrait?: string;
-  // CPR skills (optional, CPR campaigns only)
+  // CPR stats (optional, CPR campaigns only)
+  cprBaseStats?: CPRBaseStats;
   cprSkills?: CPRSkills;
 }
 
