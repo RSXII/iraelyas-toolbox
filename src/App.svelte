@@ -11,6 +11,7 @@
   import PartyTab from '@/features/party/PartyTab.svelte';
   import DVTablesTab from '@/features/dv-tables/DVTablesTab.svelte';
   import MechanicsTab from '@/features/mechanics/MechanicsTab.svelte';
+  import TraumaTeamTab from '@/features/trauma-team/TraumaTeamTab.svelte';
   import TrackerTab from '@/features/tracker/TrackerTab.svelte';
   import FavorTab from '@/features/favor/FavorTab.svelte';
   import ChronicleTab from '@/components/tabs/ChronicleTab.svelte';
@@ -26,7 +27,7 @@
   const GROUP_TABS = $derived({
     session:  ['sessions'] as TabId[],
     game:     (store.activeCampaignGameSystem === 'cpr'
-      ? ['dvtables', 'mechanics', 'initiative', 'dice', 'convo', 'party']
+      ? ['dvtables', 'mechanics', 'traumateam', 'initiative', 'dice', 'convo', 'party']
       : ['initiative', 'dice', 'convo', 'party']) as TabId[],
     world:    (store.activeCampaignGameSystem === 'cpr'
       ? ['favor', 'npcs', 'factions']
@@ -44,6 +45,7 @@
   const TAB_META: Record<TabId, { label: string; icon: string }> = {
     dvtables:   { label: 'DV Tables',       icon: '◈' },
     mechanics:  { label: 'Mechanics',       icon: '⚙' },
+    traumateam: { label: 'Trauma Team',     icon: '🏥' },
     initiative: { label: 'Initiative',      icon: '⚡' },
     dice:       { label: 'Dice Roller',     icon: '🎲' },
     convo:      { label: 'Conversation',    icon: '💬' },
@@ -75,7 +77,7 @@
 
   // Redirect away from CPR-only tabs when switching to a non-CPR campaign
   $effect(() => {
-    if (store.activeCampaignGameSystem !== 'cpr' && (activeTab === 'dvtables' || activeTab === 'mechanics')) {
+    if (store.activeCampaignGameSystem !== 'cpr' && (activeTab === 'dvtables' || activeTab === 'mechanics' || activeTab === 'traumateam')) {
       switchTab('initiative');
     }
   });
@@ -690,6 +692,9 @@
 
   <!-- ── MECHANICS ── -->
   <MechanicsTab active={activeTab === 'mechanics'} />
+
+  <!-- ── TRAUMA TEAM ── -->
+  <TraumaTeamTab active={activeTab === 'traumateam'} />
 
   <!-- ── FACTION MEMBERSHIPS ── -->
   <FactionsTab active={activeTab === 'factions'} />

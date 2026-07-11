@@ -1,0 +1,262 @@
+/* ═══════════════════════════════════════════════════════════════
+   TRAUMA TEAM TAB
+═══════════════════════════════════════════════════════════════ */
+
+#panel-traumateam {
+  padding: 1.5rem 2rem 3rem;
+}
+
+.tt-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Page header ── */
+.tt-header {
+  margin-bottom: 1.75rem;
+}
+
+.tt-title {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin: 0 0 3px;
+}
+
+.tt-sub {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ── Section label ── */
+.tt-section-label {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--gold-dim);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tt-section-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Body text ── */
+.tt-body {
+  font-size: 1.0rem;
+  color: var(--text);
+  line-height: 1.65;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.tt-body strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* ── Callout box (reuses mechanics style) ── */
+.tt-callout {
+  background: var(--card);
+  border: 2px solid #c0392b;
+  border-radius: var(--radius);
+  padding: 1.25rem 2rem;
+  margin: 1rem 0 1.25rem;
+  text-align: center;
+  box-shadow:
+    inset 0 1px 4px rgba(192, 57, 43, 0.12),
+    0 0 16px rgba(192, 57, 43, 0.06);
+}
+
+.tt-callout-main {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.tt-callout-main strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* ── Table scroll wrapper ── */
+.tt-table-wrap {
+  overflow-x: auto;
+  border: 1.5px solid var(--border-h);
+  border-top: 2px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  border-radius: var(--radius);
+  box-shadow:
+    inset 0 1px 3px rgba(245, 194, 0, 0.25),
+    inset 0 4px 28px -6px rgba(245, 194, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+/* ── Table base ── */
+.tt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Rajdhani", sans-serif;
+}
+
+/* ── Header cells ── */
+.tt-th {
+  background: var(--surface);
+  padding: 10px 14px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+  border-bottom: 2px solid var(--border-h);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  line-height: 1.35;
+}
+.tt-th:last-child {
+  border-right: none;
+}
+.tt-th-sub {
+  display: block;
+  font-size: 8px;
+  color: var(--text-faint);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+  text-transform: none;
+}
+
+/* Left-align text-heavy header columns */
+.tt-th-state,
+.tt-th-injury,
+.tt-th-effect {
+  text-align: left;
+}
+
+/* First column header (state / roll) — dimmer label, stronger right border */
+.tt-th-state,
+.tt-th-roll {
+  color: var(--text-dim);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  border-right: 2px solid var(--border-h);
+}
+
+/* Column min-widths */
+.tt-th-state    { min-width: 130px; }
+.tt-th-roll     { min-width: 52px; }
+.tt-th-injury   { min-width: 130px; }
+.tt-th-effect   { min-width: 260px; }
+.tt-th-fix      { min-width: 140px; }
+.tt-th-treatment { min-width: 160px; }
+
+/* ── Data cells — base ── */
+.tt-td {
+  padding: 11px 14px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--card);
+  line-height: 1.5;
+  vertical-align: middle;
+  transition: background 0.12s;
+}
+.tt-td:last-child {
+  border-right: none;
+}
+.tt-table tbody tr:last-child .tt-td {
+  border-bottom: none;
+}
+
+/* ── Accent column — wound state / roll number ── */
+.tt-td-state,
+.tt-td-roll {
+  background: var(--bg);
+  border-right: 2px solid var(--border-h);
+  font-weight: 700;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.tt-td-state {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tt-td-roll {
+  font-size: 17px;
+  text-align: center;
+}
+
+/* ── Injury name ── */
+.tt-td-injury {
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+/* ── Effect cell ── */
+.tt-td-effect {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.tt-td-effect strong {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ── Centered cells (threshold, quick fix, treatment, stabilization DV) ── */
+.tt-td-center {
+  text-align: center;
+  font-size: 13px;
+}
+
+/* ── Mortally Wounded bullet list ── */
+.tt-effect-list {
+  margin: 0;
+  padding-left: 1.1em;
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tt-effect-list li {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.tt-effect-list li strong {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ── Row hover ── */
+.tt-table tbody tr:hover .tt-td {
+  background: var(--card-hover);
+}
+.tt-table tbody tr:hover .tt-td-state,
+.tt-table tbody tr:hover .tt-td-roll {
+  background: rgba(245, 194, 0, 0.04);
+}

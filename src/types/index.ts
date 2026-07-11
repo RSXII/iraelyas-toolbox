@@ -582,7 +582,8 @@ export type TabId =
   | "dice"
   | "enemies"
   | "dvtables"
-  | "mechanics";
+  | "mechanics"
+  | "traumateam";
 
 export type GroupId = "session" | "game" | "world" | "toolbox" | "custom";
 
