@@ -3,6 +3,7 @@
   import { showToast } from '@/state/toast.svelte';
   import type { PCCard } from '@/types/index';
   import CPRPCCard from './CPRPCCard.svelte';
+  import { mapFieldsToPC } from '@/utils/cpr-sheet-import';
 
   interface Props { active?: boolean; }
   let { active = false }: Props = $props();
@@ -49,6 +50,25 @@
     showToast(`${name} added to crew`);
   }
 
+  // ─── Import from PDF sheet ────────────────────────────────────
+  let importingSheet = $state(false);
+
+  async function importFromSheet(): Promise<void> {
+    const cid = store.activeCampaignId;
+    if (!cid) { showToast('Select a campaign first'); return; }
+    importingSheet = true;
+    try {
+      const result = await window.toolbox.importCharacterSheet();
+      if (!result) return;
+      if (!result.ok || !result.fields) { showToast(result?.error ?? 'Failed to read PDF'); return; }
+      const pc = mapFieldsToPC(result.fields, genId());
+      store.addPC(cid, pc);
+      showToast(`${pc.name} added to crew`);
+    } finally {
+      importingSheet = false;
+    }
+  }
+
   // ─── Delete ───────────────────────────────────────────────────
   let deleteEnabled  = $state(false);
   let deletePending  = $state<PCCard | null>(null);
@@ -83,6 +103,9 @@
         <button class="btn btn-sm btn-danger" class:active={deleteEnabled}
           onclick={() => deleteEnabled = !deleteEnabled}>
           {deleteEnabled ? 'Done' : 'Remove'}
+        </button>
+        <button class="btn btn-sm" onclick={importFromSheet} disabled={importingSheet}>
+          {importingSheet ? 'Reading…' : 'Import Sheet'}
         </button>
         <button class="cpr-add-btn" onclick={openAdd}>+ ADD CHARACTER</button>
       </div>

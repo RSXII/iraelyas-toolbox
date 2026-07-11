@@ -5,6 +5,8 @@
   import NpcListRow from './NpcListRow.svelte';
   import NpcDetailModal from './NpcDetailModal.svelte';
   import NpcAddForm from './NpcAddForm.svelte';
+  import { mapFieldsToNPC } from '@/utils/cpr-sheet-import';
+  import { slugify } from './utils';
   import type { NPC, NPCType } from '@/types/index';
 
   interface Props { active?: boolean; }
@@ -58,6 +60,29 @@
     store.deleteNPC(cid, npc.id);
     showToast(`${npc.name} removed`);
   }
+
+  let importingSheet = $state(false);
+
+  async function importFromSheet(): Promise<void> {
+    if (!cid) { showToast('Select a campaign first'); return; }
+    importingSheet = true;
+    try {
+      const result = await window.toolbox.importCharacterSheet();
+      if (!result) return; // user canceled
+      if (!result.ok || !result.fields) { showToast(result?.error ?? 'Failed to read PDF'); return; }
+
+      const fields = result.fields;
+      let id = slugify(fields.Handle || 'unnamed');
+      const existing = store.getSchema(cid).npcs;
+      if (existing.find((n) => n.id === id)) id = `${id}_${Date.now()}`;
+
+      const npc = mapFieldsToNPC(fields, { id, faction: 'Unaffiliated', npcType: 'recurring' });
+      store.addNPC(cid, npc);
+      showToast(`${npc.name} imported`);
+    } finally {
+      importingSheet = false;
+    }
+  }
 </script>
 
 <div class="tab-panel" id="panel-npcs" class:active>
@@ -66,7 +91,12 @@
     <!-- Header -->
     <div class="npc-creator-header">
       <span class="npc-creator-title">NPC Creator</span>
-      <button class="btn btn-gold btn-sm" onclick={() => { showAddForm = !showAddForm; }}>+ Add NPC</button>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-sm" onclick={importFromSheet} disabled={importingSheet}>
+          {importingSheet ? 'Reading…' : 'Import Sheet'}
+        </button>
+        <button class="btn btn-gold btn-sm" onclick={() => { showAddForm = !showAddForm; }}>+ Add NPC</button>
+      </div>
     </div>
 
     <!-- Filters -->

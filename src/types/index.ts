@@ -18,6 +18,7 @@ export interface ToolboxBridge {
   loadData: () => Promise<AppState | null>;
   saveData: (data: AppState) => Promise<{ ok: boolean }>;
   importFile: (filters: FileFilter[]) => Promise<FileResult[] | null>;
+  importCharacterSheet: () => Promise<{ ok: boolean; fields?: Record<string, string>; error?: string } | null>;
   exportFile: (filename: string, content: string) => Promise<SaveResult>;
   getVersion: () => Promise<string>;
   getDataPath: () => Promise<string>;
@@ -203,6 +204,35 @@ export interface CPRBaseStats {
   statEmp?: string;
 }
 
+export interface CPRWeapon {
+  name: string;
+  dmg: string;
+  ammo: string;
+  rof: string;
+  notes: string;
+}
+
+export interface CPRCombatData {
+  currentHp?: number;
+  maxHp?: number;
+  seriouslyWoundedThreshold?: number;
+  deathSave?: number;
+  currentHumanity?: number;
+  maxHumanity?: number;
+  luck?: number;
+  luckMax?: number;
+  armorHeadSp?: number;
+  armorBodySp?: number;
+  armorShieldSp?: number;
+  weapons?: CPRWeapon[];
+  gear?: string[];
+  aliases?: string;
+  cash?: string;
+  reputation?: number;
+  housing?: string;
+  fashion?: string;
+}
+
 export interface NPC {
   id: string;
   name: string;
@@ -229,6 +259,7 @@ export interface NPC {
   // CPR stats (optional, CPR campaigns only)
   cprBaseStats?: CPRBaseStats;
   cprSkills?: CPRSkills;
+  cprCombat?: CPRCombatData;
 }
 
 export interface Schema {
@@ -464,6 +495,9 @@ export interface CPRPCStats {
   plat?: number;
   // Skills
   skills?: CPRSkills;
+  // Extended sheet data
+  weapons?: CPRWeapon[];
+  gear?: string[];
 }
 
 export interface PCCard {

@@ -6,6 +6,8 @@
   import NpcRecurringFields from './NpcRecurringFields.svelte';
   import NpcMajorFields from './NpcMajorFields.svelte';
   import CPRSkillsPanel from '@/features/party/cpr/CPRSkillsPanel.svelte';
+  import { mapFieldsToNPCPatch } from '@/utils/cpr-sheet-import';
+  import { showToast } from '@/state/toast.svelte';
   import type { NPC, NPCType, FactionConfig, CPRSkills, CPRBaseStats } from '@/types/index';
 
   interface Props {
@@ -83,6 +85,23 @@
 
   function handleRemovePortrait(): void {
     patch({ portrait: undefined });
+  }
+
+  // ─── Import sheet onto existing NPC ──────────────────────────
+  let importingSheet = $state(false);
+
+  async function importSheet(): Promise<void> {
+    if (!cid || !npc) return;
+    importingSheet = true;
+    try {
+      const result = await window.toolbox.importCharacterSheet();
+      if (!result) return;
+      if (!result.ok || !result.fields) { showToast(result?.error ?? 'Failed to read PDF'); return; }
+      patch(mapFieldsToNPCPatch(result.fields));
+      showToast('Stats imported');
+    } finally {
+      importingSheet = false;
+    }
   }
 
   // ─── Keyboard: Escape to close ────────────────────────────────
@@ -255,6 +274,11 @@
       {/if}
 
       <div class="modal-foot">
+        {#if isCpr}
+          <button class="btn btn-sm" onclick={importSheet} disabled={importingSheet}>
+            {importingSheet ? 'Reading…' : 'Import Sheet'}
+          </button>
+        {/if}
         <button class="btn btn-gold" onclick={onclose}>Done</button>
       </div>
 
