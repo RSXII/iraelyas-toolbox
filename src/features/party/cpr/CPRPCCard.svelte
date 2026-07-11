@@ -1,6 +1,8 @@
 <script lang="ts">
   import { store } from '@/state/store.svelte';
+  import { showToast } from '@/state/toast.svelte';
   import { pickAndCompressPortrait } from '@/utils/npc-image';
+  import { mapFieldsToPCStats } from '@/utils/cpr-sheet-import';
   import type { PCCard, CPRSkills } from '@/types/index';
   import CPRSkillsPanel from './CPRSkillsPanel.svelte';
 
@@ -81,6 +83,22 @@
 
   function genId(): string {
     return `cf_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  }
+
+  let importingSheet = $state(false);
+
+  async function importSheet(): Promise<void> {
+    if (!cid) return;
+    importingSheet = true;
+    try {
+      const result = await window.toolbox.importCharacterSheet();
+      if (!result) return;
+      if (!result.ok || !result.fields) { showToast(result?.error ?? 'Failed to read PDF'); return; }
+      store.updateCprPCStats(cid, pc.id, mapFieldsToPCStats(result.fields));
+      showToast('Stats imported');
+    } finally {
+      importingSheet = false;
+    }
   }
 </script>
 
@@ -235,6 +253,13 @@
       skills={s.skills ?? {}}
       onchange={saveSkill}
     />
+  </div>
+
+  <!-- Sheet import -->
+  <div class="cpr-pc-card-footer">
+    <button class="btn btn-sm cpr-import-sheet-btn" onclick={importSheet} disabled={importingSheet}>
+      {importingSheet ? 'Reading…' : 'Import Sheet'}
+    </button>
   </div>
 
 </div>

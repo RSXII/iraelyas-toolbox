@@ -10,6 +10,7 @@ const path = require("path");
 const fs = require("fs");
 const https = require("https");
 const crypto = require("crypto");
+const { PDFDocument, PDFTextField, PDFCheckBox, PDFDropdown } = require("pdf-lib");
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const IS_DEV = process.env.NODE_ENV === "development" || !app.isPackaged;
@@ -352,6 +353,38 @@ ipcMain.handle("import-file", async (_event, filters) => {
     name: path.basename(fp),
     content: fs.readFileSync(fp, "utf-8"),
   }));
+});
+
+// Open a PDF character sheet and return all AcroForm field values
+ipcMain.handle("import-character-sheet", async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ["openFile"],
+    filters: [{ name: "PDF Character Sheet", extensions: ["pdf"] }],
+  });
+  if (result.canceled || !result.filePaths.length) return null;
+
+  try {
+    const pdfBytes = fs.readFileSync(result.filePaths[0]);
+    const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+    const form = pdfDoc.getForm();
+    const fields = form.getFields();
+
+    const fieldMap = {};
+    for (const field of fields) {
+      const name = field.getName();
+      if (field instanceof PDFTextField) {
+        fieldMap[name] = field.getText() ?? "";
+      } else if (field instanceof PDFCheckBox) {
+        fieldMap[name] = field.isChecked() ? "true" : "false";
+      } else if (field instanceof PDFDropdown) {
+        fieldMap[name] = field.getSelected()?.[0] ?? "";
+      }
+    }
+    return { ok: true, fields: fieldMap };
+  } catch (err) {
+    console.error("import-character-sheet error:", err);
+    return { ok: false, error: err.message };
+  }
 });
 
 // Save a file via native save dialog

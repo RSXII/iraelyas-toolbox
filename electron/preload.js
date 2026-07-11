@@ -21,6 +21,9 @@ contextBridge.exposeInMainWorld("toolbox", {
    */
   importFile: (filters) => ipcRenderer.invoke("import-file", filters),
 
+  /** Open a PDF character sheet picker and return the AcroForm field map */
+  importCharacterSheet: () => ipcRenderer.invoke("import-character-sheet"),
+
   /**
    * Open a native save dialog and write content to the chosen path.
    * @param filename  Suggested filename (e.g. 'toolbox_backup.json')

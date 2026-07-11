@@ -1181,3 +1181,18 @@ input.pc-custom-value:focus {
 .npc-info-body.collapsed {
   max-height: 0;
 }
+
+.cpr-pc-card-footer {
+  padding: 8px 12px 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cpr-import-sheet-btn {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.cpr-import-sheet-btn:hover:not(:disabled) {
+  opacity: 1;
+}
